@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  gitnetic-ml:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gitnetic-ml
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: sleep infinity
+
+    network_mode: host
