@@ -38,6 +38,7 @@ class CodeBertTokenizerFast(RobertaTokenizerFast):
         unk_token: Text = "<unk>",
         pad_token: Text = "<pad>",
         mask_token: Text = "<mask>",
+        newline_token: Text = "<nl>",
         add_prefix_space: bool = True,
         trim_offsets: bool = True,
         lowercase: bool = True,
@@ -56,8 +57,13 @@ class CodeBertTokenizerFast(RobertaTokenizerFast):
             mask_token=mask_token,
             add_prefix_space=add_prefix_space,
             trim_offsets=trim_offsets,
-            **kwargs,
+            additional_special_tokens=[newline_token],
+            kwargs=kwargs,
         )
+
+        # a special token for new lines in text datasets
+        self.newline_token = newline_token
+        self.newline_token_id = self.backend_tokenizer.token_to_id(newline_token)
 
         # validate if token ids are in the correct order
         assert self.pad_token_id == 1, "`pad_token_id` must always be at index 1"
