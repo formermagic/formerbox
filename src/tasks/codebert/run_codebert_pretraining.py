@@ -11,12 +11,17 @@ from pytorch_lightning.utilities.memory import garbage_collection_cuda, is_oom_e
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
-from transformers import AdamW, RobertaConfig, RobertaForMaskedLM
+from transformers import (
+    AdamW,
+    PreTrainedTokenizerFast,
+    RobertaConfig,
+    RobertaForMaskedLM,
+)
 from transformers.data.data_collator import DataCollatorForLanguageModeling
 
 from src.data import IndexedDataset, MaxTokensBatchSampler
 from src.optim import get_polynomial_decay_with_warmup
-from src.tasks.codebert import CodeBertTokenizerFast
+from src.tasks.codebert.tokenization_codebert import CodeBertTokenizerFast
 from src.utils import get_perplexity
 
 
@@ -48,7 +53,7 @@ class ValidSaveCallback(Callback):
 
 
 class CodeBertLMPretraining(LightningModule):
-    tokenizer: CodeBertTokenizerFast
+    tokenizer: PreTrainedTokenizerFast
     optimizer: Optional[Optimizer] = None
     lr_scheduler: Optional[LambdaLR] = None
     trainer: Optional[Trainer] = None
@@ -121,15 +126,18 @@ class CodeBertLMPretraining(LightningModule):
         tokenizer_add_prefix_space: bool,
         tokenizer_trim_offsets: bool,
         tokenizer_lowercase: bool,
-    ) -> CodeBertTokenizerFast:
+    ) -> PreTrainedTokenizerFast:
         tokenizer = CodeBertTokenizerFast.from_pretrained(
             tokenizer_path,
             add_prefix_space=tokenizer_add_prefix_space,
             trim_offsets=tokenizer_trim_offsets,
             lowercase=tokenizer_lowercase,
         )
-        tokenizer = cast(CodeBertTokenizerFast, tokenizer)
-        tokenizer.backend_tokenizer.add_special_tokens(["<nl>"])
+
+        assert isinstance(
+            tokenizer, PreTrainedTokenizerFast
+        ), "Tokenizer must be a subclass of PreTrainedTokenizerFast."
+
         return tokenizer
 
     @property
