@@ -1,0 +1,10 @@
+{
+  "python.linting.pylintEnabled": true,
+  "python.linting.enabled": true,
+  "oneDarkPro.italic": false,
+  "workbench.colorTheme": "One Dark Pro",
+  "workbench.preferredDarkColorTheme": "One Dark Pro",
+  "python.languageServer": "Microsoft",
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "terminal.integrated.env.osx": { "PYTHONPATH": "." }
+}
