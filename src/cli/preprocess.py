@@ -49,8 +49,6 @@ def load_tokenizer(
         tokenizer, PreTrainedTokenizerFast
     ), "Tokenizer must be a subclass of PreTrainedTokenizerFast."
 
-    # add codebert special tokens
-    tokenizer.backend_tokenizer.add_special_tokens(["<nl>"])
     return tokenizer
 
 
