@@ -1,6 +1,7 @@
 import logging
 from typing import Any, List, Optional, Text
 
+from tokenizers import AddedToken
 from tokenizers.normalizers import Lowercase
 from transformers import RobertaTokenizerFast
 
@@ -64,6 +65,16 @@ class CodeBertTokenizerFast(RobertaTokenizerFast):
         # a special token for new lines in text datasets
         self.newline_token = newline_token
         self.newline_token_id = self.backend_tokenizer.token_to_id(newline_token)
+
+        # WORKAROUND: https://github.com/huggingface/transformers/issues/5393
+        init_kwargs = {}
+        for key, value in self.init_kwargs.items():
+            if isinstance(value, AddedToken):
+                init_kwargs[key] = str(value)
+            else:
+                init_kwargs[key] = value
+
+        self.init_kwargs = init_kwargs
 
         # validate if token ids are in the correct order
         assert self.pad_token_id == 1, "`pad_token_id` must always be at index 1"
