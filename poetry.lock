@@ -1146,20 +1146,15 @@ description = "PyTorch Lightning is the lightweight PyTorch wrapper for ML resea
 name = "pytorch-lightning"
 optional = false
 python-versions = ">=3.6"
-version = "0.8.0rc1"
+version = "0.8.4"
 
 [package.dependencies]
+PyYAML = ">=5.1"
 future = ">=0.17.1"
 numpy = ">=1.15"
-pyyaml = ">=3.13"
 tensorboard = ">=1.14"
 torch = ">=1.3"
 tqdm = ">=4.41.0"
-
-[package.source]
-reference = "bd49b07fbba09b1e7d8851ee5a1ffce3d5925e9e"
-type = "git"
-url = "https://github.com/PyTorchLightning/pytorch-lightning.git"
 
 [[package]]
 category = "main"
@@ -1803,7 +1798,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "5758ab3766b638fcb0f460fdecabe5eb93d9dcee31b5e63567582dea53e27a39"
+content-hash = "82f1d851dd3990fb5dc41ba7897584153638416d6637dbfbc16fdeb27095831a"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -2465,7 +2460,10 @@ python-dateutil = [
     {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
     {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
 ]
-pytorch-lightning = []
+pytorch-lightning = [
+    {file = "pytorch-lightning-0.8.4.tar.gz", hash = "sha256:3bed8b70e8f50696ae0c9b0daff991c876427a8ed33c370c93cf326ddb44a52a"},
+    {file = "pytorch_lightning-0.8.4-py3-none-any.whl", hash = "sha256:1745c0993a24a752aaa516d926f1ff5b4aabcecdac47f786da3f81cf13e75899"},
+]
 pytz = [
     {file = "pytz-2020.1-py2.py3-none-any.whl", hash = "sha256:a494d53b6d39c3c6e44c3bec237336e14305e4f29bbf800b599253057fbb79ed"},
     {file = "pytz-2020.1.tar.gz", hash = "sha256:c35965d010ce31b23eeb663ed3cc8c906275d6be1a34393a1d73a41febf4a048"},
