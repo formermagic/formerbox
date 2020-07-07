@@ -210,29 +210,13 @@ class CodeBertLMPretraining(LightningModule):
         return progress_bar_dict
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
-        model = self.model
-        no_decay = ["bias", "LayerNorm.weight"]
-        optimizer_grouped_parameters = [
-            {
-                "params": [
-                    p
-                    for n, p in model.named_parameters()
-                    if not any(nd in n for nd in no_decay)
-                ],
-                "weight_decay": self.weight_decay,
-            },
-            {
-                "params": [
-                    p
-                    for n, p in model.named_parameters()
-                    if any(nd in n for nd in no_decay)
-                ],
-                "weight_decay": 0.0,
-            },
-        ]
+        skip_list = ["bias", "LayerNorm.weight"]
+        parameters = self.weight_decay_params(
+            self.model, weight_decay=self.weight_decay, skip_list=skip_list
+        )
 
         optimizer = AdamW(
-            optimizer_grouped_parameters,
+            parameters,  # type: ignore
             betas=(0.9, 0.98),
             eps=1e-6,
             lr=self.learning_rate,
@@ -349,6 +333,24 @@ class CodeBertLMPretraining(LightningModule):
                             help="A number of workers for data loaders.")
         # fmt: on
         return parser
+
+    @staticmethod
+    def weight_decay_params(
+        model: torch.nn.Module, weight_decay: float, skip_list: List[Text]
+    ) -> List[Dict[Text, Any]]:
+        decay = []
+        no_decay = []
+        for name, param in model.named_parameters():
+            if not param.requires_grad:
+                continue
+            if len(param.shape) == 1 or name in skip_list:
+                no_decay.append(param)
+            else:
+                decay.append(param)
+        return [
+            {"params": no_decay, "weight_decay": 0.0},
+            {"params": decay, "weight_decay": weight_decay},
+        ]
 
 
 def main() -> None:
