@@ -21,8 +21,9 @@ from transformers.data.data_collator import DataCollatorForLanguageModeling
 
 from src.data import IndexedDataset, MaxTokensBatchSampler
 from src.optim import get_polynomial_decay_with_warmup
-from src.tasks.codebert.tokenization_codebert import CodeBertTokenizerFast
 from src.utils import get_perplexity
+
+from .tokenization_codebert import CodeBertTokenizerFast
 
 
 class ValidSaveCallback(Callback):
