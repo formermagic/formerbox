@@ -90,16 +90,16 @@ class CodeBertLMPretraining(LightningModule):
         self.val_data_path = val_data_path
         self.num_workers = num_workers
 
-        self.tokenizer = self.load_tokenizer(
+        self.tokenizer = self._load_tokenizer(
             tokenizer_path,
             tokenizer_add_prefix_space,
             tokenizer_trim_offsets,
             tokenizer_lowercase,
         )
 
-        self.model = self.load_model(num_hidden_layers, num_attention_heads)
+        self.model = self._load_model(num_hidden_layers, num_attention_heads)
 
-    def load_model(
+    def _load_model(
         self, num_hidden_layers: int, num_attention_heads: int
     ) -> RobertaForMaskedLM:
         config = RobertaConfig(
@@ -120,7 +120,7 @@ class CodeBertLMPretraining(LightningModule):
         model.resize_token_embeddings(len(self.tokenizer))
         return model
 
-    def load_tokenizer(
+    def _load_tokenizer(
         self,
         tokenizer_path: Text,
         tokenizer_add_prefix_space: bool,
@@ -141,7 +141,7 @@ class CodeBertLMPretraining(LightningModule):
         return tokenizer
 
     @property
-    def last_learning_rate(self) -> torch.FloatTensor:
+    def _last_learning_rate(self) -> torch.FloatTensor:
         # pylint: disable=not-callable
         if self.lr_scheduler is None:
             values = torch.tensor([float("nan")])
@@ -166,7 +166,7 @@ class CodeBertLMPretraining(LightningModule):
         # prepare logging meter values
         loss, _ = self.forward(**batch)
         perplexity = get_perplexity(loss)
-        learning_rate = self.last_learning_rate
+        learning_rate = self._last_learning_rate
         batch_size = torch.tensor([self.batch_size])
         tensorboard_logs = {
             "train_loss": loss,
@@ -223,7 +223,7 @@ class CodeBertLMPretraining(LightningModule):
         )
 
         if getattr(self.trainer, "max_steps") is None:
-            t_total = self.training_steps(len(self.trainer.train_dataloader))
+            t_total = self._training_steps(len(self.trainer.train_dataloader))
         else:
             t_total = self.trainer.max_steps
 
@@ -245,7 +245,7 @@ class CodeBertLMPretraining(LightningModule):
 
         return [optimizer], [step_scheduler]
 
-    def training_steps(self, dataset_len: int) -> int:
+    def _training_steps(self, dataset_len: int) -> int:
         num_gpus = self.trainer.gpus
         if isinstance(num_gpus, list):
             num_gpus = list(num_gpus)
