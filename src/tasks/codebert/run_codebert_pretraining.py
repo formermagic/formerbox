@@ -98,7 +98,7 @@ class CodeBertLMPretraining(LightningModule):
             tokenizer_lowercase,
         )
 
-        self.model = self._load_model(num_hidden_layers, num_attention_heads)
+        self.roberta_lm = self._load_model(num_hidden_layers, num_attention_heads)
 
     def _load_model(
         self, num_hidden_layers: int, num_attention_heads: int
@@ -155,8 +155,8 @@ class CodeBertLMPretraining(LightningModule):
     def forward(
         self, input_ids: torch.LongTensor, labels: torch.LongTensor, **kwargs: Any,
     ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:
-        self.model.train()
-        outputs = self.model.forward(input_ids=input_ids, labels=labels)
+        self.roberta_lm.train()
+        outputs = self.roberta_lm(input_ids=input_ids, labels=labels)
         loss, prediction_scores = outputs[:2]
         return loss, prediction_scores
 
@@ -213,7 +213,7 @@ class CodeBertLMPretraining(LightningModule):
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
         skip_list = ["bias", "LayerNorm.weight"]
         parameters = self.weight_decay_params(
-            self.model, weight_decay=self.weight_decay, skip_list=skip_list
+            self.roberta_lm, weight_decay=self.weight_decay, skip_list=skip_list
         )
 
         optimizer = AdamW(
@@ -409,7 +409,7 @@ def main() -> None:
     wandb_logger = WandbLogger(
         project=args.wandb_project, name=args.wandb_name, id=args.wandb_id,
     )
-    wandb_logger.watch(code_bert_model.model, log="gradients", log_freq=1)
+    wandb_logger.watch(code_bert_model.roberta_lm, log="gradients", log_freq=1)
 
     val_save = ValidSaveCallback(args.save_dir)
     trainer = Trainer(
