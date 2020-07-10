@@ -1,8 +1,8 @@
 import os
 import struct
 from functools import lru_cache
-from io import TextIOWrapper
-from typing import List, Optional, Text
+from io import BufferedReader, BufferedWriter, FileIO
+from typing import List, Optional, Text, Union
 
 import numpy as np
 import torch
@@ -38,24 +38,24 @@ def element_code(dtype: np.dtype) -> int:
     raise ValueError(dtype)
 
 
-def read_longs(stream: TextIOWrapper, num: int) -> np.array:
+def read_longs(stream: Union[FileIO, BufferedReader], num: int) -> np.ndarray:
     buffer = np.empty(num, dtype=np.int64)
     stream.readinto(buffer)  # type: ignore
     return buffer
 
 
-def write_longs(stream: TextIOWrapper, buffer: List[int]) -> None:
-    stream.write(np.array(buffer, dtype=np.int64))
+def write_longs(stream: Union[FileIO, BufferedWriter], buffer: List[int]) -> None:
+    stream.write(np.array(buffer, dtype=np.int64))  # type: ignore
 
 
 class IndexedDataset(Dataset):
     dtype: Optional[np.dtype] = None
     length: Optional[int] = None
     element_size: Optional[int] = None
-    dim_offsets: Optional[np.array] = None
-    data_offsets: Optional[np.array] = None
-    sizes: Optional[np.array] = None
-    data_stream: Optional[TextIOWrapper] = None
+    dim_offsets: Optional[np.ndarray] = None
+    data_offsets: Optional[np.ndarray] = None
+    sizes: Optional[np.ndarray] = None
+    data_stream: Optional[FileIO] = None
 
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__()
@@ -116,7 +116,7 @@ class IndexedDataset(Dataset):
 
 
 class IndexedDatasetBuilder:
-    stream: Optional[TextIOWrapper] = None
+    stream: Optional[FileIO] = None
 
     def __init__(self, data_filepath: Text, dtype: np.dtype = np.int32) -> None:
         self.data_filepath = data_filepath
