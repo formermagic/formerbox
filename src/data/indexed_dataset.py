@@ -73,16 +73,16 @@ class IndexedDataset(Dataset):
         return prefix_path + ".bin"
 
     def _read_index_file(self, filepath: Text) -> None:
-        with open(filepath, mode="rb") as f:
-            code, element_size = struct.unpack("<QQ", f.read(16))
-            length, size = struct.unpack("<QQ", f.read(16))
+        with open(filepath, mode="rb") as index_file:
+            code, element_size = struct.unpack("<QQ", index_file.read(16))
+            length, size = struct.unpack("<QQ", index_file.read(16))
 
             self.dtype = element_codes[code]
             self.length = length
             self.element_size = element_size
-            self.dim_offsets = read_longs(f, length + 1)
-            self.data_offsets = read_longs(f, length + 1)
-            self.sizes = read_longs(f, size)
+            self.dim_offsets = read_longs(index_file, length + 1)
+            self.data_offsets = read_longs(index_file, length + 1)
+            self.sizes = read_longs(index_file, size)
 
     def __len__(self) -> int:
         if self.length is None:
