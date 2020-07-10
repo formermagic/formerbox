@@ -116,7 +116,7 @@ class IndexedDataset(Dataset):
 
 
 class IndexedDatasetBuilder:
-    stream: Optional[FileIO] = None
+    stream: Optional[Union[FileIO, BufferedWriter]] = None
 
     def __init__(
         self, data_filepath: Text, dtype: np.dtype = np.dtype(np.int32)
@@ -202,11 +202,14 @@ class IndexedDatasetBuilder:
             write_longs(index_file, self.sizes)
 
     def __enter__(self) -> "IndexedDatasetBuilder":
+        if self.stream is not None:
+            self.stream.close()
         self.stream = open(self.data_filepath, mode="wb")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.stream.close()
+        self.stream = None
 
     def __del__(self) -> None:
         if self.stream is not None:
