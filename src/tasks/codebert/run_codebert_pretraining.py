@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Text, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Text, Tuple, Union
 
 import torch
 from pytorch_lightning import LightningModule, Trainer, seed_everything
@@ -142,14 +142,14 @@ class CodeBertLMPretraining(LightningModule):
         return tokenizer
 
     @property
-    def _last_learning_rate(self) -> torch.FloatTensor:
+    def _last_learning_rate(self) -> torch.Tensor:
         # pylint: disable=not-callable
         if self.lr_scheduler is None:
             values = torch.tensor([float("nan")])
         else:
             values = self.lr_scheduler.get_last_lr()  # type: ignore
             values = torch.tensor(values).mean()
-        return cast(torch.FloatTensor, values.float())
+        return values
 
     # pylint: disable=arguments-differ
     def forward(
