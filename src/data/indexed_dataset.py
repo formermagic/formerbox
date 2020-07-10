@@ -118,7 +118,9 @@ class IndexedDataset(Dataset):
 class IndexedDatasetBuilder:
     stream: Optional[FileIO] = None
 
-    def __init__(self, data_filepath: Text, dtype: np.dtype = np.int32) -> None:
+    def __init__(
+        self, data_filepath: Text, dtype: np.dtype = np.dtype(np.int32)
+    ) -> None:
         self.data_filepath = data_filepath
         self.dtype = dtype
         self.data_offsets = [0]
