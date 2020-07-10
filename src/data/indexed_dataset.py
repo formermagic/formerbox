@@ -80,9 +80,9 @@ class IndexedDataset(Dataset):
             self.dtype = element_codes[code]
             self.length = length
             self.element_size = element_size
-            self.dim_offsets = read_longs(f, length + 1)  # type: ignore
-            self.data_offsets = read_longs(f, length + 1)  # type: ignore
-            self.sizes = read_longs(f, size)  # type: ignore
+            self.dim_offsets = read_longs(f, length + 1)
+            self.data_offsets = read_longs(f, length + 1)
+            self.sizes = read_longs(f, size)
 
     def __len__(self) -> int:
         if self.length is None:
@@ -94,7 +94,7 @@ class IndexedDataset(Dataset):
         if index < 0 or index >= self.length:
             raise IndexError("index out of range")
         if self.data_stream is None:
-            self.data_stream = open(self.data_filepath, mode="rb", buffering=0)  # type: ignore
+            self.data_stream = open(self.data_filepath, mode="rb", buffering=0)
 
         start_idx = self.dim_offsets[index]
         end_idx = self.dim_offsets[index + 1]
@@ -197,13 +197,12 @@ class IndexedDatasetBuilder:
             index_file.write(struct.pack("<QQ", length, size))
 
             # write long lists with offsets and sizes
-            write_longs(index_file, self.dim_offsets)  # type: ignore
-            write_longs(index_file, self.data_offsets)  # type: ignore
-            write_longs(index_file, self.sizes)  # type: ignore
+            write_longs(index_file, self.dim_offsets)
+            write_longs(index_file, self.data_offsets)
+            write_longs(index_file, self.sizes)
 
     def __enter__(self) -> "IndexedDatasetBuilder":
-        # file objects conform to `TextIOWrapper` type
-        self.stream = open(self.data_filepath, mode="wb")  # type: ignore
+        self.stream = open(self.data_filepath, mode="wb")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
