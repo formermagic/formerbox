@@ -141,7 +141,7 @@ class IndexedDatasetBuilder:
 
         # write tokenized ids to data file
         input_ids_numpy = np.array(input_ids.numpy(), dtype=self.dtype)
-        input_bytes = self.stream.write(input_ids_numpy)
+        input_bytes = self.stream.write(input_ids_numpy)  # type: ignore
         input_size = input_bytes // self.element_size
 
         # append updated offset for the added input
