@@ -21,6 +21,7 @@ scipy = "^1.4.1"
 transformers = "^3.0.0"
 fairseq = {git = "https://github.com/pytorch/fairseq.git"}
 pytorch-lightning = "^0.8.4"
+jsonlines = "^1.2.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.5.3"
