@@ -198,7 +198,7 @@ class GitneticCz(BaseCommitizen):
             content = info_file.read()
         return content
 
-    def process_commit(self, commit: str) -> str:
+    def process_commit(self, commit: Text) -> Text:
         pattern = re.compile(self.schema_pattern())
         message = re.match(pattern, commit)
         if message is None:
