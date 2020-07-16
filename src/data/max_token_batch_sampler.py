@@ -1,9 +1,9 @@
 import math
 import random
-from typing import Iterable, List
+from typing import Iterator, List
 
 import numpy as np
-from torch.utils.data import Sampler
+from torch.utils.data import Dataset, Sampler
 
 from src.utils import lazy_groups_of
 
@@ -11,7 +11,13 @@ from . import IndexedDataset
 
 
 class BatchSampler(Sampler):
-    def __iter__(self) -> Iterable[List[int]]:
+    data_source: Dataset
+
+    def __init__(self, data_source: Dataset) -> None:
+        super().__init__(data_source)
+        self.data_source = data_source
+
+    def __iter__(self) -> Iterator[List[int]]:
         raise NotImplementedError
 
     def __len__(self) -> int:
@@ -32,7 +38,7 @@ class MaxTokensBatchSampler(BatchSampler):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-    def __iter__(self) -> Iterable[List[int]]:
+    def __iter__(self) -> Iterator[List[int]]:
         sorted_indices = np.argsort(self.data_source.sizes)
         batches = []
         for group in lazy_groups_of(sorted_indices, self.batch_size):
