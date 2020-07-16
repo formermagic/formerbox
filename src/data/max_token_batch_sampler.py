@@ -25,6 +25,8 @@ class BatchSampler(Sampler):
 
 
 class MaxTokensBatchSampler(BatchSampler):
+    data_source: IndexedDataset
+
     def __init__(
         self,
         data_source: IndexedDataset,
