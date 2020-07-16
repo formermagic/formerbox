@@ -1,7 +1,6 @@
 from typing import Iterator, List, Optional
 
-from torch.utils.data import DistributedSampler
-from torch.utils.data.dataset import Dataset
+from torch.utils.data import Dataset, DistributedSampler
 
 from . import BatchSampler
 
