@@ -268,7 +268,7 @@ class CodeBertLMPretraining(LightningModule):
 
     def train_dataloader(self) -> DataLoader:
         dataset = IndexedDataset(filepath_prefix=self.train_data_path)
-        batch_sampler = MaxTokensBatchSampler(
+        batch_sampler = self._batch_sampler(
             data_source=dataset,
             batch_size=self.batch_size,
             shuffle=True,
@@ -288,7 +288,7 @@ class CodeBertLMPretraining(LightningModule):
 
     def val_dataloader(self) -> DataLoader:
         dataset = IndexedDataset(filepath_prefix=self.val_data_path)
-        batch_sampler = MaxTokensBatchSampler(
+        batch_sampler = self._batch_sampler(
             data_source=dataset,
             batch_size=self.batch_size,
             shuffle=False,
@@ -305,6 +305,30 @@ class CodeBertLMPretraining(LightningModule):
         )
 
         return data_loader
+
+    def _batch_sampler(
+        self,
+        data_source: IndexedDataset,
+        batch_size: int,
+        shuffle: bool = True,
+        drop_last: bool = False,
+    ) -> BatchSampler:
+        batch_sampler = MaxTokensBatchSampler(
+            data_source=data_source,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            drop_last=drop_last,
+        )
+
+        if self.use_tpu:
+            batch_sampler = DistributedBatchSampler(
+                batch_sampler,
+                num_replicas=xm.xrt_world_size(),
+                rank=xm.get_ordinal(),
+                shuffle=shuffle,
+            )
+
+        return batch_sampler
 
     @staticmethod
     def add_model_specific_args(parent_parser: ArgumentParser,) -> ArgumentParser:
