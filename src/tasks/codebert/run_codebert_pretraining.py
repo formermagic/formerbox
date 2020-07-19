@@ -19,7 +19,12 @@ from transformers import (
 )
 from transformers.data.data_collator import DataCollatorForLanguageModeling
 
-from src.data import IndexedDataset, MaxTokensBatchSampler
+from src.data import (
+    BatchSampler,
+    DistributedBatchSampler,
+    IndexedDataset,
+    MaxTokensBatchSampler,
+)
 from src.optim import get_polynomial_decay_with_warmup
 from src.utils import get_perplexity
 
