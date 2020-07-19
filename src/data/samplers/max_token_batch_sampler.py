@@ -3,25 +3,11 @@ import random
 from typing import Iterator, List
 
 import numpy as np
-from torch.utils.data import Dataset, Sampler
 
+from src.data import IndexedDataset
 from src.utils import lazy_groups_of
 
-from . import IndexedDataset
-
-
-class BatchSampler(Sampler):
-    data_source: Dataset
-
-    def __init__(self, data_source: Dataset) -> None:
-        super().__init__(data_source)
-        self.data_source = data_source
-
-    def __iter__(self) -> Iterator[List[int]]:
-        raise NotImplementedError
-
-    def __len__(self) -> int:
-        raise NotImplementedError
+from .batch_sampler import BatchSampler
 
 
 class MaxTokensBatchSampler(BatchSampler):
