@@ -30,6 +30,11 @@ from src.utils import get_perplexity
 
 from .tokenization_codebert import CodeBertTokenizerFast
 
+try:
+    import torch_xla.core.xla_model as xm  # type: ignore
+except ImportError:
+    pass
+
 
 class ValidSaveCallback(Callback):
     def __init__(self, filepath: Text, save_top_k: int = 3) -> None:
