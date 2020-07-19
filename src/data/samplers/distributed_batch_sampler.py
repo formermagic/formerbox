@@ -2,7 +2,7 @@ from typing import Iterator, List, Optional
 
 from torch.utils.data import Dataset, DistributedSampler
 
-from . import BatchSampler
+from .batch_sampler import BatchSampler
 
 
 class IntDataset(Dataset):
