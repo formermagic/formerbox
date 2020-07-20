@@ -4,7 +4,7 @@
   "oneDarkPro.italic": false,
   "workbench.colorTheme": "One Dark Pro",
   "workbench.preferredDarkColorTheme": "One Dark Pro",
-  "python.languageServer": "Microsoft",
+  "python.languageServer": "Pylance",
   "python.terminal.activateEnvInCurrentTerminal": true,
   "terminal.integrated.env.osx": { "PYTHONPATH": "." }
 }
