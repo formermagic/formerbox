@@ -19,14 +19,14 @@ from transformers import (
 )
 from transformers.data.data_collator import DataCollatorForLanguageModeling
 
-from src.data import (
+from gitnetic.data import (
     BatchSampler,
     DistributedBatchSampler,
     IndexedDataset,
     MaxTokensBatchSampler,
 )
-from src.optim import get_polynomial_decay_with_warmup
-from src.utils import get_perplexity
+from gitnetic.optim import get_polynomial_decay_with_warmup
+from gitnetic.utils import get_perplexity
 
 from .tokenization_codebert import CodeBertTokenizerFast
 

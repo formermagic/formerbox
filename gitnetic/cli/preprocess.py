@@ -15,13 +15,13 @@ from typing import Optional, Text
 from tqdm import tqdm
 from transformers import PreTrainedTokenizerFast
 
-from src.data import (
+from gitnetic.data import (
     Binarizer,
     IndexedDatasetBuilder,
     dataset_dest_filepath,
     find_offsets,
 )
-from src.tasks.codebert import CodeBertTokenizerFast
+from gitnetic.tasks.codebert import CodeBertTokenizerFast
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,7 @@ def load_tokenizer(
     return tokenizer
 
 
+# pylint: disable=too-many-arguments, too-many-locals
 def preprocess(
     train_prefix: Text,
     valid_prefix: Optional[Text],
@@ -162,4 +163,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    """
+    TOKENIZERS_PARALLELISM=false python -m src.cli.preprocess \
+        --train_prefix=/Users/mozharovsky/GitHub/gitnetic-ml/data/2020-05-19-dataset-byte-bpe-tokenizer-vocab10K/val.src \
+        --tokenizer_path=/Users/mozharovsky/GitHub/gitnetic-ml/data/2020-05-19-dataset-byte-bpe-tokenizer-vocab10K \
+        --output_path=/Users/mozharovsky/GitHub/gitnetic-ml/data/2020-05-19-dataset-byte-bpe-tokenizer-vocab10K-bin \
+        --num_workers=32
+    """
     main()

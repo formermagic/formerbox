@@ -4,8 +4,8 @@ from typing import Iterator, List
 
 import numpy as np
 
-from src.data import IndexedDataset
-from src.utils import lazy_groups_of
+from gitnetic.data import IndexedDataset
+from gitnetic.utils import lazy_groups_of
 
 from .batch_sampler import BatchSampler
 

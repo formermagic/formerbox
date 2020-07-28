@@ -4,7 +4,7 @@ from typing import Any, Iterable, List, Text
 import torch
 from torch.utils.data import Dataset
 
-from src.utils import lines_in_file
+from gitnetic.utils import lines_in_file
 
 from .tokenization_codebert import CodeBertTokenizerFast
 
