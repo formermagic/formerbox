@@ -23,5 +23,6 @@
 **/values.dev.yaml
 **/results
 **/README.md
-**/.venv/
+**/.venv
 **/wandb
+**/typings
