@@ -163,11 +163,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    """
-    TOKENIZERS_PARALLELISM=false python -m src.cli.preprocess \
-        --train_prefix=/Users/mozharovsky/GitHub/gitnetic-ml/data/2020-05-19-dataset-byte-bpe-tokenizer-vocab10K/val.src \
-        --tokenizer_path=/Users/mozharovsky/GitHub/gitnetic-ml/data/2020-05-19-dataset-byte-bpe-tokenizer-vocab10K \
-        --output_path=/Users/mozharovsky/GitHub/gitnetic-ml/data/2020-05-19-dataset-byte-bpe-tokenizer-vocab10K-bin \
-        --num_workers=32
-    """
     main()
