@@ -13,7 +13,7 @@ def convert_url_to_name(url: Text) -> Text:
     return name
 
 
-def clone_repository(url: Text, output_path: Text) -> None:
+def clone_repository(url: Text, output_path: Text) -> Text:
     logger.info("Started cloning repo with url: %s", url)
 
     # extract basename from the given url to clone
@@ -24,3 +24,5 @@ def clone_repository(url: Text, output_path: Text) -> None:
     Repo.clone_from(url=url, to_path=destpath)
 
     logging.info("Cloned %s into %s", basename, destpath)
+
+    return destpath
