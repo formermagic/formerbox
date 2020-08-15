@@ -1,12 +1,12 @@
 import math
-import os
 import shutil
 import tempfile
 from collections import deque
 from typing import Iterator, List, Optional, Text, Tuple
 
-from git import Repo
 from tree_sitter import Language, Node, Parser
+
+from .git_repo_extractor import clone_repository
 
 PYTHON_LANG_REPO_URL = "https://github.com/tree-sitter/tree-sitter-python"
 
@@ -60,29 +60,20 @@ class LanguageRepr:
 
 
 class LanguageReprBuilder:
-    def __init__(self, output_path: Text) -> None:
-        self.output_path = output_path
-
-    def __clone_repo(self, url: Text) -> Text:
-        # make a temp dir for cloning a repo
+    @staticmethod
+    def build(
+        url: Text, lang: Text, output_path: Text, removing_tmp: bool = True
+    ) -> LanguageRepr:
+        # clone a git repository to a temp dir
         tmp_dirname = tempfile.mkdtemp()
-        output_path = os.path.join(tmp_dirname, "tree-sitter")
-        if os.path.exists(output_path):
-            shutil.rmtree(output_path)
-        os.makedirs(tmp_dirname, exist_ok=True)
-        # clone a git repository
-        _ = Repo.clone_from(url, output_path)
-        return output_path
-
-    def build(self, url: Text, lang: Text, removing_tmp: bool = True) -> LanguageRepr:
+        repository_path = clone_repository(url, tmp_dirname)
         # build a language library with the given grammar
-        repository_path = self.__clone_repo(url)
-        Language.build_library(self.output_path, repo_paths=[repository_path])
+        Language.build_library(output_path, repo_paths=[repository_path])
         # remove temp dir if needed
         if removing_tmp:
             shutil.rmtree(repository_path)
         # construct a language repr wrapper
-        lang_repr = LanguageRepr(library_path=self.output_path, lang=lang)
+        lang_repr = LanguageRepr(library_path=output_path, lang=lang)
         return lang_repr
 
 
