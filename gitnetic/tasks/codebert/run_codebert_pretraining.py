@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Tuple, Union
 
 import torch
+import torch.cuda as cuda
 from pytorch_lightning import LightningModule, Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
@@ -435,7 +436,7 @@ def main() -> None:
             code_bert_model, mode="binsearch", steps_per_trial=args.steps_per_trial,
         )
         # clear allocated gpu memory
-        torch.cuda.empty_cache()
+        cuda.empty_cache()
     else:
         batch_size = args.batch_size
     code_bert_model.batch_size = batch_size
