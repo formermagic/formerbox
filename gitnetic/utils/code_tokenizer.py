@@ -238,4 +238,3 @@ def detokenize_python(tokens: Union[List[Text], Text]) -> Text:
         raise err
     except BaseException:
         return ""
-
