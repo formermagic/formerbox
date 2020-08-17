@@ -26,7 +26,7 @@ from gitnetic.data import (
     IndexedDataset,
     MaxTokensBatchSampler,
 )
-from gitnetic.optim import get_polynomial_decay_with_warmup
+from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import perplexity
 
 from .tokenization_codebert import CodeBertTokenizerFast
@@ -223,7 +223,7 @@ class CodeBertLMPretraining(LightningModule):
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
         skip_list = ["bias", "LayerNorm.weight"]
-        parameters = self.weight_decay_params(
+        parameters = weight_decay_params(
             self.roberta_lm, weight_decay=self.weight_decay, skip_list=skip_list
         )
 
@@ -369,24 +369,6 @@ class CodeBertLMPretraining(LightningModule):
                             help="A number of workers for data loaders.")
         # fmt: on
         return parser
-
-    @staticmethod
-    def weight_decay_params(
-        model: torch.nn.Module, weight_decay: float, skip_list: List[Text]
-    ) -> List[Dict[Text, Any]]:
-        decay = []
-        no_decay = []
-        for name, param in model.named_parameters():
-            if not param.requires_grad:
-                continue
-            if len(param.shape) == 1 or name in skip_list:
-                no_decay.append(param)
-            else:
-                decay.append(param)
-        return [
-            {"params": no_decay, "weight_decay": 0.0},
-            {"params": decay, "weight_decay": weight_decay},
-        ]
 
 
 def main() -> None:
