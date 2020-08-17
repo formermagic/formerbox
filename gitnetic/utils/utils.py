@@ -24,7 +24,7 @@ def safe_round(number: Any, ndigits: int) -> float:
 
 
 # pylint: disable=not-callable
-def get_perplexity(
+def perplexity(
     loss: Optional[Any], ndigits: int = 2, base: int = 2
 ) -> torch.FloatTensor:
     ppl_tensor: torch.Tensor
