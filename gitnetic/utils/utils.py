@@ -2,7 +2,8 @@ import os
 import typing
 from io import TextIOWrapper
 from itertools import islice
-from typing import Any, Iterable, Iterator, List, Optional, Text, Tuple
+from pathlib import Path
+from typing import Any, Iterable, Iterator, List, Optional, Text, Tuple, Union
 
 import numpy as np
 import torch
@@ -84,3 +85,9 @@ def lazy_groups_of(iterable: Iterable[T], group_size: int) -> Iterator[List[T]]:
             yield _slice
         else:
             break
+
+
+def path_to_posix(path: Union[Text, Path]) -> Text:
+    if isinstance(path, Path):
+        return path.as_posix()
+    return path
