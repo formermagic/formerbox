@@ -27,7 +27,7 @@ from gitnetic.data import (
     MaxTokensBatchSampler,
 )
 from gitnetic.optim import get_polynomial_decay_with_warmup
-from gitnetic.utils import get_perplexity
+from gitnetic.utils import perplexity
 
 from .tokenization_codebert import CodeBertTokenizerFast
 
@@ -177,19 +177,19 @@ class CodeBertLMPretraining(LightningModule):
     ) -> Dict[Text, Union[torch.Tensor, Dict[Text, torch.Tensor]]]:
         # prepare logging meter values
         loss, _ = self.forward(**batch)
-        perplexity = get_perplexity(loss)
+        train_perplexity = perplexity(loss)
         learning_rate = self._last_learning_rate
         batch_size = torch.tensor([self.batch_size])
         tensorboard_logs = {
             "train_loss": loss,
-            "train_ppl": perplexity,
+            "train_ppl": train_perplexity,
             "train_lr": learning_rate,
             "train_bz": batch_size,
         }
 
         return {
             "loss": loss,
-            "ppl": perplexity,
+            "ppl": train_perplexity,
             "lr": learning_rate,
             "log": tensorboard_logs,
         }
@@ -200,8 +200,8 @@ class CodeBertLMPretraining(LightningModule):
     ) -> Dict[Text, torch.Tensor]:
         # prepare loss and ppl
         loss, _ = self.forward(**batch)
-        perplexity = get_perplexity(loss)
-        return {"loss": loss, "ppl": perplexity}
+        val_perplexity = perplexity(loss)
+        return {"loss": loss, "ppl": val_perplexity}
 
     def validation_epoch_end(
         self, outputs: List[Dict[Text, torch.Tensor]]
