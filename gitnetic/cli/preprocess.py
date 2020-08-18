@@ -112,7 +112,7 @@ def preprocess(
         index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
 
         # merge temp files contents and remove files from disk
-        dataset_builder = IndexedDatasetBuilder(data_filepath)
+        dataset_builder = IndexedDatasetBuilder(data_filepath, index_filepath)
         with dataset_builder:
             for worker_idx in range(num_workers):
                 output_prefix = temp_filepath(filepath, str(worker_idx), output_path)
@@ -120,7 +120,7 @@ def preprocess(
                 dataset_builder.merge_file(temp_file_path)
 
         # write final meta and type data
-        dataset_builder.finalize(index_filepath)
+        dataset_builder.finalize()
 
         # log execution wall time
         time_delta = time.time() - start_time
