@@ -220,3 +220,4 @@ class IndexedDatasetBuilder:
     def __del__(self) -> None:
         if self.stream is not None:
             self.stream.close()
+            self.stream = None
