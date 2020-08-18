@@ -120,6 +120,10 @@ class IndexedDataset(Dataset):
         if self.data_stream is not None:
             self.data_stream.close()
 
+    @property
+    def supports_prefetch(self) -> bool:
+        return False
+
 
 class IndexedDatasetBuilder:
     stream: Optional[Union[FileIO, BufferedWriter]] = None
