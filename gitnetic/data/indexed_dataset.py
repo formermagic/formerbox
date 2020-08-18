@@ -146,12 +146,9 @@ class IndexedDatasetBuilder:
         return element_sizes.get(self.dtype, 4)
 
     def add_tokenized_ids(self, input_ids: torch.Tensor) -> None:
-        # check if stream is not none
-        if self.stream is None:
-            raise ValueError(
-                "`stream` property must not be null, "
-                "use `IndexedDatasetBuilder` instance for entering a context."
-            )
+        # check if stream is open
+        if self.stream is None or self.stream.closed:
+            self.stream = open(self.data_filepath, mode="wb")
 
         # write tokenized ids to data file
         input_ids_numpy = np.array(input_ids.numpy(), dtype=self.dtype)
