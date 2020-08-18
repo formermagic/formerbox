@@ -55,7 +55,7 @@ class IndexedDataset(Dataset):
     dim_offsets: Optional[np.ndarray] = None
     data_offsets: Optional[np.ndarray] = None
     sizes: Optional[np.ndarray] = None
-    data_stream: Optional[FileIO] = None
+    data_stream: Optional[Union[FileIO, BufferedReader]] = None
 
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__()
@@ -98,14 +98,20 @@ class IndexedDataset(Dataset):
 
         start_idx = self.dim_offsets[index]
         end_idx = self.dim_offsets[index + 1]
+
+        # a number of elements across all dimensions
         tensor_size = self.sizes[start_idx:end_idx]
+        # a number of elements that preceed the current start element
+        tensor_offset = self.data_offsets[index] * self.element_size
 
-        buffer = np.empty(tensor_size, dtype=self.dtype)
+        buffer = np.fromfile(
+            self.data_stream,
+            dtype=self.dtype,
+            count=tensor_size.sum(),
+            offset=tensor_offset,
+        )
 
-        offset = self.data_offsets[index] * self.element_size
-        self.data_stream.seek(offset)
-        self.data_stream.readinto(buffer)  # type: ignore
-
+        buffer = buffer.reshape(tensor_size)
         item = torch.from_numpy(buffer).long()
 
         return item
