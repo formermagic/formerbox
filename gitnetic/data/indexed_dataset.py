@@ -129,9 +129,13 @@ class IndexedDatasetBuilder:
     stream: Optional[Union[FileIO, BufferedWriter]] = None
 
     def __init__(
-        self, data_filepath: Text, dtype: np.dtype = np.dtype(np.int32)
+        self,
+        data_filepath: Text,
+        index_filepath: Text,
+        dtype: np.dtype = np.dtype(np.int32),
     ) -> None:
         self.data_filepath = data_filepath
+        self.index_filepath = index_filepath
         self.dtype = dtype
         self.data_offsets = [0]
         self.dim_offsets = [0]
@@ -196,8 +200,8 @@ class IndexedDatasetBuilder:
             os.remove(indexed_dataset.data_filepath)
             os.remove(indexed_dataset.index_filepath)
 
-    def finalize(self, index_filepath: Text) -> None:
-        with open(index_filepath, mode="wb") as index_file:
+    def finalize(self) -> None:
+        with open(self.index_filepath, mode="wb") as index_file:
             code = element_code(self.dtype)
             length = len(self.data_offsets) - 1
             size = len(self.sizes)
