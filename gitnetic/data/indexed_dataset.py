@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import os
 import struct
+from abc import abstractmethod, abstractproperty
 from functools import lru_cache
 from io import BufferedReader, BufferedWriter, FileIO
 from types import TracebackType
@@ -49,31 +52,60 @@ def write_longs(stream: Union[FileIO, BufferedWriter], buffer: List[int]) -> Non
     stream.write(np.array(buffer, dtype=np.int64))  # type: ignore
 
 
-class IndexedDataset(Dataset):
-    dtype: Optional[np.dtype] = None
-    length: Optional[int] = None
-    element_size: Optional[int] = None
-    dim_offsets: Optional[np.ndarray] = None
-    data_offsets: Optional[np.ndarray] = None
-    sizes: Optional[np.ndarray] = None
-    data_stream: Optional[Union[FileIO, BufferedReader]] = None
+def make_index_filepath(prefix_path: Text) -> Text:
+    return prefix_path + ".idx"
 
+
+def make_data_filepath(prefix_path: Text) -> Text:
+    return prefix_path + ".bin"
+
+
+class IndexedDatasetMixin(Dataset):
+    """A base class for loading preprocessed binary datasets.
+    Binary datasets are represented as 2 files (.bin, .idx),
+    containing the data sequences (.bin) and indices (.idx).
+
+    Attributes:
+        dtype (:obj:`Optional[np.dtype]`): A numpy dtype for the written elements.
+        length (:obj:`Optional[int]`): A total number of written sequences (aka lines).
+        element_size (:obj:`Optional[int]`): A number of bytes for each written element.
+        data_stream (:obj:`Optional[Union[FileIO, BufferedReader]]`):
+            A FileIO stream for reading the data file (.bin).
+        dim_offsets (:obj:`Optional[np.ndarray]`): A number of dimensions/axes
+            for the given item (typically, tokenized text sequences have 1 dimension).
+        data_offsets (:obj:`Optional[np.ndarray]`): A number of elements that
+            preceed the given item's beginning.
+        sizes (:obj:`Optional[np.ndarray]`): A number of elements for the given element
+            written to the index (.idx) file.
+    """
+
+    def __init__(self) -> None:
+        self.dtype: Optional[np.dtype] = None
+        self.length: Optional[int] = None
+        self.element_size: Optional[int] = None
+        self.dim_offsets: Optional[np.ndarray] = None
+        self.data_offsets: Optional[np.ndarray] = None
+        self.sizes: Optional[np.ndarray] = None
+        self.data_stream: Optional[Union[FileIO, BufferedReader]] = None
+
+    @abstractmethod
+    def read_index_file(self, filepath: Text) -> None:
+        raise NotImplementedError()
+
+    @abstractproperty
+    def supports_prefetch(self) -> bool:
+        raise NotImplementedError()
+
+
+class IndexedDataset(IndexedDatasetMixin):
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__()
         self.filepath_prefix = filepath_prefix
-        self.index_filepath = self._index_filepath(filepath_prefix)
-        self.data_filepath = self._data_filepath(filepath_prefix)
-        self._read_index_file(self.index_filepath)
+        self.index_filepath = make_index_filepath(filepath_prefix)
+        self.data_filepath = make_data_filepath(filepath_prefix)
+        self.read_index_file(self.index_filepath)
 
-    @staticmethod
-    def _index_filepath(prefix_path: Text) -> Text:
-        return prefix_path + ".idx"
-
-    @staticmethod
-    def _data_filepath(prefix_path: Text) -> Text:
-        return prefix_path + ".bin"
-
-    def _read_index_file(self, filepath: Text) -> None:
+    def read_index_file(self, filepath: Text) -> None:
         with open(filepath, mode="rb") as index_file:
             code, element_size = struct.unpack("<QQ", index_file.read(16))
             length, size = struct.unpack("<QQ", index_file.read(16))
@@ -84,6 +116,10 @@ class IndexedDataset(Dataset):
             self.dim_offsets = read_longs(index_file, length + 1)
             self.data_offsets = read_longs(index_file, length + 1)
             self.sizes = read_longs(index_file, size)
+
+    @property
+    def supports_prefetch(self) -> bool:
+        return False
 
     def __len__(self) -> int:
         if self.length is None:
@@ -120,10 +156,6 @@ class IndexedDataset(Dataset):
     def __del__(self) -> None:
         if self.data_stream is not None:
             self.data_stream.close()
-
-    @property
-    def supports_prefetch(self) -> bool:
-        return False
 
 
 class IndexedDatasetBuilder:
