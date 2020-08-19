@@ -17,9 +17,6 @@ from .base import BaseTrainingMixin, DataParams, TrainingParams
 
 # pylint: disable=arguments-differ, unused-argument, not-callable
 class BaseLMTransformer(BaseTrainingMixin):
-    total_steps: Optional[int] = None
-    lr_scheduler: Optional[LambdaLR] = None
-
     def __init__(
         self,
         model: PreTrainedModel,
@@ -36,6 +33,8 @@ class BaseLMTransformer(BaseTrainingMixin):
         self.training_params = training_params
         self.data_params = data_params
 
+        self.total_steps: Optional[int] = None
+        self.lr_scheduler: Optional[LambdaLR] = None
         self._train_dataloader: Optional[DataLoader] = None
         self._val_dataloader: Optional[DataLoader] = None
 
