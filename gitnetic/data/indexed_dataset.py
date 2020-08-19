@@ -2,7 +2,8 @@ import os
 import struct
 from functools import lru_cache
 from io import BufferedReader, BufferedWriter, FileIO
-from typing import List, Optional, Text, Union
+from types import TracebackType
+from typing import List, Optional, Text, Type, Union
 
 import numpy as np
 import torch
@@ -218,7 +219,9 @@ class IndexedDatasetBuilder:
         self.stream = open(self.data_filepath, mode="wb")
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(
+        self, exc_type: Type[Exception], exc_value: Exception, traceback: TracebackType
+    ) -> None:
         self.stream.close()
         self.stream = None
 
