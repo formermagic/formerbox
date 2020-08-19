@@ -163,6 +163,21 @@ class IndexedDatasetBuilder:
         # append dim offsets for added tensor
         self.dim_offsets.append(self.dim_offsets[-1] + len(input_ids.size()))
 
+    def finalize(self) -> None:
+        with open(self.index_filepath, mode="wb") as index_file:
+            code = element_code(self.dtype)
+            length = len(self.data_offsets) - 1
+            size = len(self.sizes)
+
+            # write sizes and types meta data
+            index_file.write(struct.pack("<QQ", code, self.element_size))
+            index_file.write(struct.pack("<QQ", length, size))
+
+            # write long lists with offsets and sizes
+            write_longs(index_file, self.dim_offsets)
+            write_longs(index_file, self.data_offsets)
+            write_longs(index_file, self.sizes)
+
     def merge_file(self, filepath_prefix: Text, remove_files: bool = True) -> None:
         # read indexed dataset to merge with the current one
         indexed_dataset = IndexedDataset(filepath_prefix)
@@ -197,21 +212,6 @@ class IndexedDatasetBuilder:
         if remove_files:
             os.remove(indexed_dataset.data_filepath)
             os.remove(indexed_dataset.index_filepath)
-
-    def finalize(self) -> None:
-        with open(self.index_filepath, mode="wb") as index_file:
-            code = element_code(self.dtype)
-            length = len(self.data_offsets) - 1
-            size = len(self.sizes)
-
-            # write sizes and types meta data
-            index_file.write(struct.pack("<QQ", code, self.element_size))
-            index_file.write(struct.pack("<QQ", length, size))
-
-            # write long lists with offsets and sizes
-            write_longs(index_file, self.dim_offsets)
-            write_longs(index_file, self.data_offsets)
-            write_longs(index_file, self.sizes)
 
     def __enter__(self) -> IndexedDatasetBuilder:
         if self.stream is not None:
