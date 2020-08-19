@@ -59,11 +59,9 @@ class Binarizer:
         self, filename: Text, output_prefix: Text, start_offset: int, end_offset: int
     ) -> None:
         # prepare indexed dataset builder
-        data_filepath = dataset_dest_filepath(
-            filepath_prefix=output_prefix, extension="bin"
-        )
-
-        dataset_builder = IndexedDatasetBuilder(data_filepath)
+        data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
+        index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
+        dataset_builder = IndexedDatasetBuilder(data_filepath, index_filepath)
 
         # convert text to ids and write to the data file
         with dataset_builder:
@@ -77,11 +75,7 @@ class Binarizer:
             )
 
         # write meta data and type info
-        index_filepath = dataset_dest_filepath(
-            filepath_prefix=output_prefix, extension="idx"
-        )
-
-        dataset_builder.finalize(index_filepath)
+        dataset_builder.finalize()
 
     # pylint: disable=too-many-arguments
     @staticmethod
