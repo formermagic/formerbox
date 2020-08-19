@@ -33,10 +33,11 @@ class BaseLMTransformer(BaseTrainingMixin):
         self.training_params = training_params
         self.data_params = data_params
 
+        # lazy initialized properties
         self.total_steps: Optional[int] = None
         self.lr_scheduler: Optional[LambdaLR] = None
-        self._train_dataloader: Optional[DataLoader] = None
-        self._val_dataloader: Optional[DataLoader] = None
+        self._train_dataloader: Optional[DataLoader[Tensor]] = None
+        self._val_dataloader: Optional[DataLoader[Tensor]] = None
 
     def forward(
         self, input_ids: torch.LongTensor, labels: torch.LongTensor, **kwargs: Any
