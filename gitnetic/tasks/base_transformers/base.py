@@ -42,8 +42,11 @@ class TrainingMixin:
     data_params: DataParams
 
 
+# pylint: disable=too-many-ancestors
 class BaseTrainingMixin(LightningModule, TrainingMixin):
-    trainer: Optional[Trainer] = None
+    def __init__(self) -> None:
+        super().__init__()
+        self.trainer: Optional[Trainer] = None
 
     def get_dataloader(
         self,
