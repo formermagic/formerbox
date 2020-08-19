@@ -14,9 +14,9 @@ from gitnetic.utils import path_to_posix, perplexity
 
 from .base import BaseTrainingMixin, DataParams, TrainingParams
 
-
-# pylint: disable=arguments-differ, unused-argument, not-callable
+# pylint: disable=arguments-differ
 class BaseLMTransformer(BaseTrainingMixin):
+    # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         model: PreTrainedModel,
@@ -41,6 +41,7 @@ class BaseLMTransformer(BaseTrainingMixin):
     def forward(
         self, input_ids: torch.LongTensor, labels: torch.LongTensor, **kwargs: Any
     ) -> Tuple[Tensor, Tensor]:
+        del kwargs  # we implement this method with our parameters
         self.model.train()
         outputs = self.model(input_ids=input_ids, labels=labels)
         loss, prediction_scores = outputs[:2]
@@ -49,6 +50,7 @@ class BaseLMTransformer(BaseTrainingMixin):
     def training_step(
         self, batch: Dict[Text, Tensor], batch_idx: int
     ) -> Dict[Text, Union[Tensor, Dict[Text, Tensor]]]:
+        del batch_idx  # we don't use `batch_idx` now
         loss, _ = self.forward(**batch)
         train_perplexity = perplexity(loss)
         batch_size = torch.tensor([self.training_params.batch_size])
@@ -81,6 +83,7 @@ class BaseLMTransformer(BaseTrainingMixin):
     def validation_step(
         self, batch: Dict[Text, Tensor], batch_idx: int
     ) -> Dict[Text, Union[Tensor, Dict[Text, Tensor]]]:
+        del batch_idx  # we don't use `batch_idx` now
         loss, _ = self.forward(**batch)
         val_perplexity = perplexity(loss)
         return {"val_loss": loss, "val_ppl": val_perplexity}
@@ -128,6 +131,7 @@ class BaseLMTransformer(BaseTrainingMixin):
         pass
 
     def setup(self, stage: Text) -> None:
+        del stage  # we don't use `stage` to build a dataloader
         # prepare a language modeling collator
         collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
 
