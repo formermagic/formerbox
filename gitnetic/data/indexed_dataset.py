@@ -213,7 +213,7 @@ class IndexedDatasetBuilder:
             write_longs(index_file, self.data_offsets)
             write_longs(index_file, self.sizes)
 
-    def __enter__(self) -> "IndexedDatasetBuilder":
+    def __enter__(self) -> IndexedDatasetBuilder:
         if self.stream is not None:
             self.stream.close()
         self.stream = open(self.data_filepath, mode="wb")
