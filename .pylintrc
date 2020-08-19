@@ -486,7 +486,7 @@ min-similarity-lines=4
 max-args=5
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=7
+max-attributes=17
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=5
@@ -498,7 +498,7 @@ max-branches=12
 max-locals=15
 
 # Maximum number of parents for a class (see R0901).
-max-parents=7
+max-parents=17
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=20
