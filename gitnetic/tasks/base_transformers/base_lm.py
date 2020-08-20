@@ -8,11 +8,12 @@ from torch.utils.data import DataLoader
 from transformers import AdamW, PreTrainedModel, PreTrainedTokenizerBase
 from transformers.data.data_collator import DataCollatorForLanguageModeling
 
-from gitnetic.data.indexed_dataset import IndexedDataset
+from gitnetic.data import IndexedDataset
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
 from .base import BaseTrainingMixin, DataParams, TrainingParams
+
 
 # pylint: disable=arguments-differ
 class BaseLMTransformer(BaseTrainingMixin):
