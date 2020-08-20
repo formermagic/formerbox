@@ -90,11 +90,15 @@ class IndexedDatasetMixin(Dataset):
 
     @abstractmethod
     def read_index_file(self, filepath: Text) -> None:
+        del filepath  # an abstract method doesn't use args
         raise NotImplementedError()
 
     @abstractproperty
     def supports_prefetch(self) -> bool:
         raise NotImplementedError()
+
+    def prefetch(self, indices: List[int]) -> None:
+        del indices  # an abstract method doesn't use args
 
     def validate_index(self, index: int) -> None:
         if index < 0 or index >= self.length:
