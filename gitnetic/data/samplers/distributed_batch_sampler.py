@@ -2,7 +2,7 @@ from typing import Iterator, List, Optional
 
 from torch.utils.data import Dataset, DistributedSampler
 
-from .batch_sampler import BatchSampler
+from gitnetic.data.samplers import BatchSampler
 
 
 class IntDataset(Dataset):
@@ -26,7 +26,13 @@ class DistributedBatchSampler(BatchSampler):
         rank: Optional[int] = None,
         shuffle: bool = True,
     ) -> None:
-        super().__init__(batch_sampler.data_source)
+        super().__init__(
+            batch_sampler.data_source,
+            batch_sampler.batch_size,
+            batch_sampler.shuffle,
+            batch_sampler.drop_last,
+        )
+
         self.batch_sampler = batch_sampler
         self.num_replicas = num_replicas
         self.rank = rank
