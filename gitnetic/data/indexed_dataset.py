@@ -6,7 +6,7 @@ from abc import abstractmethod, abstractproperty
 from functools import lru_cache
 from io import BufferedReader, BufferedWriter, FileIO
 from types import TracebackType
-from typing import List, Optional, Text, Type, Union
+from typing import Dict, List, Optional, Text, Type, Union
 
 import numpy as np
 import torch
@@ -164,6 +164,80 @@ class IndexedDataset(IndexedDatasetMixin):
     def __del__(self) -> None:
         if self.data_stream is not None:
             self.data_stream.close()
+
+
+class IndexedCachedDataset(IndexedDataset):
+    def __init__(self, filepath_prefix: Text) -> None:
+        super().__init__(filepath_prefix)
+        self.cache: Optional[np.ndarray] = None
+        self.cache_index: Dict[int, int] = {}
+
+    @property
+    def supports_prefetch(self) -> bool:
+        return True
+
+    def prefetch(self, indices: List[int]) -> None:
+        # check if prefetching hasn't been done yet
+        if all(idx in self.cache_index for idx in indices):
+            return
+
+        # prepare the data file for reading
+        if self.data_stream is None:
+            self.data_stream = open(self.data_filepath, mode="rb", buffering=0)
+
+        indices = sorted(set(indices))
+
+        # calculate the total number of elements to cache
+        total_size = 0
+        for idx in indices:
+            total_size += self.data_offsets[idx + 1] - self.data_offsets[idx]
+
+        self.cache = np.empty(total_size, dtype=self.dtype)
+        self.cache_index.clear()
+
+        size_offset = 0
+        for idx in indices:
+            self.cache_index[idx] = size_offset
+            item_size = self.data_offsets[idx + 1] - self.data_offsets[idx]
+            item_offset = self.data_offsets[idx] * self.element_size
+
+            # read a buffer to cache from file
+            buffer = np.fromfile(
+                self.data_stream, dtype=self.dtype, count=item_size, offset=item_offset,
+            )
+
+            # get back the original offset
+            self.data_stream.seek(0)
+
+            # cache the read buffer
+            self.cache[size_offset : size_offset + item_size] = buffer
+
+            size_offset += item_size
+
+        if self.data_stream is not None:
+            self.data_stream.close()
+            self.data_stream = None
+
+    @lru_cache(maxsize=128)
+    def __getitem__(self, index: int) -> torch.Tensor:
+        # make sure the index is within bounds
+        self.validate_index(index)
+        start_idx = self.dim_offsets[index]
+        end_idx = self.dim_offsets[index + 1]
+
+        # a number of elements across all dimensions
+        tensor_size = self.sizes[start_idx:end_idx]
+
+        # copy cached chunk into a buffer
+        assert index in self.cache_index
+        buffer = np.empty(tensor_size.prod(), dtype=self.dtype)
+        size_offset = self.cache_index[index]
+        np.copyto(buffer, self.cache[size_offset : size_offset + buffer.size])
+
+        buffer = buffer.reshape(tensor_size)
+        item = torch.from_numpy(buffer).long()
+
+        return item
 
 
 class IndexedDatasetBuilder:
