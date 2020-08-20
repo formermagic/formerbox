@@ -96,6 +96,10 @@ class IndexedDatasetMixin(Dataset):
     def supports_prefetch(self) -> bool:
         raise NotImplementedError()
 
+    def validate_index(self, index: int) -> None:
+        if index < 0 or index >= self.length:
+            raise IndexError(f"Index({index}) is out of bounds")
+
 
 class IndexedDataset(IndexedDatasetMixin):
     def __init__(self, filepath_prefix: Text) -> None:
@@ -128,8 +132,9 @@ class IndexedDataset(IndexedDatasetMixin):
 
     @lru_cache(maxsize=128)
     def __getitem__(self, index: int) -> torch.Tensor:
-        if index < 0 or index >= self.length:
-            raise IndexError("index out of range")
+        # make sure the index is within bounds
+        self.validate_index(index)
+        # prepare the data file for reading
         if self.data_stream is None:
             self.data_stream = open(self.data_filepath, mode="rb", buffering=0)
 
