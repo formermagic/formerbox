@@ -144,7 +144,7 @@ class IndexedDataset(IndexedDatasetMixin):
         buffer = np.fromfile(
             self.data_stream,
             dtype=self.dtype,
-            count=tensor_size.sum(),
+            count=tensor_size.prod(),
             offset=tensor_offset,
         )
 
