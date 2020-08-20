@@ -7,10 +7,10 @@ from torch.utils.data import DataLoader
 from transformers import DataCollator
 from transformers.data.data_collator import DataCollatorForLanguageModeling
 
-from gitnetic.data import (
+from gitnetic.data import IndexedDataset
+from gitnetic.data.samplers import (
     BatchSampler,
     DistributedBatchSampler,
-    IndexedDataset,
     MaxTokensBatchSampler,
 )
 
