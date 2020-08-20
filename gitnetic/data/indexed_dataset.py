@@ -148,6 +148,9 @@ class IndexedDataset(IndexedDatasetMixin):
             offset=tensor_offset,
         )
 
+        # get back the original offset
+        self.data_stream.seek(0)
+
         buffer = buffer.reshape(tensor_size)
         item = torch.from_numpy(buffer).long()
 
