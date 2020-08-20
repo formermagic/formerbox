@@ -53,3 +53,26 @@ def model_from_config(config_path: Union[Text, Path], **kwargs: Any) -> PreTrain
     assert isinstance(config, PretrainedConfig)
 
     return model_class(config)
+
+
+def tokenizer_from_config(
+    config_path: Union[Text, Path], tokenizer_path: Union[Text, Path], **kwargs: Any
+) -> PreTrainedTokenizerBase:
+    try:
+        config_kwargs = parse_config(config_path)
+        validate_tokenizer_config(config_kwargs)
+        tokenizer_name = config_kwargs["tokenizer"]["name"]
+        tokenizer_class = import_class_from_string(tokenizer_name)
+    except AttributeError as err:
+        raise err
+
+    assert issubclass(tokenizer_class, PreTrainedTokenizerBase)
+
+    if isinstance(tokenizer_path, Path):
+        tokenizer_path = tokenizer_path.as_posix()
+
+    params = config_kwargs["tokenizer"].get("params", {})
+    params.update(kwargs)
+    tokenizer = tokenizer_class.from_pretrained(tokenizer_path, **params)
+
+    return tokenizer
