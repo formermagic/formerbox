@@ -4,10 +4,9 @@ from typing import Iterator, List
 
 import numpy as np
 
-from gitnetic.data import IndexedDataset
+from gitnetic.data.indexed_dataset import IndexedDataset
+from gitnetic.data.samplers import BatchSampler
 from gitnetic.utils import lazy_groups_of
-
-from .batch_sampler import BatchSampler
 
 
 class MaxTokensBatchSampler(BatchSampler):
@@ -20,11 +19,7 @@ class MaxTokensBatchSampler(BatchSampler):
         shuffle: bool = True,
         drop_last: bool = False,
     ) -> None:
-        super().__init__(data_source)
-        self.data_source = data_source
-        self.batch_size = batch_size
-        self.shuffle = shuffle
-        self.drop_last = drop_last
+        super().__init__(data_source, batch_size, shuffle, drop_last)
 
     def __iter__(self) -> Iterator[List[int]]:
         sorted_indices = np.argsort(self.data_source.sizes)
