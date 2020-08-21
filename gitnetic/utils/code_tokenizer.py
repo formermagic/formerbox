@@ -68,6 +68,10 @@ def process_string(
     token = tokenize_v14_international(token)
     token = re.sub(" +", " ", token)
 
+    # split string prefix if one stands at the beginning
+    regex = r"""([bruf]*) ((\"""|'''|"|')(?:(?!\3)(?:\\.|[^\\]))*\3)"""
+    token = re.sub(regex, r"\1\2", token)
+
     for special_token, char in token2char.items():
         token = token.replace(special_token, char)
 
