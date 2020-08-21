@@ -53,7 +53,7 @@ def process_string(
         if len(re.sub(r"\W", "", token)) < 2:
             return ""
 
-    token = token.replace(" ", " ▁ ")
+    token = token.replace(" ", f" {SpecialToken.SPACE.value} ")
     for char, special_token in char2token.items():
         token = token.replace(char, special_token)
 
