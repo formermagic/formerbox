@@ -64,13 +64,14 @@ def process_string(
 
     token = token.replace("\n", f" {SpecialToken.STRNEWLINE.value} ")
     token = token.replace("\t", f" {SpecialToken.TABSYMBOL.value} ")
-    token = token.replace("\r", "")
     token = re.sub(" +", " ", token)
     token = tokenize_v14_international(token)
     token = re.sub(" +", " ", token)
 
     for special_token, char in token2char.items():
         token = token.replace(special_token, char)
+
+    token = token.replace("\r", "")
 
     return token
 
