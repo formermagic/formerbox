@@ -6,4 +6,3 @@ __pycache__/
 wandb/*
 .ipynb_checkpoints/
 lightning_logs/
-data/
