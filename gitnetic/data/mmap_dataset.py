@@ -30,8 +30,8 @@ def _warmup_mmap_file(filepath: Text) -> None:
 
 
 class MMapIndexedDatasetMixin(IndexedDatasetMixin, metaclass=ABCMeta):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, filepath_prefix: Text) -> None:
+        super().__init__(filepath_prefix)
         self.index_buffer_mmap: Optional[np.memmap] = None
         self.index_buffer: Optional[memoryview] = None
         self.data_buffer_mmap: Optional[np.memmap] = None
@@ -42,10 +42,7 @@ class MMapIndexedDataset(MMapIndexedDatasetMixin):
     magic_code = b"MMID\x00\x00"
 
     def __init__(self, filepath_prefix: Text) -> None:
-        super().__init__()
-        self.filepath_prefix = filepath_prefix
-        self.index_filepath = make_index_filepath(filepath_prefix)
-        self.data_filepath = make_data_filepath(filepath_prefix)
+        super().__init__(filepath_prefix)
         self.read_index_file(self.index_filepath)
         self.read_data_file(self.data_filepath)
 

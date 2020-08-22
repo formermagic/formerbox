@@ -5,7 +5,7 @@ import struct
 from abc import ABCMeta, abstractmethod
 from functools import lru_cache
 from io import BufferedReader, BufferedWriter, FileIO
-from typing import Dict, List, Optional, Text, Type, Union
+from typing import Any, Dict, List, Optional, Text, Type, Union
 
 import numpy as np
 import torch
@@ -67,12 +67,20 @@ class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
             written to the index (.idx) file.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, filepath_prefix: Text, **kwargs: Any) -> None:
+        # properties for reading data from files
         self.dtype: Optional[Type[np.dtype]] = None
         self.length: Optional[int] = None
         self.dim_offsets: Optional[np.ndarray] = None
         self.data_offsets: Optional[np.ndarray] = None
         self.sizes: Optional[np.ndarray] = None
+
+        # properties for managing filenames
+        self.filepath_prefix = filepath_prefix
+        self.index_filepath = make_index_filepath(filepath_prefix)
+        self.data_filepath = make_data_filepath(filepath_prefix)
+
+        del kwargs  # the base class should accept any args
 
     # pylint: disable=invalid-length-returned
     def __len__(self) -> int:
@@ -102,10 +110,7 @@ class IndexedDataset(IndexedDatasetMixin):
     magic_code = b"ID\x00\x00"
 
     def __init__(self, filepath_prefix: Text) -> None:
-        super().__init__()
-        self.filepath_prefix = filepath_prefix
-        self.index_filepath = make_index_filepath(filepath_prefix)
-        self.data_filepath = make_data_filepath(filepath_prefix)
+        super().__init__(filepath_prefix)
         self.data_stream: Optional[Union[FileIO, BufferedReader]] = None
         self.read_index_file(self.index_filepath)
 
