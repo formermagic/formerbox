@@ -1,11 +1,12 @@
 import os
 from io import TextIOWrapper
-from typing import Callable, List, Optional, Text, Tuple
+from typing import Callable, List, Optional, Text, Tuple, Type
 
+import numpy as np
 import torch
 from transformers import PreTrainedTokenizerFast
 
-from .indexed_dataset import IndexedDatasetBuilder
+from .indexed_dataset import IndexedDatasetBuilderMixin, IndexedDatasetMixin
 
 
 def dataset_dest_filepath(filepath_prefix: Text, extension: Text) -> Text:
@@ -49,9 +50,15 @@ class Binarizer:
     # pylint: disable=too-many-arguments
     def __init__(
         self,
+        dataset_builder: Type[IndexedDatasetBuilderMixin],
+        dtype: np.dtype,
+        dataset_type: Type[IndexedDatasetMixin],
         tokenizer: PreTrainedTokenizerFast,
         tokenizer_max_length: Optional[int] = None,
     ) -> None:
+        self.dataset_builder = dataset_builder
+        self.dtype = dtype
+        self.dataset_type = dataset_type
         self.tokenizer = tokenizer
         self.tokenizer_max_length = tokenizer_max_length
 
@@ -61,18 +68,22 @@ class Binarizer:
         # prepare indexed dataset builder
         data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
         index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
-        dataset_builder = IndexedDatasetBuilder(data_filepath, index_filepath)
+        dataset_builder = self.dataset_builder(
+            data_filepath=data_filepath,
+            index_filepath=index_filepath,
+            dtype=self.dtype,
+            dataset_type=self.dataset_type,
+        )
 
         # convert text to ids and write to the data file
-        with dataset_builder:
-            self.binarize(
-                filename=filename,
-                tokenizer=self.tokenizer,
-                consumer=dataset_builder.add_tokenized_ids,
-                start_offset=start_offset,
-                end_offset=end_offset,
-                max_length=self.tokenizer_max_length,
-            )
+        self.binarize(
+            filename=filename,
+            tokenizer=self.tokenizer,
+            consumer=dataset_builder.add_tokenized_ids,
+            start_offset=start_offset,
+            end_offset=end_offset,
+            max_length=self.tokenizer_max_length,
+        )
 
         # write meta data and type info
         dataset_builder.finalize()
