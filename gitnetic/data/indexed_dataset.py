@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import os
 import struct
-from abc import abstractproperty
+from abc import abstractmethod, abstractproperty
 from functools import lru_cache
 from io import BufferedReader, BufferedWriter, FileIO
-from types import TracebackType
 from typing import Dict, List, Optional, Text, Type, Union
 
 import numpy as np
@@ -225,18 +224,39 @@ class IndexedCachedDataset(IndexedDataset):
         return item
 
 
-class IndexedDatasetBuilder:
+class IndexedDatasetBuilderMixin:
     stream: Optional[Union[FileIO, BufferedWriter]] = None
 
+    def __init__(
+        self, data_filepath: Text, index_filepath: Text, dtype: np.dtype,
+    ) -> None:
+        self.data_filepath = data_filepath
+        self.index_filepath = index_filepath
+        self.dtype = dtype
+
+    @abstractmethod
+    def add_tokenized_ids(self, input_ids: torch.Tensor) -> None:
+        del input_ids
+        raise NotImplementedError()
+
+    @abstractmethod
+    def finalize(self) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def merge_file(self, filepath_prefix: Text, remove_files: bool = True) -> None:
+        del filepath_prefix, remove_files
+        raise NotImplementedError()
+
+
+class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
     def __init__(
         self,
         data_filepath: Text,
         index_filepath: Text,
         dtype: np.dtype = np.dtype(np.int32),
     ) -> None:
-        self.data_filepath = data_filepath
-        self.index_filepath = index_filepath
-        self.dtype = dtype
+        super().__init__(data_filepath, index_filepath, dtype)
         self.data_offsets = [0]
         self.dim_offsets = [0]
         self.sizes = []
