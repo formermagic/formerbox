@@ -164,14 +164,12 @@ class IndexedDataset(IndexedDatasetMixin):
 
 
 class IndexedCachedDataset(IndexedDataset):
+    magic_code = b"ICD\x00\x00"
+
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__(filepath_prefix)
         self.cache: Optional[np.ndarray] = None
         self.cache_index: Dict[int, int] = {}
-
-    @property
-    def magic_code(self) -> bytes:
-        return b"ICD\x00\x00"
 
     @property
     def supports_prefetch(self) -> bool:
