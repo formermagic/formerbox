@@ -312,18 +312,6 @@ class IndexedDatasetBuilder:
             os.remove(indexed_dataset.data_filepath)
             os.remove(indexed_dataset.index_filepath)
 
-    def __enter__(self) -> IndexedDatasetBuilder:
-        if self.stream is not None:
-            self.stream.close()
-        self.stream = open(self.data_filepath, mode="wb")
-        return self
-
-    def __exit__(
-        self, exc_type: Type[Exception], exc_value: Exception, traceback: TracebackType
-    ) -> None:
-        self.stream.close()
-        self.stream = None
-
     def __del__(self) -> None:
         # close the data stream if one is open
         if self.stream is not None:
