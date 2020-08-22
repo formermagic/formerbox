@@ -124,11 +124,9 @@ class IndexedDataset(IndexedDatasetMixin):
         if self.data_stream is None:
             self.data_stream = open(self.data_filepath, mode="rb", buffering=0)
 
-        start_idx = self.dim_offsets[index]
-        end_idx = self.dim_offsets[index + 1]
-
         # a number of elements across all dimensions
-        tensor_size = self.sizes[start_idx:end_idx]
+        start, end = self.dim_offsets[index : index + 2]
+        tensor_size = self.sizes[start:end]
         # a number of elements that preceed the current start element
         element_size = np.dtype(self.dtype).itemsize
         tensor_offset = self.data_offsets[index] * element_size
@@ -209,11 +207,10 @@ class IndexedCachedDataset(IndexedDataset):
     def __getitem__(self, index: int) -> torch.Tensor:
         # make sure the index is within bounds
         self.validate_index(index)
-        start_idx = self.dim_offsets[index]
-        end_idx = self.dim_offsets[index + 1]
 
         # a number of elements across all dimensions
-        tensor_size = self.sizes[start_idx:end_idx]
+        start, end = self.dim_offsets[index : index + 2]
+        tensor_size = self.sizes[start:end]
 
         # copy cached chunk into a buffer
         assert index in self.cache_index
