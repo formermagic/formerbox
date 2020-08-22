@@ -86,12 +86,6 @@ class IndexedDatasetMixin(Dataset):
         self.dim_offsets: Optional[np.ndarray] = None
         self.data_offsets: Optional[np.ndarray] = None
         self.sizes: Optional[np.ndarray] = None
-        self.data_stream: Optional[Union[FileIO, BufferedReader]] = None
-
-    @abstractmethod
-    def read_index_file(self, filepath: Text) -> None:
-        del filepath  # an abstract method doesn't use args
-        raise NotImplementedError()
 
     @abstractproperty
     def supports_prefetch(self) -> bool:
