@@ -18,8 +18,6 @@ from gitnetic.data.indexed_dataset import (
     IndexedDatasetMixin,
     element_code,
     element_codes,
-    make_data_filepath,
-    make_index_filepath,
 )
 
 
