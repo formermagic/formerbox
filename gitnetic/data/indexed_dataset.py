@@ -12,17 +12,6 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-element_sizes = {
-    np.uint8: 1,
-    np.int8: 1,
-    np.uint16: 2,
-    np.int16: 2,
-    np.int32: 4,
-    np.int64: 8,
-    np.float: 4,
-    np.double: 8,
-}
-
 element_codes = {
     1: np.uint8,
     2: np.int8,
@@ -82,7 +71,6 @@ class IndexedDatasetMixin(Dataset):
     def __init__(self) -> None:
         self.dtype: Optional[Type[np.dtype]] = None
         self.length: Optional[int] = None
-        self.element_size: Optional[int] = None
         self.dim_offsets: Optional[np.ndarray] = None
         self.data_offsets: Optional[np.ndarray] = None
         self.sizes: Optional[np.ndarray] = None
@@ -110,12 +98,11 @@ class IndexedDataset(IndexedDatasetMixin):
 
     def read_index_file(self, filepath: Text) -> None:
         with open(filepath, mode="rb") as index_file:
-            code, element_size = struct.unpack("<QQ", index_file.read(16))
+            code = struct.unpack("<B", index_file.read(1))[0]
             length, size = struct.unpack("<QQ", index_file.read(16))
 
             self.dtype = element_codes[code]
             self.length = length
-            self.element_size = element_size
             self.dim_offsets = read_longs(index_file, length + 1)
             self.data_offsets = read_longs(index_file, length + 1)
             self.sizes = read_longs(index_file, size)
@@ -143,7 +130,8 @@ class IndexedDataset(IndexedDatasetMixin):
         # a number of elements across all dimensions
         tensor_size = self.sizes[start_idx:end_idx]
         # a number of elements that preceed the current start element
-        tensor_offset = self.data_offsets[index] * self.element_size
+        element_size = np.dtype(self.dtype).itemsize
+        tensor_offset = self.data_offsets[index] * element_size
 
         buffer = np.fromfile(
             self.data_stream,
@@ -198,7 +186,7 @@ class IndexedCachedDataset(IndexedDataset):
         for idx in indices:
             self.cache_index[idx] = size_offset
             item_size = self.data_offsets[idx + 1] - self.data_offsets[idx]
-            item_offset = self.data_offsets[idx] * self.element_size
+            item_offset = self.data_offsets[idx] * self.dtype.itemsize
 
             # read a buffer to cache from file
             buffer = np.fromfile(
@@ -255,10 +243,6 @@ class IndexedDatasetBuilder:
         self.dim_offsets = [0]
         self.sizes = []
 
-    @property
-    def element_size(self) -> int:
-        return element_sizes.get(self.dtype, 4)
-
     def add_tokenized_ids(self, input_ids: torch.Tensor) -> None:
         # check if stream is open
         if self.stream is None or self.stream.closed:
@@ -267,7 +251,7 @@ class IndexedDatasetBuilder:
         # write tokenized ids to data file
         input_ids_numpy = np.array(input_ids.numpy(), dtype=self.dtype)
         input_bytes = self.stream.write(input_ids_numpy.tobytes())
-        input_size = input_bytes // self.element_size
+        input_size = input_bytes // self.dtype.itemsize
 
         # append updated offset for the added input
         self.data_offsets.append(self.data_offsets[-1] + input_size)
@@ -283,7 +267,7 @@ class IndexedDatasetBuilder:
             size = len(self.sizes)
 
             # write sizes and types meta data
-            index_file.write(struct.pack("<QQ", code, self.element_size))
+            index_file.write(struct.pack("<B", code))
             index_file.write(struct.pack("<QQ", length, size))
 
             # write long lists with offsets and sizes
