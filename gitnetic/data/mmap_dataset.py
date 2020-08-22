@@ -148,7 +148,11 @@ class MMapIndexedDatasetBuilder:
         self.dim_offsets.append(self.dim_offsets[-1] + len(input_ids.size()))
 
     def finalize(self) -> None:
-        self.stream.close()
+        # close the data stream if one is open
+        if self.stream is not None:
+            self.stream.close()
+
+        # write an index-specific metadata
         with IndexWriter(self.index_filepath, self.dtype) as writer:
             writer.write(self.sizes, self.dim_offsets)
 
@@ -179,7 +183,9 @@ class MMapIndexedDatasetBuilder:
             os.remove(indexed_dataset.index_filepath)
 
     def __del__(self) -> None:
-        self.stream.close()
+        # close the data stream if one is open
+        if self.stream is not None:
+            self.stream.close()
 
 
 class IndexWriter:

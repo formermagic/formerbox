@@ -258,6 +258,11 @@ class IndexedDatasetBuilder:
         self.dim_offsets.append(self.dim_offsets[-1] + len(input_ids.size()))
 
     def finalize(self) -> None:
+        # close the data stream if one is open
+        if self.stream is not None:
+            self.stream.close()
+
+        # write an index-specific metadata
         with open(self.index_filepath, mode="wb") as index_file:
             code = element_code(self.dtype)
             length = len(self.data_offsets) - 1
@@ -320,6 +325,6 @@ class IndexedDatasetBuilder:
         self.stream = None
 
     def __del__(self) -> None:
+        # close the data stream if one is open
         if self.stream is not None:
             self.stream.close()
-            self.stream = None
