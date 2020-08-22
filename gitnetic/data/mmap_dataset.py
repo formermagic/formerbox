@@ -93,11 +93,13 @@ class MMapIndexedDataset(IndexedDatasetMixin, MMapIndexedDatasetMixin):
 
     @lru_cache(maxsize=128)
     def __getitem__(self, index: int) -> Tensor:
-        start_idx = self.dim_offsets[index]
-        end_idx = self.dim_offsets[index + 1]
-        # a number of elements across all dimensions
-        tensor_size = self.sizes[start_idx:end_idx]
+        # make sure the index is within bounds
+        self.validate_index(index)
 
+        # a number of elements across all dimensions
+        start, end = self.dim_offsets[index : index + 2]
+        tensor_size = self.sizes[start:end]
+        # a pointer to the items' bytes in a file
         tensor_offset = self.data_offsets[index]
 
         buffer = np.frombuffer(
@@ -192,9 +194,8 @@ class IndexWriter:
         pointers: List[int] = []
         for idx in range(len(dim_offsets) - 1):
             # calculate the total number of elements
-            start_index = dim_offsets[idx]
-            end_index = dim_offsets[idx + 1]
-            size = np.prod(sizes[start_index:end_index])
+            start, end = dim_offsets[idx : idx + 2]
+            size = np.prod(sizes[start:end])
 
             # append the pointer & pass the current element
             pointers.append(pointer)
