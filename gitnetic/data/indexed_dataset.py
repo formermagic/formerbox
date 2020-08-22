@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import struct
-from abc import abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from functools import lru_cache
 from io import BufferedReader, BufferedWriter, FileIO
 from typing import Dict, List, Optional, Text, Type, Union
@@ -48,7 +48,7 @@ def make_data_filepath(prefix_path: Text) -> Text:
     return prefix_path + ".bin"
 
 
-class IndexedDatasetMixin(Dataset):
+class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
     """A base class for loading preprocessed binary datasets.
     Binary datasets are represented as 2 files (.bin, .idx),
     containing the data sequences (.bin) and indices (.idx).
@@ -80,7 +80,13 @@ class IndexedDatasetMixin(Dataset):
             raise ValueError("No length calculated at this moment.")
         return self.length
 
-    @abstractproperty
+    @property
+    @abstractmethod
+    def magic_code(self) -> bytes:
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
     def supports_prefetch(self) -> bool:
         raise NotImplementedError()
 
@@ -93,6 +99,8 @@ class IndexedDatasetMixin(Dataset):
 
 
 class IndexedDataset(IndexedDatasetMixin):
+    magic_code = b"ID\x00\x00"
+
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__()
         self.filepath_prefix = filepath_prefix
@@ -103,6 +111,10 @@ class IndexedDataset(IndexedDatasetMixin):
 
     def read_index_file(self, filepath: Text) -> None:
         with open(filepath, mode="rb") as index_file:
+            magic_code = index_file.read(len(self.magic_code))
+            assert (
+                magic_code == self.magic_code
+            ), "Index file doesn't match the expected format."
             code = struct.unpack("<B", index_file.read(1))[0]
             length, size = struct.unpack("<QQ", index_file.read(16))
 
@@ -156,6 +168,10 @@ class IndexedCachedDataset(IndexedDataset):
         super().__init__(filepath_prefix)
         self.cache: Optional[np.ndarray] = None
         self.cache_index: Dict[int, int] = {}
+
+    @property
+    def magic_code(self) -> bytes:
+        return b"ICD\x00\x00"
 
     @property
     def supports_prefetch(self) -> bool:
@@ -228,11 +244,16 @@ class IndexedDatasetBuilderMixin:
     stream: Optional[Union[FileIO, BufferedWriter]] = None
 
     def __init__(
-        self, data_filepath: Text, index_filepath: Text, dtype: np.dtype,
+        self,
+        data_filepath: Text,
+        index_filepath: Text,
+        dtype: np.dtype,
+        dataset_type: Type[IndexedDatasetMixin],
     ) -> None:
         self.data_filepath = data_filepath
         self.index_filepath = index_filepath
         self.dtype = dtype
+        self.dataset_type = dataset_type
 
     @abstractmethod
     def add_tokenized_ids(self, input_ids: torch.Tensor) -> None:
@@ -255,8 +276,9 @@ class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
         data_filepath: Text,
         index_filepath: Text,
         dtype: np.dtype = np.dtype(np.int32),
+        dataset_type: Type[IndexedDatasetMixin] = IndexedDataset,
     ) -> None:
-        super().__init__(data_filepath, index_filepath, dtype)
+        super().__init__(data_filepath, index_filepath, dtype, dataset_type)
         self.data_offsets = [0]
         self.dim_offsets = [0]
         self.sizes = []
@@ -285,6 +307,9 @@ class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
 
         # write an index-specific metadata
         with open(self.index_filepath, mode="wb") as index_file:
+            # write index format metadata
+            index_file.write(self.dataset_type.magic_code)
+
             code = element_code(self.dtype)
             length = len(self.data_offsets) - 1
             size = len(self.sizes)

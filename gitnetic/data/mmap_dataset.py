@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import struct
-from abc import ABC
+from abc import ABCMeta
 from functools import lru_cache
 from io import BufferedWriter, FileIO
 from types import TracebackType
@@ -29,7 +29,7 @@ def _warmup_mmap_file(filepath: Text) -> None:
             pass
 
 
-class MMapIndexedDatasetMixin(ABC, IndexedDatasetMixin):
+class MMapIndexedDatasetMixin(IndexedDatasetMixin, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         self.index_buffer_mmap: Optional[np.memmap] = None
@@ -39,6 +39,8 @@ class MMapIndexedDatasetMixin(ABC, IndexedDatasetMixin):
 
 
 class MMapIndexedDataset(MMapIndexedDatasetMixin):
+    magic_code = b"MMID\x00\x00"
+
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__()
         self.filepath_prefix = filepath_prefix
@@ -49,6 +51,10 @@ class MMapIndexedDataset(MMapIndexedDatasetMixin):
 
     def read_index_file(self, filepath: Text) -> None:
         with open(filepath, mode="rb") as index_file:
+            magic_code = index_file.read(len(self.magic_code))
+            assert (
+                magic_code == self.magic_code
+            ), "Index file doesn't match the expected format."
             code = struct.unpack("<B", index_file.read(1))[0]
             length, num_sizes = struct.unpack("<QQ", index_file.read(16))
 
@@ -111,10 +117,15 @@ class MMapIndexedDataset(MMapIndexedDatasetMixin):
         return torch.from_numpy(buffer)
 
     def __del__(self) -> None:
-        self.index_buffer_mmap.close()
-        self.data_buffer_mmap.close()
-        del self.index_buffer_mmap
-        del self.data_buffer_mmap
+        # close index mmap if needed
+        if self.index_buffer_mmap is not None:
+            self.index_buffer_mmap.close()
+            del self.index_buffer_mmap
+
+        # close data mmap if needed
+        if self.data_buffer_mmap is not None:
+            self.data_buffer_mmap.close()
+            del self.data_buffer_mmap
 
 
 class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
@@ -123,8 +134,9 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
         data_filepath: Text,
         index_filepath: Text,
         dtype: np.dtype = np.dtype(np.int64),
+        dataset_type: Type[IndexedDatasetMixin] = MMapIndexedDataset,
     ) -> None:
-        super().__init__(data_filepath, index_filepath, dtype)
+        super().__init__(data_filepath, index_filepath, dtype, dataset_type)
         self.dim_offsets = [0]
         self.sizes: List[int] = []
 
@@ -147,8 +159,14 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
             self.stream.close()
 
         # write an index-specific metadata
-        with IndexWriter(self.index_filepath, self.dtype) as writer:
-            writer.write(self.sizes, self.dim_offsets)
+        index_writer = IndexWriter(
+            filepath=self.index_filepath,
+            dtype=self.dtype,
+            magic_code=self.dataset_type.magic_code,
+        )
+
+        with index_writer:
+            index_writer.write(self.sizes, self.dim_offsets)
 
     def merge_file(self, filepath_prefix: Text, remove_files: bool = True) -> None:
         # read indexed dataset to merge with the current one
@@ -183,9 +201,10 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
 
 
 class IndexWriter:
-    def __init__(self, filepath: Text, dtype: np.dtype) -> None:
+    def __init__(self, filepath: Text, dtype: np.dtype, magic_code: bytes) -> None:
         self.filepath = filepath
         self.dtype = dtype
+        self.magic_code = magic_code
         self.stream: Optional[Union[FileIO, BufferedWriter]] = None
 
     def pointers(self, sizes: List[int], dim_offsets: List[int]) -> List[int]:
@@ -220,6 +239,7 @@ class IndexWriter:
 
     def __enter__(self) -> IndexWriter:
         self.stream = open(self.filepath, mode="wb")
+        self.stream.write(self.magic_code)
         self.stream.write(struct.pack("<B", element_code(self.dtype)))
         return self
 
