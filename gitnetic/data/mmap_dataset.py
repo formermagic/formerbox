@@ -139,7 +139,7 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
 
     def add_tokenized_ids(self, input_ids: Tensor) -> None:
         # check if stream is open
-        if self.stream is None or self.stream.closed:
+        if self.stream.closed:
             self.stream = open(self.data_filepath, mode="wb")
 
         # write the given input tensor as bytes
@@ -152,7 +152,7 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
 
     def finalize(self) -> None:
         # close the data stream if one is open
-        if self.stream is not None:
+        if not self.stream.closed:
             self.stream.close()
 
         # write an index-specific metadata
