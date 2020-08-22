@@ -207,35 +207,34 @@ class IndexWriter:
         self.magic_code = magic_code
         self.stream: Optional[Union[FileIO, BufferedWriter]] = None
 
-    def pointers(self, sizes: List[int], dim_offsets: List[int]) -> List[int]:
-        pointer = 0
-        pointers: List[int] = []
+    def data_offsets(self, sizes: List[int], dim_offsets: List[int]) -> List[int]:
+        offset = 0
+        offsets: List[int] = []
         for idx in range(len(dim_offsets) - 1):
             # calculate the total number of elements
             start, end = dim_offsets[idx : idx + 2]
             size = np.prod(sizes[start:end])
 
             # append the pointer & pass the current element
-            pointers.append(pointer)
-            pointer += size * self.dtype.itemsize
+            offsets.append(offset)
+            offset += size * self.dtype.itemsize
 
-        return pointers
+        return offsets
 
     def write(self, sizes: List[int], dim_offsets: List[int]) -> None:
-        pointers = self.pointers(sizes, dim_offsets)
-
         # write `dim_offsets` and `sizes` lengths
         self.stream.write(struct.pack("<QQ", len(dim_offsets), len(sizes)))
 
         # prepare numpy buffers
         dim_offsets_buffer = np.array(dim_offsets, dtype=np.int32).tobytes(order="C")
         sizes_buffer = np.array(sizes, dtype=np.int32).tobytes(order="C")
-        pointers_buffer = np.array(pointers, dtype=np.int64).tobytes(order="C")
+        pointers = self.data_offsets(sizes, dim_offsets)
+        data_offsets_buffer = np.array(pointers, dtype=np.int64).tobytes(order="C")
 
         # write numpy buffers
         self.stream.write(dim_offsets_buffer)
         self.stream.write(sizes_buffer)
-        self.stream.write(pointers_buffer)
+        self.stream.write(data_offsets_buffer)
 
     def __enter__(self) -> IndexWriter:
         self.stream = open(self.filepath, mode="wb")
