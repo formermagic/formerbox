@@ -50,7 +50,7 @@ class MMapIndexedDataset(IndexedDatasetMixin, MMapIndexedDatasetMixin):
             length, num_sizes = struct.unpack("<QQ", index_file.read(16))
 
             self.dtype = element_codes[code]
-            self.length = length
+            self.length = length - 1  # has one extra (initial) item
             offset = index_file.tell()
 
         _warmup_mmap_file(filepath)
@@ -59,7 +59,10 @@ class MMapIndexedDataset(IndexedDatasetMixin, MMapIndexedDatasetMixin):
         assert self.index_buffer_mmap is not None
         self.index_buffer = memoryview(self.index_buffer_mmap)
         self.dim_offsets = np.frombuffer(
-            self.index_buffer, dtype=np.int32, count=self.length, offset=offset
+            self.index_buffer,
+            dtype=np.int32,
+            count=self.length + 1,  # one for an initial item
+            offset=offset,
         )
 
         offset += self.dim_offsets.nbytes
