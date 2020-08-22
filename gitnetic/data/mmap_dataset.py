@@ -85,11 +85,6 @@ class MMapIndexedDataset(IndexedDatasetMixin, MMapIndexedDatasetMixin):
     def supports_prefetch(self) -> bool:
         return False
 
-    def __len__(self) -> int:
-        if self.length is None:
-            raise ValueError("No length calculated at this moment.")
-        return self.length
-
     @lru_cache(maxsize=128)
     def __getitem__(self, index: int) -> Tensor:
         # make sure the index is within bounds

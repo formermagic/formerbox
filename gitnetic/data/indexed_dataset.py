@@ -75,6 +75,12 @@ class IndexedDatasetMixin(Dataset):
         self.data_offsets: Optional[np.ndarray] = None
         self.sizes: Optional[np.ndarray] = None
 
+    # pylint: disable=invalid-length-returned
+    def __len__(self) -> int:
+        if self.length is None:
+            raise ValueError("No length calculated at this moment.")
+        return self.length
+
     @abstractproperty
     def supports_prefetch(self) -> bool:
         raise NotImplementedError()
@@ -110,11 +116,6 @@ class IndexedDataset(IndexedDatasetMixin):
     @property
     def supports_prefetch(self) -> bool:
         return False
-
-    def __len__(self) -> int:
-        if self.length is None:
-            return 0
-        return self.length
 
     @lru_cache(maxsize=128)
     def __getitem__(self, index: int) -> torch.Tensor:
