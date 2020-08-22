@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import struct
-from abc import abstractmethod, abstractproperty
+from abc import abstractproperty
 from functools import lru_cache
 from io import BufferedReader, BufferedWriter, FileIO
 from types import TracebackType
