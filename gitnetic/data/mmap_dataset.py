@@ -13,6 +13,7 @@ import torch
 from torch import Tensor
 
 from gitnetic.data.indexed_dataset import (
+    IndexedDatasetMixin,
     element_code,
     element_codes,
     make_data_filepath,
@@ -26,7 +27,6 @@ def _warmup_mmap_file(filepath: Text) -> None:
             pass
 
 
-class MMapIndexedDataset:
 class MMapIndexedDatasetMixin:
     def __init__(self) -> None:
         self.index_buffer_mmap: Optional[np.memmap] = None
@@ -35,6 +35,7 @@ class MMapIndexedDatasetMixin:
         self.data_buffer: Optional[memoryview] = None
 
 
+class MMapIndexedDataset(IndexedDatasetMixin, MMapIndexedDatasetMixin):
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__()
         self.filepath_prefix = filepath_prefix
@@ -46,7 +47,7 @@ class MMapIndexedDatasetMixin:
     def read_index_file(self, filepath: Text) -> None:
         with open(filepath, mode="rb") as index_file:
             code = struct.unpack("<B", index_file.read(1))[0]
-            length, size = struct.unpack("<QQ", index_file.read(16))
+            length, num_sizes = struct.unpack("<QQ", index_file.read(16))
 
             self.dtype = element_codes[code]
             self.length = length
@@ -55,6 +56,7 @@ class MMapIndexedDatasetMixin:
         _warmup_mmap_file(filepath)
 
         self.index_buffer_mmap = np.memmap(filepath, mode="r", order="C")
+        assert self.index_buffer_mmap is not None
         self.index_buffer = memoryview(self.index_buffer_mmap)
         self.dim_offsets = np.frombuffer(
             self.index_buffer, dtype=np.int32, count=self.length, offset=offset
@@ -62,18 +64,19 @@ class MMapIndexedDatasetMixin:
 
         offset += self.dim_offsets.nbytes
         self.sizes = np.frombuffer(
-            self.index_buffer, dtype=np.int32, count=size, offset=offset
+            self.index_buffer, dtype=np.int32, count=num_sizes, offset=offset
         )
 
         print(f"len={self.length}, size={size}")
         offset += self.sizes.nbytes
-        self.pointers = np.frombuffer(
-            self.index_buffer, dtype=np.int64, count=self.length - 1, offset=offset
+        self.data_offsets = np.frombuffer(
+            self.index_buffer, dtype=np.int64, count=self.length, offset=offset
         )
 
     def read_data_file(self, filepath: Text) -> None:
         _warmup_mmap_file(filepath)
         self.data_buffer_mmap = np.memmap(filepath, mode="r", order="C")
+        assert self.data_buffer_mmap is not None
         self.data_buffer = memoryview(self.data_buffer_mmap)
 
     @property
@@ -81,6 +84,8 @@ class MMapIndexedDatasetMixin:
         return False
 
     def __len__(self) -> int:
+        if self.length is None:
+            raise ValueError("No length calculated at this moment.")
         return self.length
 
     @lru_cache(maxsize=128)
@@ -90,13 +95,13 @@ class MMapIndexedDatasetMixin:
         # a number of elements across all dimensions
         tensor_size = self.sizes[start_idx:end_idx]
 
-        tensor_pointer = self.pointers[index]
+        tensor_offset = self.data_offsets[index]
 
         buffer = np.frombuffer(
             self.data_buffer,
             dtype=self.dtype,
             count=tensor_size.prod(),
-            offset=tensor_pointer,
+            offset=tensor_offset,
         )
 
         buffer = buffer.reshape(tensor_size)
@@ -151,7 +156,8 @@ class MMapIndexedDatasetBuilder:
         ), "Types must match for both datasets to be merged correctly."
 
         # merge `sizes` properties together
-        self.sizes.extend(indexed_dataset.sizes)
+        if indexed_dataset.sizes is not None:
+            self.sizes.extend(indexed_dataset.sizes)
 
         # merge `dim_offsets` properties together
         start_offset = self.dim_offsets[-1]
