@@ -119,12 +119,12 @@ class MMapIndexedDataset(MMapIndexedDatasetMixin):
     def __del__(self) -> None:
         # close index mmap if needed
         if self.index_buffer_mmap is not None:
-            self.index_buffer_mmap.close()
+            self.index_buffer_mmap._mmap.close()
             del self.index_buffer_mmap
 
         # close data mmap if needed
         if self.data_buffer_mmap is not None:
-            self.data_buffer_mmap.close()
+            self.data_buffer_mmap._mmap.close()
             del self.data_buffer_mmap
 
 
