@@ -105,6 +105,7 @@ class IndexedDataset(IndexedDatasetMixin):
         self.filepath_prefix = filepath_prefix
         self.index_filepath = make_index_filepath(filepath_prefix)
         self.data_filepath = make_data_filepath(filepath_prefix)
+        self.data_stream: Optional[Union[FileIO, BufferedReader]] = None
         self.read_index_file(self.index_filepath)
 
     def read_index_file(self, filepath: Text) -> None:
