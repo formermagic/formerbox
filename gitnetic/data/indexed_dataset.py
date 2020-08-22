@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import os
 import struct
 from abc import ABCMeta, abstractmethod
@@ -334,7 +335,8 @@ class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
 
     def merge_file(self, filepath_prefix: Text, remove_files: bool = True) -> None:
         # read indexed dataset to merge with the current one
-        indexed_dataset = IndexedDataset(filepath_prefix)
+        assert not inspect.isabstract(self.dataset_type)
+        indexed_dataset = self.dataset_type(filepath_prefix=filepath_prefix)
         assert (
             indexed_dataset.dtype == self.dtype
         ), "Types must match for both datasets to be merged correctly."
