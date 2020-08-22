@@ -273,6 +273,11 @@ class IndexedDatasetBuilderMixin:
         del filepath_prefix, remove_files
         raise NotImplementedError()
 
+    def __del__(self) -> None:
+        # close the data stream if one is open
+        if not self.stream.closed:
+            self.stream.close()
+
 
 class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
     def __init__(
@@ -361,8 +366,3 @@ class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
         if remove_files:
             os.remove(indexed_dataset.data_filepath)
             os.remove(indexed_dataset.index_filepath)
-
-    def __del__(self) -> None:
-        # close the data stream if one is open
-        if self.stream is not None:
-            self.stream.close()

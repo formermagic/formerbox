@@ -191,11 +191,6 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
             os.remove(indexed_dataset.data_filepath)
             os.remove(indexed_dataset.index_filepath)
 
-    def __del__(self) -> None:
-        # close the data stream if one is open
-        if self.stream is not None:
-            self.stream.close()
-
 
 class IndexWriter:
     def __init__(self, filepath: Text, dtype: np.dtype, magic_code: bytes) -> None:
