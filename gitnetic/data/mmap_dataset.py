@@ -27,6 +27,14 @@ def _warmup_mmap_file(filepath: Text) -> None:
 
 
 class MMapIndexedDataset:
+class MMapIndexedDatasetMixin:
+    def __init__(self) -> None:
+        self.index_buffer_mmap: Optional[np.memmap] = None
+        self.index_buffer: Optional[memoryview] = None
+        self.data_buffer_mmap: Optional[np.memmap] = None
+        self.data_buffer: Optional[memoryview] = None
+
+
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__()
         self.filepath_prefix = filepath_prefix
