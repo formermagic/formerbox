@@ -10,16 +10,25 @@ import os
 import time
 from argparse import ArgumentParser
 from multiprocessing import Pool
-from typing import Optional, Text
+from typing import Optional, Text, Type
 
+import numpy as np
 from tqdm import tqdm
 from transformers import PreTrainedTokenizerFast
 
 from gitnetic.data import (
     Binarizer,
+    IndexedCachedDataset,
+    IndexedDataset,
     IndexedDatasetBuilder,
+    MMapIndexedDataset,
+    MMapIndexedDatasetBuilder,
     dataset_dest_filepath,
     find_offsets,
+)
+from gitnetic.data.indexed_dataset import (
+    IndexedDatasetBuilderMixin,
+    IndexedDatasetMixin,
 )
 from gitnetic.tasks.codebert import CodeBertTokenizerFast
 
@@ -52,6 +61,37 @@ def load_tokenizer(
     return tokenizer
 
 
+# pylint: disable=no-else-return
+def make_dataset(impl: Text) -> Type[IndexedDatasetMixin]:
+    if impl == "lazy":
+        return IndexedDataset
+    elif impl == "cached":
+        return IndexedCachedDataset
+    elif impl == "mmap":
+        return MMapIndexedDataset
+    raise ValueError("Unable to match the given dataset type.")
+
+
+def make_dataset_builder(impl: Text) -> Type[IndexedDatasetBuilderMixin]:
+    if impl == "lazy":
+        return IndexedDatasetBuilder
+    elif impl == "cached":
+        return IndexedDatasetBuilder
+    elif impl == "mmap":
+        return MMapIndexedDatasetBuilder
+    raise ValueError("Unable to match the given dataset builder type.")
+
+
+def make_dtype(impl: Text) -> np.dtype:
+    if impl == "lazy":
+        return np.dtype(np.int32)
+    elif impl == "cached":
+        return np.dtype(np.int32)
+    elif impl == "mmap":
+        return np.dtype(np.int64)
+    raise ValueError("Unable to match the given dataset builder type.")
+
+
 # pylint: disable=too-many-arguments, too-many-locals
 def preprocess(
     train_prefix: Text,
@@ -64,8 +104,15 @@ def preprocess(
     tokenizer_max_length: int,
     output_path: Text,
     num_workers: int,
+    impl: Text,
 ) -> None:
     os.makedirs(output_path, exist_ok=True)
+
+    # prepare dataset classes based on selected impl
+    dataset_cls = make_dataset(impl)
+    dataset_builder_cls = make_dataset_builder(impl)
+    dtype = make_dtype(impl)
+
     for filepath in [train_prefix, valid_prefix, test_prefix]:
         if filepath is None:
             continue
@@ -89,7 +136,11 @@ def preprocess(
                 )
 
                 binarizer = Binarizer(
-                    tokenizer=tokenizer, tokenizer_max_length=tokenizer_max_length,
+                    dataset_builder=dataset_builder_cls,
+                    dtype=dtype,
+                    dataset_type=dataset_cls,
+                    tokenizer=tokenizer,
+                    tokenizer_max_length=tokenizer_max_length,
                 )
 
                 pool.apply_async(
@@ -111,13 +162,16 @@ def preprocess(
         data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
         index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
 
+        # prepare a dataset builder instance
+        dataset_builder = dataset_builder_cls(
+            data_filepath, index_filepath, dtype, dataset_cls
+        )
+
         # merge temp files contents and remove files from disk
-        dataset_builder = IndexedDatasetBuilder(data_filepath, index_filepath)
-        with dataset_builder:
-            for worker_idx in range(num_workers):
-                output_prefix = temp_filepath(filepath, str(worker_idx), output_path)
-                temp_file_path = dataset_dest_filepath(output_prefix, extension="")
-                dataset_builder.merge_file(temp_file_path)
+        for worker_idx in range(num_workers):
+            output_prefix = temp_filepath(filepath, str(worker_idx), output_path)
+            temp_file_path = dataset_dest_filepath(output_prefix, extension="")
+            dataset_builder.merge_file(temp_file_path)
 
         # write final meta and type data
         dataset_builder.finalize()
@@ -151,6 +205,9 @@ def make_parser() -> ArgumentParser:
                         help="An output path for writing output files to.")
     parser.add_argument("--num_workers", type=int, required=True,
                         help="A number of processes to perform actions in parallel.")
+    parser.add_argument("--impl", type=str, required=True,
+                        choices=["lazy", "cached", "mmap"],
+                        help="Determines the type of a dataset to build.")
     # fmt: on
 
     return parser
