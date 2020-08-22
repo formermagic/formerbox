@@ -70,7 +70,6 @@ class MMapIndexedDataset(IndexedDatasetMixin, MMapIndexedDatasetMixin):
             self.index_buffer, dtype=np.int32, count=num_sizes, offset=offset
         )
 
-        print(f"len={self.length}, size={size}")
         offset += self.sizes.nbytes
         self.data_offsets = np.frombuffer(
             self.index_buffer, dtype=np.int64, count=self.length, offset=offset
