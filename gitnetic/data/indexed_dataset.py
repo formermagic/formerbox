@@ -80,7 +80,7 @@ class IndexedDatasetMixin(Dataset):
     """
 
     def __init__(self) -> None:
-        self.dtype: Optional[np.dtype] = None
+        self.dtype: Optional[Type[np.dtype]] = None
         self.length: Optional[int] = None
         self.element_size: Optional[int] = None
         self.dim_offsets: Optional[np.ndarray] = None
