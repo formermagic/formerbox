@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import struct
+from abc import ABC
 from functools import lru_cache
 from io import BufferedWriter, FileIO
 from types import TracebackType
@@ -27,15 +28,16 @@ def _warmup_mmap_file(filepath: Text) -> None:
             pass
 
 
-class MMapIndexedDatasetMixin:
+class MMapIndexedDatasetMixin(ABC, IndexedDatasetMixin):
     def __init__(self) -> None:
+        super().__init__()
         self.index_buffer_mmap: Optional[np.memmap] = None
         self.index_buffer: Optional[memoryview] = None
         self.data_buffer_mmap: Optional[np.memmap] = None
         self.data_buffer: Optional[memoryview] = None
 
 
-class MMapIndexedDataset(IndexedDatasetMixin, MMapIndexedDatasetMixin):
+class MMapIndexedDataset(MMapIndexedDatasetMixin):
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__()
         self.filepath_prefix = filepath_prefix
