@@ -12,6 +12,7 @@ from gitnetic.data.samplers import (
     BatchSampler,
     DistributedBatchSampler,
     UniformBatchSampler,
+    UniformMaxTokensBatchSampler,
 )
 
 try:
@@ -23,7 +24,8 @@ except (ModuleNotFoundError, ImportError):
 
 @dataclass
 class TrainingParams:
-    batch_size: int
+    batch_size: Optional[int]
+    max_tokens: Optional[int]
     weight_decay: float
     warmup_steps: int
     learning_rate: float
@@ -32,6 +34,7 @@ class TrainingParams:
 
 @dataclass
 class DataParams:
+    dataset_impl: Text
     train_data_prefix: Union[Text, Path]
     val_data_prefix: Union[Text, Path]
     num_workers: int = 0
@@ -63,6 +66,7 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
         batch_sampler = self.batch_sampler(
             dataset=dataset,
             batch_size=self.training_params.batch_size,
+            max_tokens=self.training_params.max_tokens,
             shuffle=shuffle,
             drop_last=drop_last,
         )
@@ -76,17 +80,35 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
 
     def batch_sampler(
         self,
-        batch_size: int,
         dataset: IndexedDatasetMixin,
+        max_tokens: Optional[int],
+        batch_size: Optional[int],
         shuffle: bool = True,
         drop_last: bool = False,
     ) -> BatchSampler:
-        batch_sampler = UniformBatchSampler(
-            data_source=dataset,
-            batch_size=batch_size,
-            shuffle=shuffle,
-            drop_last=drop_last,
-        )
+        if max_tokens is None and batch_size is None:
+            raise ValueError(
+                "Unable to prepare a batch sampler."
+                " You must pass either a `batch_size`"
+                " or a `max_tokens` argument."
+            )
+
+        batch_sampler: BatchSampler
+        if max_tokens is not None:
+            batch_sampler = UniformMaxTokensBatchSampler(
+                data_source=dataset,
+                max_tokens=max_tokens,
+                shuffle=shuffle,
+                drop_last=drop_last,
+            )
+        else:
+            assert batch_size is not None
+            batch_sampler = UniformBatchSampler(
+                data_source=dataset,
+                batch_size=batch_size,
+                shuffle=shuffle,
+                drop_last=drop_last,
+            )
 
         if self.trainer is None:
             return batch_sampler
