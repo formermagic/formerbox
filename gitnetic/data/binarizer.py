@@ -1,12 +1,11 @@
 import os
 from io import TextIOWrapper
-from typing import Callable, List, Optional, Text, Tuple, Type
+from typing import Callable, List, Optional, Text, Tuple
 
-import numpy as np
 import torch
 from transformers import PreTrainedTokenizerFast
 
-from .indexed_dataset import IndexedDatasetBuilderMixin, IndexedDatasetMixin
+from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 
 
 def dataset_dest_filepath(filepath_prefix: Text, extension: Text) -> Text:
@@ -50,15 +49,11 @@ class Binarizer:
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        dataset_builder: Type[IndexedDatasetBuilderMixin],
-        dtype: np.dtype,
-        dataset_type: Type[IndexedDatasetMixin],
+        dataset_setup: IndexedDatasetSetup,
         tokenizer: PreTrainedTokenizerFast,
         tokenizer_max_length: Optional[int] = None,
     ) -> None:
-        self.dataset_builder = dataset_builder
-        self.dtype = dtype
-        self.dataset_type = dataset_type
+        self.dataset_setup = dataset_setup
         self.tokenizer = tokenizer
         self.tokenizer_max_length = tokenizer_max_length
 
@@ -68,11 +63,11 @@ class Binarizer:
         # prepare indexed dataset builder
         data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
         index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
-        dataset_builder = self.dataset_builder(
+        dataset_builder = self.dataset_setup.dataset_builder_type(
             data_filepath=data_filepath,
             index_filepath=index_filepath,
-            dtype=self.dtype,
-            dataset_type=self.dataset_type,
+            dtype=self.dataset_setup.dataset_dtype,
+            dataset_type=self.dataset_setup.dataset_type,
         )
 
         # convert text to ids and write to the data file
