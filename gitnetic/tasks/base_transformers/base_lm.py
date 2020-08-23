@@ -55,39 +55,6 @@ class BaseDataModuleMixin:
             collate_fn=collator,
         )
 
-    def batch_sampler(
-        self,
-        dataset: IndexedDatasetMixin,
-        max_tokens: Optional[int],
-        batch_size: Optional[int],
-        shuffle: bool = True,
-        drop_last: bool = False,
-    ) -> BatchSampler:
-        if max_tokens is None and batch_size is None:
-            raise ValueError(
-                "Unable to prepare a batch sampler."
-                " You must pass either a `batch_size`"
-                " or a `max_tokens` argument."
-            )
-
-        batch_sampler: BatchSampler
-        if max_tokens is not None:
-            batch_sampler = UniformMaxTokensBatchSampler(
-                data_source=dataset,
-                max_tokens=max_tokens,
-                shuffle=shuffle,
-                drop_last=drop_last,
-            )
-        else:
-            assert batch_size is not None
-            batch_sampler = UniformBatchSampler(
-                data_source=dataset,
-                batch_size=batch_size,
-                shuffle=shuffle,
-                drop_last=drop_last,
-            )
-
-        return batch_sampler
 
 
 class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
