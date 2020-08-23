@@ -1,18 +1,159 @@
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Tuple, Union
 
 import torch
+from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
-from transformers import AdamW, PreTrainedModel, PreTrainedTokenizerBase
+from transformers import AdamW, DataCollator, PreTrainedModel, PreTrainedTokenizerBase
 from transformers.data.data_collator import DataCollatorForLanguageModeling
 
+from gitnetic.data.indexed_dataset import IndexedDatasetMixin
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
+from gitnetic.data.samplers import (
+    BatchSampler,
+    UniformBatchSampler,
+    UniformMaxTokensBatchSampler,
+)
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
 from .base import BaseTrainingMixin, DataParams, TrainingParams
+
+
+class BaseDataModuleMixin:
+    def __init__(
+        self, max_tokens: Optional[int], batch_size: Optional[int], num_workers: int,
+    ) -> None:
+        super().__init__()
+        self.max_tokens = max_tokens
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+
+    def get_dataloader(
+        self,
+        dataset: IndexedDatasetMixin,
+        collator: DataCollator,
+        shuffle: bool,
+        drop_last: bool,
+    ) -> DataLoader:
+        # prepare a batch sampler
+        batch_sampler = self.batch_sampler(
+            dataset=dataset,
+            batch_size=self.batch_size,
+            max_tokens=self.max_tokens,
+            shuffle=shuffle,
+            drop_last=drop_last,
+        )
+
+        return DataLoader(
+            dataset,
+            num_workers=self.num_workers,
+            batch_sampler=batch_sampler,
+            collate_fn=collator,
+        )
+
+    def batch_sampler(
+        self,
+        dataset: IndexedDatasetMixin,
+        max_tokens: Optional[int],
+        batch_size: Optional[int],
+        shuffle: bool = True,
+        drop_last: bool = False,
+    ) -> BatchSampler:
+        if max_tokens is None and batch_size is None:
+            raise ValueError(
+                "Unable to prepare a batch sampler."
+                " You must pass either a `batch_size`"
+                " or a `max_tokens` argument."
+            )
+
+        batch_sampler: BatchSampler
+        if max_tokens is not None:
+            batch_sampler = UniformMaxTokensBatchSampler(
+                data_source=dataset,
+                max_tokens=max_tokens,
+                shuffle=shuffle,
+                drop_last=drop_last,
+            )
+        else:
+            assert batch_size is not None
+            batch_sampler = UniformBatchSampler(
+                data_source=dataset,
+                batch_size=batch_size,
+                shuffle=shuffle,
+                drop_last=drop_last,
+            )
+
+        return batch_sampler
+
+
+class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        tokenizer: PreTrainedTokenizerBase,
+        train_data_prefix: Union[Text, Path],
+        val_data_prefix: Union[Text, Path],
+        dataset_impl: Text,
+        max_tokens: Optional[int],
+        batch_size: Optional[int],
+        num_workers: int,
+    ) -> None:
+        super().__init__(max_tokens, batch_size, num_workers)
+
+        self.tokenizer = tokenizer
+        self.train_data_prefix = train_data_prefix
+        self.val_data_prefix = val_data_prefix
+        self.dataset_impl = dataset_impl
+
+        # prepare the dataset type from the given impl
+        self.dataset_setup = IndexedDatasetSetup.from_args(dataset_impl)
+
+        self.train_dataset: Optional[IndexedDatasetMixin] = None
+        self.val_dataset: Optional[IndexedDatasetMixin] = None
+
+    def prepare_data(self, *args, **kwargs) -> None:
+        del args, kwargs
+
+    def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
+        del batch, device
+
+    def setup(self, stage: Optional[Text] = None) -> None:
+        del stage  # we don't use `stage` to build a dataloader
+
+        # prepare a dataset type class
+        dataset_type = self.dataset_setup.dataset_type
+
+        # prepare a train dataloader
+        train_path = path_to_posix(self.train_data_prefix)
+        self.train_dataset = dataset_type(filepath_prefix=train_path)
+
+        # prepare a validation dataloader
+        val_path = path_to_posix(self.val_data_prefix)
+        self.val_dataset = dataset_type(filepath_prefix=val_path)
+
+    def train_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
+        del args, kwargs  # use initialized properties to make a dataloader
+        assert self.train_dataset is not None
+        collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
+        return self.get_dataloader(
+            self.train_dataset, collator=collator, shuffle=True, drop_last=False
+        )
+
+    def val_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
+        del args, kwargs  # use initialized properties to make a dataloader
+        assert self.val_dataset is not None
+        collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
+        return self.get_dataloader(
+            self.val_dataset, collator=collator, shuffle=False, drop_last=False
+        )
+
+    def test_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
+        del args, kwargs  # use initialized properties to make a dataloader
+        raise NotImplementedError()
 
 
 # pylint: disable=arguments-differ
@@ -129,43 +270,43 @@ class BaseLMTransformer(BaseTrainingMixin):
 
         return [optimizer], [step_scheduler]
 
-    def prepare_data(self) -> None:
-        pass
+    # def prepare_data(self) -> None:
+    #     pass
 
-    def setup(self, stage: Text) -> None:
-        del stage  # we don't use `stage` to build a dataloader
+    # def setup(self, stage: Text) -> None:
+    #     del stage  # we don't use `stage` to build a dataloader
 
-        # prepare the dataset type from the given impl
-        dataset_setup = IndexedDatasetSetup.from_args(self.data_params.dataset_impl)
-        dataset_type = dataset_setup.dataset_type
+    #     # prepare the dataset type from the given impl
+    #     dataset_setup = IndexedDatasetSetup.from_args(self.data_params.dataset_impl)
+    #     dataset_type = dataset_setup.dataset_type
 
-        # prepare a language modeling collator
-        collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
+    #     # prepare a language modeling collator
+    #     collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
 
-        # prepare a train dataloader
-        train_path = path_to_posix(self.data_params.train_data_prefix)
-        train_dataset = dataset_type(filepath_prefix=train_path)
-        self._train_dataloader = self.get_dataloader(
-            train_dataset, collator=collator, shuffle=True, drop_last=False,
-        )
+    #     # prepare a train dataloader
+    #     train_path = path_to_posix(self.data_params.train_data_prefix)
+    #     train_dataset = dataset_type(filepath_prefix=train_path)
+    #     self._train_dataloader = self.get_dataloader(
+    #         train_dataset, collator=collator, shuffle=True, drop_last=False,
+    #     )
 
-        # prepare a validation dataloader
-        val_path = path_to_posix(self.data_params.val_data_prefix)
-        val_dataset = dataset_type(filepath_prefix=val_path)
-        self._val_dataloader = self.get_dataloader(
-            val_dataset, collator=collator, shuffle=False, drop_last=False,
-        )
+    #     # prepare a validation dataloader
+    #     val_path = path_to_posix(self.data_params.val_data_prefix)
+    #     val_dataset = dataset_type(filepath_prefix=val_path)
+    #     self._val_dataloader = self.get_dataloader(
+    #         val_dataset, collator=collator, shuffle=False, drop_last=False,
+    #     )
 
-        # calculate the total training steps
-        if getattr(self.trainer, "max_steps") is None:
-            self.total_steps = self.training_steps(len(self._train_dataloader))
-        else:
-            self.total_steps = self.trainer.max_steps
+    #     # calculate the total training steps
+    #     if getattr(self.trainer, "max_steps") is None:
+    #         self.total_steps = self.training_steps(len(self._train_dataloader))
+    #     else:
+    #         self.total_steps = self.trainer.max_steps
 
-    def train_dataloader(self) -> DataLoader:
-        assert self._train_dataloader is not None
-        return self._train_dataloader
+    # def train_dataloader(self) -> DataLoader:
+    #     assert self._train_dataloader is not None
+    #     return self._train_dataloader
 
-    def val_dataloader(self) -> DataLoader:
-        assert self._val_dataloader is not None
-        return self._val_dataloader
+    # def val_dataloader(self) -> DataLoader:
+    #     assert self._val_dataloader is not None
+    #     return self._val_dataloader
