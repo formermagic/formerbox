@@ -69,6 +69,9 @@ if __name__ == "__main__":
     val_data_prefix: Text = args["val_data_prefix"]
     num_workers: int = args["num_workers"]
 
+    max_tokens = args["max_tokens"]
+    batch_size = args["batch_size"]
+
     # build a tokenizer from a config file
     tokenizer = tokenizer_from_config(config_path, tokenizer_path)
     assert isinstance(tokenizer, PreTrainedTokenizerFast)
@@ -84,7 +87,8 @@ if __name__ == "__main__":
 
     # prepare training params
     training_params = TrainingParams(
-        batch_size=4,
+        batch_size=batch_size,
+        max_tokens=max_tokens,
         weight_decay=0.01,
         warmup_steps=4_000,
         learning_rate=5e-5,
