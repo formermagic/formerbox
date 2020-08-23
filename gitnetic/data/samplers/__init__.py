@@ -1,3 +1,3 @@
 from .batch_sampler import BatchSampler
 from .distributed_batch_sampler import DistributedBatchSampler
-from .max_token_batch_sampler import MaxTokensBatchSampler
+from .uniform_batch_sampler import UniformBatchSampler, UniformMaxTokensBatchSampler
