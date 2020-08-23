@@ -71,6 +71,7 @@ if __name__ == "__main__":
 
     max_tokens = args["max_tokens"]
     batch_size = args["batch_size"]
+    dataset_impl = args["dataset_impl"]
 
     # build a tokenizer from a config file
     tokenizer = tokenizer_from_config(config_path, tokenizer_path)
@@ -96,7 +97,9 @@ if __name__ == "__main__":
     )
 
     # prepare data params
-    data_params = DataParams(train_data_prefix, val_data_prefix, num_workers)
+    data_params = DataParams(
+        dataset_impl, train_data_prefix, val_data_prefix, num_workers
+    )
 
     # build a transformer lightning module model
     base_lm = BaseLMTransformer(model, tokenizer, training_params, data_params)
