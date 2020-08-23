@@ -10,26 +10,13 @@ import os
 import time
 from argparse import ArgumentParser
 from multiprocessing import Pool
-from typing import Optional, Text, Type
+from typing import Optional, Text
 
-import numpy as np
 from tqdm import tqdm
 from transformers import PreTrainedTokenizerFast
 
-from gitnetic.data import (
-    Binarizer,
-    IndexedCachedDataset,
-    IndexedDataset,
-    IndexedDatasetBuilder,
-    MMapIndexedDataset,
-    MMapIndexedDatasetBuilder,
-    dataset_dest_filepath,
-    find_offsets,
-)
-from gitnetic.data.indexed_dataset import (
-    IndexedDatasetBuilderMixin,
-    IndexedDatasetMixin,
-)
+from gitnetic.data import Binarizer, dataset_dest_filepath, find_offsets
+from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.tasks.codebert import CodeBertTokenizerFast
 
 logger = logging.getLogger(__name__)
@@ -61,37 +48,6 @@ def load_tokenizer(
     return tokenizer
 
 
-# pylint: disable=no-else-return
-def make_dataset(impl: Text) -> Type[IndexedDatasetMixin]:
-    if impl == "lazy":
-        return IndexedDataset
-    elif impl == "cached":
-        return IndexedCachedDataset
-    elif impl == "mmap":
-        return MMapIndexedDataset
-    raise ValueError("Unable to match the given dataset type.")
-
-
-def make_dataset_builder(impl: Text) -> Type[IndexedDatasetBuilderMixin]:
-    if impl == "lazy":
-        return IndexedDatasetBuilder
-    elif impl == "cached":
-        return IndexedDatasetBuilder
-    elif impl == "mmap":
-        return MMapIndexedDatasetBuilder
-    raise ValueError("Unable to match the given dataset builder type.")
-
-
-def make_dtype(impl: Text) -> np.dtype:
-    if impl == "lazy":
-        return np.dtype(np.int32)
-    elif impl == "cached":
-        return np.dtype(np.int32)
-    elif impl == "mmap":
-        return np.dtype(np.int64)
-    raise ValueError("Unable to match the given dataset type.")
-
-
 # pylint: disable=too-many-arguments, too-many-locals
 def preprocess(
     train_prefix: Text,
@@ -108,10 +64,8 @@ def preprocess(
 ) -> None:
     os.makedirs(output_path, exist_ok=True)
 
-    # prepare dataset classes based on selected impl
-    dataset_cls = make_dataset(impl)
-    dataset_builder_cls = make_dataset_builder(impl)
-    dtype = make_dtype(impl)
+    # prepare an indexed dataset setup
+    dataset_setup = IndexedDatasetSetup.from_args(impl)
 
     for filepath in [train_prefix, valid_prefix, test_prefix]:
         if filepath is None:
@@ -136,9 +90,7 @@ def preprocess(
                 )
 
                 binarizer = Binarizer(
-                    dataset_builder=dataset_builder_cls,
-                    dtype=dtype,
-                    dataset_type=dataset_cls,
+                    dataset_setup=dataset_setup,
                     tokenizer=tokenizer,
                     tokenizer_max_length=tokenizer_max_length,
                 )
@@ -163,8 +115,11 @@ def preprocess(
         index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
 
         # prepare a dataset builder instance
-        dataset_builder = dataset_builder_cls(
-            data_filepath, index_filepath, dtype, dataset_cls
+        dataset_builder = dataset_setup.dataset_builder_type(
+            data_filepath,
+            index_filepath,
+            dataset_setup.dataset_dtype,
+            dataset_setup.dataset_type,
         )
 
         # merge temp files contents and remove files from disk
@@ -209,6 +164,9 @@ def make_parser() -> ArgumentParser:
                         choices=["lazy", "cached", "mmap"],
                         help="Determines the type of a dataset to build.")
     # fmt: on
+
+    # add indexed dataset impl argument
+    IndexedDatasetSetup.add_arguments(parser)
 
     return parser
 
