@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 import shutil
 import struct
@@ -226,7 +224,7 @@ class IndexWriter:
         self.stream.write(sizes_buffer)
         self.stream.write(data_offsets_buffer)
 
-    def __enter__(self) -> IndexWriter:
+    def __enter__(self) -> "IndexWriter":
         self.stream = open(self.filepath, mode="wb")
         self.stream.write(self.magic_code)
         self.stream.write(struct.pack("<B", element_code(self.dtype)))

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Iterator, List
 
 from torch.utils.data import Dataset, Sampler
@@ -20,7 +18,7 @@ class BatchSampler(Sampler):
         self.drop_last = drop_last
 
     @classmethod
-    def from_batch_sampler(cls, batch_sampler: BatchSampler) -> BatchSampler:
+    def from_batch_sampler(cls, batch_sampler: "BatchSampler") -> "BatchSampler":
         return cls(
             batch_sampler.data_source,
             batch_sampler.batch_size,
