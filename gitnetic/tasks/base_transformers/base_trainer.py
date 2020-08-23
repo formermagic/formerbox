@@ -8,7 +8,7 @@ from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 
 from .base import DataParams, TrainingParams
 from .base_config import model_from_config, tokenizer_from_config
-from .base_lm import BaseLMTransformer
+from .base_lm import BaseLMDataModule, BaseLMTransformer
 
 
 def parse_args() -> Dict[Text, Any]:
@@ -77,6 +77,16 @@ if __name__ == "__main__":
     tokenizer = tokenizer_from_config(config_path, tokenizer_path)
     assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
+    datamodule = BaseLMDataModule(
+        tokenizer=tokenizer,
+        train_data_prefix=train_data_prefix,
+        val_data_prefix=val_data_prefix,
+        dataset_impl=dataset_impl,
+        max_tokens=max_tokens,
+        batch_size=batch_size,
+        num_workers=num_workers,
+    )
+
     # build a model from a config file
     model = model_from_config(
         config_path,
@@ -113,4 +123,4 @@ if __name__ == "__main__":
     )
 
     # run train loop
-    trainer.fit(base_lm)
+    trainer.fit(base_lm, datamodule=datamodule)
