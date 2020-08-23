@@ -89,7 +89,7 @@ def make_dtype(impl: Text) -> np.dtype:
         return np.dtype(np.int32)
     elif impl == "mmap":
         return np.dtype(np.int64)
-    raise ValueError("Unable to match the given dataset builder type.")
+    raise ValueError("Unable to match the given dataset type.")
 
 
 # pylint: disable=too-many-arguments, too-many-locals
