@@ -119,7 +119,8 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
         del args, kwargs  # no data to download
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
-        pass
+        del device
+        return batch
 
     def setup(self, stage: Optional[Text] = None) -> None:
         del stage  # we don't use `stage` to build a dataloader
