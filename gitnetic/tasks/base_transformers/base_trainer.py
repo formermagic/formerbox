@@ -4,6 +4,8 @@ from typing import Any, Dict, Text
 from pytorch_lightning import Trainer
 from transformers import PreTrainedTokenizerFast
 
+from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
+
 from .base import DataParams, TrainingParams
 from .base_config import model_from_config, tokenizer_from_config
 from .base_lm import BaseLMTransformer
@@ -12,7 +14,9 @@ from .base_lm import BaseLMTransformer
 def parse_args() -> Dict[Text, Any]:
     parser = ArgumentParser()
     # fmt: off
-    parser.add_argument("--batch_size", type=int, default=None, required=True,
+    parser.add_argument("--batch_size", type=int, default=None, required=False,
+                        help="")
+    parser.add_argument("--max_tokens", type=int, default=None, required=False,
                         help="")
     parser.add_argument("--weight_decay", type=float, default=0.01, required=False,
                         help="")
@@ -47,6 +51,9 @@ def parse_args() -> Dict[Text, Any]:
     parser.add_argument("--seed", type=int, default=None, required=False,
                         help="A seed to make experiments reproducible.")
     # fmt: on
+
+    # add indexed dataset setup to parse
+    IndexedDatasetSetup.add_arguments(parser)
 
     return vars(parser.parse_args())
 
