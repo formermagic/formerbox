@@ -10,16 +10,12 @@ from torch.utils.data import DataLoader
 from transformers import AdamW, DataCollator, PreTrainedModel, PreTrainedTokenizerBase
 from transformers.data.data_collator import DataCollatorForLanguageModeling
 
+from gitnetic.data.data_iterators import DatasetIterator
 from gitnetic.data.indexed_dataset import IndexedDatasetMixin
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
-from gitnetic.data.samplers import (
-    BatchSampler,
-    UniformBatchSampler,
-    UniformMaxTokensBatchSampler,
-)
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
-from gitnetic.data.data_iterators import DatasetIterator
+
 from .base import BaseTrainingMixin, DataParams, TrainingParams
 
 
@@ -39,22 +35,16 @@ class BaseDataModuleMixin:
         shuffle: bool,
         drop_last: bool,
     ) -> DataLoader:
-        # prepare a batch sampler
-        batch_sampler = self.batch_sampler(
-            dataset=dataset,
-            batch_size=self.batch_size,
+        dataset_itr = DatasetIterator(
+            dataset,
+            collator=collator,
             max_tokens=self.max_tokens,
+            batch_size=self.batch_size,
             shuffle=shuffle,
             drop_last=drop_last,
         )
 
-        return DataLoader(
-            dataset,
-            num_workers=self.num_workers,
-            batch_sampler=batch_sampler,
-            collate_fn=collator,
-        )
-
+        return DataLoader(dataset_itr, num_workers=self.num_workers)
 
 
 class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
@@ -107,31 +97,17 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
         del args, kwargs  # use initialized properties to make a dataloader
         assert self.train_dataset is not None
         collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
-        dataset = DatasetIterator(
-            self.train_dataset,
-            collator=collator,
-            max_tokens=self.max_tokens,
-            batch_size=self.batch_size,
-            shuffle=True,
-            drop_last=False,
+        return self.get_dataloader(
+            self.train_dataset, collator=collator, shuffle=True, drop_last=False
         )
-
-        return DataLoader(dataset, num_workers=self.num_workers)
 
     def val_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
         assert self.val_dataset is not None
         collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
-        dataset = DatasetIterator(
-            self.val_dataset,
-            collator=collator,
-            max_tokens=self.max_tokens,
-            batch_size=self.batch_size,
-            shuffle=False,
-            drop_last=False,
+        return self.get_dataloader(
+            self.val_dataset, collator=collator, shuffle=False, drop_last=False
         )
-
-        return DataLoader(dataset, num_workers=self.num_workers)
 
     def test_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
