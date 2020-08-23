@@ -6,17 +6,14 @@ from typing import Any, Dict, Text, Type, Union
 
 import numpy as np
 
-from gitnetic.data import (
+from gitnetic.data.indexed_dataset import (
     IndexedCachedDataset,
     IndexedDataset,
     IndexedDatasetBuilder,
-    MMapIndexedDataset,
-    MMapIndexedDatasetBuilder,
-)
-from gitnetic.data.indexed_dataset import (
     IndexedDatasetBuilderMixin,
     IndexedDatasetMixin,
 )
+from gitnetic.data.mmap_dataset import MMapIndexedDataset, MMapIndexedDatasetBuilder
 
 
 @dataclass
