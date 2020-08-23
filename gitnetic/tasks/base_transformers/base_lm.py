@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from transformers import AdamW, PreTrainedModel, PreTrainedTokenizerBase
 from transformers.data.data_collator import DataCollatorForLanguageModeling
 
-from gitnetic.data import IndexedDataset
+from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
@@ -55,7 +55,7 @@ class BaseLMTransformer(BaseTrainingMixin):
         del batch_idx  # we don't use `batch_idx` now
         loss, _ = self.forward(**batch)
         train_perplexity = perplexity(loss)
-        batch_size = torch.tensor([self.training_params.batch_size])
+        batch_size = torch.tensor([len(batch["input_ids"])])
 
         # get the latest scheduled learning rate
         if self.lr_scheduler is None:
@@ -134,19 +134,24 @@ class BaseLMTransformer(BaseTrainingMixin):
 
     def setup(self, stage: Text) -> None:
         del stage  # we don't use `stage` to build a dataloader
+
+        # prepare the dataset type from the given impl
+        dataset_setup = IndexedDatasetSetup.from_args(self.data_params.dataset_impl)
+        dataset_type = dataset_setup.dataset_type
+
         # prepare a language modeling collator
         collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
 
         # prepare a train dataloader
         train_path = path_to_posix(self.data_params.train_data_prefix)
-        train_dataset = IndexedDataset(train_path)
+        train_dataset = dataset_type(filepath_prefix=train_path)
         self._train_dataloader = self.get_dataloader(
             train_dataset, collator=collator, shuffle=True, drop_last=False,
         )
 
         # prepare a validation dataloader
         val_path = path_to_posix(self.data_params.val_data_prefix)
-        val_dataset = IndexedDataset(val_path)
+        val_dataset = dataset_type(filepath_prefix=val_path)
         self._val_dataloader = self.get_dataloader(
             val_dataset, collator=collator, shuffle=False, drop_last=False,
         )
