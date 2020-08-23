@@ -19,7 +19,7 @@ from gitnetic.data.samplers import (
 )
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
-
+from gitnetic.data.data_iterators import DatasetIterator
 from .base import BaseTrainingMixin, DataParams, TrainingParams
 
 
@@ -115,11 +115,11 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
         self.train_dataset: Optional[IndexedDatasetMixin] = None
         self.val_dataset: Optional[IndexedDatasetMixin] = None
 
-    def prepare_data(self, *args, **kwargs) -> None:
-        del args, kwargs
+    def prepare_data(self, *args: Any, **kwargs: Any) -> None:
+        del args, kwargs  # no data to download
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
-        del batch, device
+        pass
 
     def setup(self, stage: Optional[Text] = None) -> None:
         del stage  # we don't use `stage` to build a dataloader
@@ -139,17 +139,31 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
         del args, kwargs  # use initialized properties to make a dataloader
         assert self.train_dataset is not None
         collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
-        return self.get_dataloader(
-            self.train_dataset, collator=collator, shuffle=True, drop_last=False
+        dataset = DatasetIterator(
+            self.train_dataset,
+            collator=collator,
+            max_tokens=self.max_tokens,
+            batch_size=self.batch_size,
+            shuffle=True,
+            drop_last=False,
         )
+
+        return DataLoader(dataset, num_workers=self.num_workers)
 
     def val_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
         assert self.val_dataset is not None
         collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
-        return self.get_dataloader(
-            self.val_dataset, collator=collator, shuffle=False, drop_last=False
+        dataset = DatasetIterator(
+            self.val_dataset,
+            collator=collator,
+            max_tokens=self.max_tokens,
+            batch_size=self.batch_size,
+            shuffle=False,
+            drop_last=False,
         )
+
+        return DataLoader(dataset, num_workers=self.num_workers)
 
     def test_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
@@ -182,7 +196,7 @@ class BaseLMTransformer(BaseTrainingMixin):
         self._val_dataloader: Optional[DataLoader[Tensor]] = None
 
     def forward(
-        self, input_ids: torch.LongTensor, labels: torch.LongTensor, **kwargs: Any
+        self, input_ids: torch.Tensor, labels: torch.Tensor, **kwargs: Any
     ) -> Tuple[Tensor, Tensor]:
         del kwargs  # we implement this method with our parameters
         self.model.train()
@@ -190,10 +204,20 @@ class BaseLMTransformer(BaseTrainingMixin):
         loss, prediction_scores = outputs[:2]
         return loss, prediction_scores
 
+    def prepare_batch(self, batch: Dict[Text, Tensor], batch_idx: int) -> None:
+        del batch_idx  # nouse
+
+        # data loader will produce an extra dimension
+        # if a data iterator is used, so we have
+        # to flatten our input tensor if this happens
+        input_ids = batch["input_ids"]
+        if len(input_ids.size()) == 3:
+            batch["input_ids"] = input_ids.squeeze(0)
+
     def training_step(
         self, batch: Dict[Text, Tensor], batch_idx: int
     ) -> Dict[Text, Union[Tensor, Dict[Text, Tensor]]]:
-        del batch_idx  # we don't use `batch_idx` now
+        self.prepare_batch(batch, batch_idx)
         loss, _ = self.forward(**batch)
         train_perplexity = perplexity(loss)
         batch_size = torch.tensor([len(batch["input_ids"])])
@@ -226,7 +250,7 @@ class BaseLMTransformer(BaseTrainingMixin):
     def validation_step(
         self, batch: Dict[Text, Tensor], batch_idx: int
     ) -> Dict[Text, Union[Tensor, Dict[Text, Tensor]]]:
-        del batch_idx  # we don't use `batch_idx` now
+        self.prepare_batch(batch, batch_idx)
         loss, _ = self.forward(**batch)
         val_perplexity = perplexity(loss)
         return {"val_loss": loss, "val_ppl": val_perplexity}
