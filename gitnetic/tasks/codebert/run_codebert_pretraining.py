@@ -24,7 +24,7 @@ from gitnetic.data import IndexedDataset
 from gitnetic.data.samplers import (
     BatchSampler,
     DistributedBatchSampler,
-    MaxTokensBatchSampler,
+    UniformBatchSampler,
 )
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import perplexity
@@ -314,7 +314,7 @@ class CodeBertLMPretraining(LightningModule):
         shuffle: bool = True,
         drop_last: bool = False,
     ) -> BatchSampler:
-        batch_sampler = MaxTokensBatchSampler(
+        batch_sampler = UniformBatchSampler(
             data_source=data_source,
             batch_size=batch_size,
             shuffle=shuffle,
