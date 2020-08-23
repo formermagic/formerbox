@@ -76,6 +76,9 @@ class UniformMaxTokensBatchSampler(BatchSampler):
             elif not sorted_indices and not self.drop_last:
                 batches.append(batch_indices)
 
+        # cache the number of batches
+        self._length = len(batches)
+
         if self.shuffle:
             random.shuffle(batches)
 
