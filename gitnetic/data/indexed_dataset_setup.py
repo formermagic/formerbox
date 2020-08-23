@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from typing import Any, Dict, Text, Type, Union
@@ -35,7 +33,9 @@ class IndexedDatasetSetup:
 
     # pylint: disable=no-else-return
     @staticmethod
-    def from_args(args: Union[Namespace, Dict[Text, Any], Text]) -> IndexedDatasetSetup:
+    def from_args(
+        args: Union[Namespace, Dict[Text, Any], Text]
+    ) -> "IndexedDatasetSetup":
         if isinstance(args, Namespace):
             args = vars(args)
         elif isinstance(args, str):

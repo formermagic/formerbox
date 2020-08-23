@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any, List, Optional, Tuple, Text
 
 TSFieldId = int
@@ -15,15 +13,15 @@ class Language:
     def build_library(output_path: Text, repo_paths: List[Text]) -> bool: ...
     def __init__(self, library_path: Text, name: Text) -> None: ...
     def field_id_for_name(self, name: Text) -> TSFieldId: ...
-    def query(self, source: Text) -> Query: ...
+    def query(self, source: Text) -> "Query": ...
 
 class Query:
     query: TSQuery
     capture_names: List[Text]
 
     # :methods:
-    def matches(self, node: Node) -> None: ...
-    def captures(self, node: Node) -> List[Tuple[Node, Text]]: ...
+    def matches(self, node: "Node") -> None: ...
+    def captures(self, node: "Node") -> List[Tuple["Node", Text]]: ...
 
 class Parser:
     parser: TSParser
@@ -39,9 +37,9 @@ class Tree:
 
     # :accessors:
     @property
-    def root_node(self) -> Node: ...
+    def root_node(self) -> "Node": ...
     # :methods:
-    def walk(self) -> TreeCursor: ...
+    def walk(self) -> "TreeCursor": ...
     def edit(
         self,
         start_byte: int,
@@ -54,7 +52,7 @@ class Tree:
 
 class TreeCursor:
     cursor: TSTreeCursor
-    node: Node
+    node: "Node"
     tree: Tree
 
     # :methods:
@@ -65,7 +63,7 @@ class TreeCursor:
 
 class Node:
     node: TSNode
-    children: List[Node]
+    children: List["Node"]
     tree: Tree
 
     start_byte: int
@@ -81,7 +79,7 @@ class Node:
 
     # :methods:
     def walk(self) -> TreeCursor: ...
-    def child_by_field_id(self, id: TSFieldId) -> Node: ...
+    def child_by_field_id(self, id: TSFieldId) -> "Node": ...
     def child_by_field_name(self, name: Text) -> None: ...
     def sexp(self) -> Text: ...
 
