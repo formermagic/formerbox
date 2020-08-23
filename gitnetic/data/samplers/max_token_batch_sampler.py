@@ -1,20 +1,20 @@
 import math
 import random
-from typing import Iterator, List
+from typing import Iterator, List, Optional
 
 import numpy as np
 
-from gitnetic.data.indexed_dataset import IndexedDataset
+from gitnetic.data.indexed_dataset import IndexedDatasetMixin
 from gitnetic.data.samplers import BatchSampler
 from gitnetic.utils import lazy_groups_of
 
 
-class MaxTokensBatchSampler(BatchSampler):
-    data_source: IndexedDataset
+class UniformBatchSampler(BatchSampler):
+    data_source: IndexedDatasetMixin
 
     def __init__(
         self,
-        data_source: IndexedDataset,
+        data_source: IndexedDatasetMixin,
         batch_size: int,
         shuffle: bool = True,
         drop_last: bool = False,
