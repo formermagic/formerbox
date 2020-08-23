@@ -11,7 +11,7 @@ from gitnetic.data import IndexedDataset
 from gitnetic.data.samplers import (
     BatchSampler,
     DistributedBatchSampler,
-    MaxTokensBatchSampler,
+    UniformBatchSampler,
 )
 
 try:
@@ -81,7 +81,7 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
         shuffle: bool = True,
         drop_last: bool = False,
     ) -> BatchSampler:
-        batch_sampler = MaxTokensBatchSampler(
+        batch_sampler = UniformBatchSampler(
             data_source=dataset,
             batch_size=batch_size,
             shuffle=shuffle,
