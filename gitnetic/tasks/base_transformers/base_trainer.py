@@ -106,7 +106,10 @@ if __name__ == "__main__":
 
     # prepare a trainer
     trainer = Trainer(
-        max_epochs=1, gpus=0, replace_sampler_ddp=False, progress_bar_refresh_rate=1
+        max_steps=100_000,
+        gpus=0,
+        replace_sampler_ddp=False,
+        progress_bar_refresh_rate=1,
     )
 
     # run train loop
