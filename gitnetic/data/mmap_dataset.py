@@ -109,7 +109,7 @@ class MMapIndexedDataset(MMapIndexedDatasetMixin):
 
         buffer = buffer.reshape(tensor_size)
 
-        return torch.from_numpy(buffer)
+        return torch.from_numpy(buffer.copy())
 
     def __del__(self) -> None:
         # close index mmap if needed
