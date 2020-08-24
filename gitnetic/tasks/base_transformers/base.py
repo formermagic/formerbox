@@ -24,25 +24,14 @@ except (ModuleNotFoundError, ImportError):
 
 @dataclass
 class TrainingParams:
-    batch_size: Optional[int]
-    max_tokens: Optional[int]
     weight_decay: float
     warmup_steps: int
     learning_rate: float
     power: float
 
 
-@dataclass
-class DataParams:
-    dataset_impl: Text
-    train_data_prefix: Union[Text, Path]
-    val_data_prefix: Union[Text, Path]
-    num_workers: int = 0
-
-
 class TrainingMixin:
     training_params: TrainingParams
-    data_params: DataParams
 
 
 # pylint: disable=too-many-ancestors
