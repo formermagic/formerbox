@@ -44,8 +44,11 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
         self,
         dataset: IndexedDatasetMixin,
         collator: DataCollator,
+        batch_size: Optional[int],
+        max_tokens: Optional[int],
         shuffle: bool,
         drop_last: bool,
+        num_workers: int,
     ) -> DataLoader:
 
         # base collator for lanuage-modeling tasks
@@ -54,15 +57,15 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
         # prepare a batch sampler
         batch_sampler = self.batch_sampler(
             dataset=dataset,
-            batch_size=self.training_params.batch_size,
-            max_tokens=self.training_params.max_tokens,
+            batch_size=batch_size,
+            max_tokens=max_tokens,
             shuffle=shuffle,
             drop_last=drop_last,
         )
 
         return DataLoader(
             dataset,
-            num_workers=self.data_params.num_workers,
+            num_workers=num_workers,
             batch_sampler=batch_sampler,
             collate_fn=collator,
         )
