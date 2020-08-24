@@ -7,16 +7,20 @@ from torch import Tensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
-from transformers import AdamW, DataCollator, PreTrainedModel, PreTrainedTokenizerBase
-from transformers.data.data_collator import DataCollatorForLanguageModeling
+from transformers import (
+    AdamW,
+    DataCollator,
+    DataCollatorForLanguageModeling,
+    PreTrainedModel,
+    PreTrainedTokenizerBase,
+)
 
 from gitnetic.data.data_iterators import DatasetIterator
 from gitnetic.data.indexed_dataset import IndexedDatasetMixin
-from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
-from .base import BaseTrainingMixin, DataParams, TrainingParams
+from .base import BaseTrainingMixin, TrainingParams
 
 
 class BaseDataModuleMixin:
@@ -114,7 +118,6 @@ class BaseLMTransformer(BaseTrainingMixin):
         model: PreTrainedModel,
         tokenizer: PreTrainedTokenizerBase,
         training_params: TrainingParams,
-        data_params: DataParams,
     ) -> None:
         super().__init__()
 
@@ -123,7 +126,6 @@ class BaseLMTransformer(BaseTrainingMixin):
         self.model = model
         self.tokenizer = tokenizer
         self.training_params = training_params
-        self.data_params = data_params
 
         # lazy initialized properties
         self.total_steps: Optional[int] = None
@@ -132,7 +134,7 @@ class BaseLMTransformer(BaseTrainingMixin):
         self._val_dataloader: Optional[DataLoader[Tensor]] = None
 
     def forward(
-        self, input_ids: torch.Tensor, labels: torch.Tensor, **kwargs: Any
+        self, input_ids: Tensor, labels: Tensor, **kwargs: Any
     ) -> Tuple[Tensor, Tensor]:
         del kwargs  # we implement this method with our parameters
         self.model.train()
