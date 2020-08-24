@@ -3,7 +3,7 @@ import typing
 from io import TextIOWrapper
 from itertools import islice
 from pathlib import Path
-from typing import Any, Iterable, Iterator, List, Optional, Text, Tuple, Union
+from typing import Any, Iterable, Iterator, List, Optional, Text, Tuple, Union, Type
 
 import numpy as np
 import torch
@@ -91,3 +91,9 @@ def path_to_posix(path: Union[Text, Path]) -> Text:
     if isinstance(path, Path):
         return path.as_posix()
     return path
+
+
+def all_subclasses(cls: Type[Any]) -> Iterable[Type[Any]]:
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in all_subclasses(c)]
+    )
