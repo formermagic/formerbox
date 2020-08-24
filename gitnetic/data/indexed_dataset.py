@@ -4,11 +4,14 @@ import struct
 from abc import ABCMeta, abstractmethod
 from functools import lru_cache
 from io import BufferedReader, BufferedWriter, FileIO
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Type, Union
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+
+from gitnetic.utils import all_subclasses, path_to_posix
 
 element_codes = {
     1: np.uint8,
@@ -103,6 +106,37 @@ class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
     def validate_index(self, index: int) -> None:
         if index < 0 or index >= self.length:
             raise IndexError(f"Index({index}) is out of bounds")
+
+    @staticmethod
+    def from_file(filepath_prefix: Union[Text, Path]) -> "IndexedDatasetMixin":
+        filepath = path_to_posix(filepath_prefix)
+        filepath = make_index_filepath(filepath)
+        dataset: Optional[IndexedDatasetMixin] = None
+
+        candidates = all_subclasses(IndexedDatasetMixin)
+        with open(filepath, mode="rb") as stream:
+            for candidate in candidates:
+                assert issubclass(candidate, IndexedDatasetMixin)
+                if inspect.isabstract(candidate):
+                    continue
+
+                num_bytes = len(candidate.magic_code)
+                magic_code = stream.read(num_bytes)
+                if candidate.magic_code == magic_code:
+                    dataset = candidate(filepath_prefix=filepath_prefix)
+                    break
+
+                # return filedesc to the beginning
+                stream.seek(0)
+
+        if dataset is None:
+            raise ValueError(
+                "Unable to match a dataset with the given type."
+                " Make sure you included `--dataset_impl` arg"
+                " while preprocessing raw datasets."
+            )
+
+        return dataset
 
 
 class IndexedDataset(IndexedDatasetMixin):
