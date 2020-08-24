@@ -29,16 +29,15 @@ class DatasetIterator(Dataset):
             dataset, max_tokens, batch_size, shuffle, drop_last,
         )
 
-        self.items = list(
-            iter(self.batch_sampler)
-        )  # TODO: make sure it's resetting correctly
+        # read the sampled index batches
+        self.index_batches = list(iter(self.batch_sampler))
 
     def __len__(self) -> int:
-        return len(self.items)
+        return len(self.index_batches)
 
     def __getitem__(self, index: int) -> Dict[Text, Tensor]:
-        indices = self.items[index]
-        input_ids = [self.dataset[idx] for idx in indices]
+        index_batch = self.index_batches[index]
+        input_ids = [self.dataset[idx] for idx in index_batch]
         return self.collator(input_ids)
 
     @staticmethod
