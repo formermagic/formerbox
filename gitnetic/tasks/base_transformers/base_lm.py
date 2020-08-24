@@ -54,7 +54,6 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
         tokenizer: PreTrainedTokenizerBase,
         train_data_prefix: Union[Text, Path],
         val_data_prefix: Union[Text, Path],
-        dataset_impl: Text,
         max_tokens: Optional[int],
         batch_size: Optional[int],
         num_workers: int,
@@ -64,10 +63,6 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
         self.tokenizer = tokenizer
         self.train_data_prefix = train_data_prefix
         self.val_data_prefix = val_data_prefix
-        self.dataset_impl = dataset_impl
-
-        # prepare the dataset type from the given impl
-        self.dataset_setup = IndexedDatasetSetup.from_args(dataset_impl)
 
         self.train_dataset: Optional[IndexedDatasetMixin] = None
         self.val_dataset: Optional[IndexedDatasetMixin] = None
@@ -82,16 +77,13 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
     def setup(self, stage: Optional[Text] = None) -> None:
         del stage  # we don't use `stage` to build a dataloader
 
-        # prepare a dataset type class
-        dataset_type = self.dataset_setup.dataset_type
-
         # prepare a train dataloader
         train_path = path_to_posix(self.train_data_prefix)
-        self.train_dataset = dataset_type(filepath_prefix=train_path)
+        self.train_dataset = IndexedDatasetMixin.from_file(train_path)
 
         # prepare a validation dataloader
         val_path = path_to_posix(self.val_data_prefix)
-        self.val_dataset = dataset_type(filepath_prefix=val_path)
+        self.val_dataset = IndexedDatasetMixin.from_file(val_path)
 
     def train_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
