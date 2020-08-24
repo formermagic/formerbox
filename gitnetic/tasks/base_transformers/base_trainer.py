@@ -52,9 +52,6 @@ def parse_args() -> Dict[Text, Any]:
                         help="A seed to make experiments reproducible.")
     # fmt: on
 
-    # add indexed dataset setup to parse
-    IndexedDatasetSetup.add_arguments(parser)
-
     return vars(parser.parse_args())
 
 
@@ -71,7 +68,6 @@ if __name__ == "__main__":
 
     max_tokens = args["max_tokens"]
     batch_size = args["batch_size"]
-    dataset_impl = args["dataset_impl"]
 
     # build a tokenizer from a config file
     tokenizer = tokenizer_from_config(config_path, tokenizer_path)
@@ -81,7 +77,6 @@ if __name__ == "__main__":
         tokenizer=tokenizer,
         train_data_prefix=train_data_prefix,
         val_data_prefix=val_data_prefix,
-        dataset_impl=dataset_impl,
         max_tokens=max_tokens,
         batch_size=batch_size,
         num_workers=num_workers,
