@@ -146,7 +146,9 @@ class TransformerModule(BaseTrainingMixin):
         self.training_params = training_params
 
         # lazy initialized properties
-        self.total_steps: Optional[int] = None
+        self.total_steps: Optional[
+            int
+        ] = None  # TODO: Figure out how to setup if max_epochs are given
         self.lr_scheduler: Optional[LambdaLR] = None
         self._train_dataloader: Optional[DataLoader[Tensor]] = None
         self._val_dataloader: Optional[DataLoader[Tensor]] = None
