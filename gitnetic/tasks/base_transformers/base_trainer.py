@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Text, Union
 
-from pytorch_lightning import Trainer
+from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback
 from transformers import PreTrainedModel, PreTrainedTokenizer, PreTrainedTokenizerFast
 
@@ -114,7 +114,7 @@ class TransformerTrainer:
         # 1) acceleration hardware setup (GPU, multi-gpu, distributed backend, etc + TPU) +
         # 2) checkpointing setup (number of steps until checkpoint, savedir, etc) +
         # 3) early stopping callbacks (e.g. stop on plateau)
-        # 4) deterministic mode toggle
+        # 4) deterministic mode toggle +
         # 5) loggers setup (especially, wandb)
 
         try:
@@ -124,6 +124,11 @@ class TransformerTrainer:
                 "Incorrect training command argument found."
                 " Make sure you have --max_steps argument included."
             ) from err
+
+        seed = args["seed"]
+        deterministic = args.pop("deterministic", False)
+        if seed is not None or deterministic:
+            seed_everything(seed)
 
         callbacks: List[Callback] = []
         save_dir = args["save_dir"] or os.getcwd()
@@ -143,7 +148,7 @@ class TransformerTrainer:
             "callbacks": callbacks,
             "default_root_dir": save_dir,
             "checkpoint_callback": False,
-            "limit_val_batches": 10,
+            "deterministic": deterministic,
         }
 
         # prepare a trainer
@@ -168,7 +173,7 @@ class TransformerTrainer:
                             help="The dir to save training checkpoints.")
         parser.add_argument("--save_step_frequency", type=int, default=None, required=False,
                             help="The interval of steps between checkpoints saving.")
-        parser.add_argument("--seed", type=int, default=None, required=False,
+        parser.add_argument("--seed", type=int, default=17, required=False,
                         help="A seed to make experiments reproducible.")
         # fmt: on
         return parser
