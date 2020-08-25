@@ -51,7 +51,7 @@ class DataLoadingMixin:
         return DataLoader(dataset_itr, num_workers=self.num_workers)
 
 
-class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
+class TransformerDataModule(DataLoadingMixin, LightningDataModule):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
