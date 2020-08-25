@@ -128,7 +128,7 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
 
 
 # pylint: disable=arguments-differ
-class BaseLMTransformer(BaseTrainingMixin):
+class TransformerModule(BaseTrainingMixin):
     # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
