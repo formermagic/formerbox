@@ -173,8 +173,8 @@ class TransformerTrainer:
         }
 
         # prepare a trainer
-        traaner_args = Namespace(**{**args, **override_kwargs})
-        trainer = Trainer.from_argparse_args(traaner_args)
+        trainer_args = Namespace(**{**args, **override_kwargs})
+        trainer = Trainer.from_argparse_args(trainer_args)
 
         # run the train loop
         trainer.fit(self.module, datamodule=self.datamodule)
