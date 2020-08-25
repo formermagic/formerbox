@@ -14,11 +14,13 @@ class SaveCheckpointAtStep(Callback):
         self,
         save_step_frequency: int,
         filepath: Text,
+        num_last_checkpoints: int,
         monitor: Text = "val_loss",
         prefix: Text = "checkpoint",
     ) -> None:
         self.save_step_frequency = save_step_frequency
         self.filepath = filepath
+        self.num_last_checkpoints = num_last_checkpoints
         self.monitor = monitor
         self.prefix = prefix
         self.best_monitor = f"best_{self.monitor}"
@@ -50,7 +52,7 @@ class SaveCheckpointAtStep(Callback):
 
         if global_step % self.save_step_frequency == 0:
             # keep only latest `num` checkpoints + best + last
-            self._keep_last_files(num=2, dirname=self.filepath)
+            self._keep_last_files(self.num_last_checkpoints, dirname=self.filepath)
             # set the initial start value from the loaded state
             self.monitor_start_value = getattr(pl_module, self.best_monitor)
 
