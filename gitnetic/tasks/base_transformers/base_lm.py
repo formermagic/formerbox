@@ -109,6 +109,23 @@ class BaseLMDataModule(BaseDataModuleMixin, LightningDataModule):
         del args, kwargs  # use initialized properties to make a dataloader
         raise NotImplementedError()
 
+    @staticmethod
+    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
+        parser = ArgumentParser(parents=[parent_parser], add_help=False)
+        # fmt: off
+        parser.add_argument("--batch_size", type=int, default=None, required=False,
+                            help="")
+        parser.add_argument("--max_tokens", type=int, default=None, required=False,
+                            help="")
+        parser.add_argument("--train_data_prefix", type=str, default=None, required=True,
+                            help="")
+        parser.add_argument("--val_data_prefix", type=str, default=None, required=True,
+                            help="")
+        parser.add_argument("--num_workers", type=int, default=1, required=True,
+                            help="")
+        # fmt: on
+        return parser
+
 
 # pylint: disable=arguments-differ
 class BaseLMTransformer(BaseTrainingMixin):
@@ -231,3 +248,18 @@ class BaseLMTransformer(BaseTrainingMixin):
         }
 
         return [optimizer], [step_scheduler]
+
+    @staticmethod
+    def add_argparse_args(parent_parser: ArgumentParser,) -> ArgumentParser:
+        parser = ArgumentParser(parents=[parent_parser], add_help=False)
+        # fmt: off
+        parser.add_argument("--weight_decay", type=float, default=0.01, required=False,
+                            help="")
+        parser.add_argument("--warmup_steps", type=int, default=4000, required=False,
+                            help="")
+        parser.add_argument("--learning_rate", type=float, default=5e-4, required=True,
+                            help="")
+        parser.add_argument("--power", type=float, default=1.0, required=False,
+                            help="")
+        # fmt: on
+        return parser
