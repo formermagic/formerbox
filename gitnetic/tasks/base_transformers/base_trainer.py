@@ -110,14 +110,6 @@ class TransformerTrainer:
     datamodule: TransformerDataModule
 
     def train(self, args: Dict[Text, Any]) -> None:
-
-        # TODO: parse and inject arguments for:
-        # 1) acceleration hardware setup (GPU, multi-gpu, distributed backend, etc + TPU) +
-        # 2) checkpointing setup (number of steps until checkpoint, savedir, etc) +
-        # 3) early stopping callbacks (e.g. stop on plateau)
-        # 4) deterministic mode toggle +
-        # 5) loggers setup (especially, wandb) +
-
         # mark: setup max training steps
         try:
             max_steps = args.pop("max_steps")
