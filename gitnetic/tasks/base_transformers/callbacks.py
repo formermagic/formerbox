@@ -128,9 +128,4 @@ class SaveCheckpointAtStep(Callback):
         paths = [p for p in Path(dirname).iterdir() if self._valid_path(p)]
         paths = sorted(paths, key=os.path.getmtime)
         for path in paths[:-num]:
-            print(f"Path={path}, is_dir={path.is_dir()}")
-            if path.is_dir():
-                continue
-            if "best" in path.name:
-                continue
             os.remove(path)
