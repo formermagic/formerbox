@@ -51,8 +51,6 @@ class SaveCheckpointAtStep(Callback):
         global_step = trainer.global_step
 
         if global_step % self.save_step_frequency == 0:
-            # keep only latest `num` checkpoints + best + last
-            self._keep_last_files(self.num_last_checkpoints, dirname=self.filepath)
             # set the initial start value from the loaded state
             self.monitor_start_value = getattr(pl_module, self.best_monitor)
 
@@ -67,6 +65,9 @@ class SaveCheckpointAtStep(Callback):
             # save the best checkpoint with the selected monitor
             filename = f"{self.prefix}_{self.best_monitor}.ckpt"
             self.save_best_checkpoint(filename, trainer, pl_module)
+
+            # keep only latest `num` checkpoints + best + last
+            self._keep_last_files(self.num_last_checkpoints, dirname=self.filepath)
 
     def update_best_monitor(
         self, monitor_value: Tensor, pl_module: LightningModule
