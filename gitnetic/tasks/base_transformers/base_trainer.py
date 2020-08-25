@@ -20,6 +20,8 @@ def parse_args() -> Dict[Text, Any]:
                         help="")
     parser.add_argument("--tokenizer_path", type=str, default=None, required=True,
                         help="")
+    parser.add_argument("--num_last_checkpoints", type=int, default=2, required=False,
+                        help="")
     # fmt: on
 
     parser = TransformerTrainer.add_argparse_args(parser)
@@ -127,7 +129,11 @@ class TransformerTrainer:
         save_dir = args["save_dir"] or os.getcwd()
         save_step_frequency = args["save_step_frequency"]
         if save_step_frequency is not None:
-            save_callback = SaveCheckpointAtStep(save_step_frequency, save_dir)
+            num_last_checkpoints = args["num_last_checkpoints"]
+            save_callback = SaveCheckpointAtStep(
+                save_step_frequency, save_dir, num_last_checkpoints
+            )
+
             callbacks.append(save_callback)
 
         override_kwargs: Dict[Text, Any] = {
