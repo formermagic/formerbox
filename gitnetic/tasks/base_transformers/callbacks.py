@@ -112,9 +112,13 @@ class SaveCheckpointAtStep(Callback):
         trainer.save_checkpoint(ckpt_path)
 
     def _valid_path(self, path: Path) -> bool:
+        # ignore directories
         if path.is_dir():
             return False
-        if "best_" in path.as_posix():
+        # ignore best and last checkpoints
+        fullpath = path.as_posix()
+        ignore_list = ["best_", "_last"]
+        if any(s in fullpath for s in ignore_list):
             return False
         return True
 
