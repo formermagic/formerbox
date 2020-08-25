@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Text, Union
 
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback
+from pytorch_lightning.loggers.wandb import WandbLogger, LightningLoggerBase
 from transformers import PreTrainedModel, PreTrainedTokenizer, PreTrainedTokenizerFast
 
 from .base import TrainingParams
@@ -115,8 +116,9 @@ class TransformerTrainer:
         # 2) checkpointing setup (number of steps until checkpoint, savedir, etc) +
         # 3) early stopping callbacks (e.g. stop on plateau)
         # 4) deterministic mode toggle +
-        # 5) loggers setup (especially, wandb)
+        # 5) loggers setup (especially, wandb) +
 
+        # mark: setup max training steps
         try:
             max_steps = args.pop("max_steps")
         except KeyError as err:
@@ -125,11 +127,13 @@ class TransformerTrainer:
                 " Make sure you have --max_steps argument included."
             ) from err
 
+        # mark: setup deterministic mode
         seed = args["seed"]
         deterministic = args.pop("deterministic", False)
         if seed is not None or deterministic:
             seed_everything(seed)
 
+        # mark: setup save checkpoint callbacks
         callbacks: List[Callback] = []
         save_dir = args["save_dir"] or os.getcwd()
         save_step_frequency = args["save_step_frequency"]
@@ -141,6 +145,24 @@ class TransformerTrainer:
 
             callbacks.append(save_callback)
 
+        # mark: setup loggers
+        loggers: List[LightningLoggerBase] = []
+
+        wandb_project = args["wandb_project"]
+        wandb_name = args["wandb_name"]
+        wandb_id = args["wandb_id"]
+
+        required_values = [wandb_project, wandb_name]
+        if all(v for v in required_values):
+            wandb_logger = WandbLogger(
+                project=wandb_project, name=wandb_name, id=wandb_id,
+            )
+
+            wandb_logger.watch(self.module.model, log_freq=1)
+
+            loggers.append(wandb_logger)
+
+        # mark: items to override in args
         override_kwargs: Dict[Text, Any] = {
             "max_steps": max_steps,
             "replace_sampler_ddp": False,
@@ -149,6 +171,7 @@ class TransformerTrainer:
             "default_root_dir": save_dir,
             "checkpoint_callback": False,
             "deterministic": deterministic,
+            "logger": loggers,
         }
 
         # prepare a trainer
