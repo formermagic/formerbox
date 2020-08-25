@@ -23,7 +23,7 @@ from gitnetic.utils import path_to_posix, perplexity
 from .base import BaseTrainingMixin, TrainingParams
 
 
-class BaseDataModuleMixin:
+class DataLoadingMixin:
     def __init__(
         self, max_tokens: Optional[int], batch_size: Optional[int], num_workers: int,
     ) -> None:
