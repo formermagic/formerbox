@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Text, Union
 
 from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import Callback
-from pytorch_lightning.loggers.wandb import WandbLogger, LightningLoggerBase
+from pytorch_lightning.callbacks import Callback, EarlyStopping
+from pytorch_lightning.loggers.wandb import LightningLoggerBase, WandbLogger
 from transformers import PreTrainedModel, PreTrainedTokenizer, PreTrainedTokenizerFast
 
 from .base import TrainingParams
@@ -162,6 +162,11 @@ class TransformerTrainer:
 
             loggers.append(wandb_logger)
 
+        # mark: setup early stopping
+        early_stop_callback = EarlyStopping(
+            monitor="val_loss", min_delta=0.00, patience=5, verbose=False, mode="min",
+        )
+
         # mark: items to override in args
         override_kwargs: Dict[Text, Any] = {
             "max_steps": max_steps,
@@ -170,6 +175,7 @@ class TransformerTrainer:
             "callbacks": callbacks,
             "default_root_dir": save_dir,
             "checkpoint_callback": False,
+            "early_stop_callback": early_stop_callback,
             "deterministic": deterministic,
             "logger": loggers,
         }
