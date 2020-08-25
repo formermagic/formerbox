@@ -175,17 +175,17 @@ class BaseLMTransformer(BaseTrainingMixin):
         self.prepare_batch(batch, batch_idx)
         loss, _ = self.forward(**batch)
         train_perplexity = perplexity(loss)
-        batch_size = torch.tensor([len(batch["input_ids"])])
+        batch_size = torch.tensor(len(batch["input_ids"]))
 
         # get the latest scheduled learning rate
         if self.lr_scheduler is None:
-            learning_rate = torch.tensor([float("nan")])
+            learning_rate = torch.tensor(float("nan"))
         else:
             try:
                 values = self.lr_scheduler.get_last_lr()  # type: ignore
                 learning_rate = torch.tensor(values).mean()
             except IndexError:
-                learning_rate = torch.tensor([float("nan")])
+                learning_rate = torch.tensor(float("nan"))
 
         return {
             "loss": loss,
