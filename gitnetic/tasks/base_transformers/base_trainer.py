@@ -110,15 +110,6 @@ class TransformerTrainer:
     datamodule: TransformerDataModule
 
     def train(self, args: Dict[Text, Any]) -> None:
-        # mark: setup max training steps
-        try:
-            max_steps = args.pop("max_steps")
-        except KeyError as err:
-            raise ValueError(
-                "Incorrect training command argument found."
-                " Make sure you have --max_steps argument included."
-            ) from err
-
         # mark: setup deterministic mode
         seed = args["seed"]
         deterministic = args.pop("deterministic", False)
@@ -161,7 +152,6 @@ class TransformerTrainer:
 
         # mark: items to override in args
         override_kwargs: Dict[Text, Any] = {
-            "max_steps": max_steps,
             "replace_sampler_ddp": False,
             "reload_dataloaders_every_epoch": True,
             "callbacks": callbacks,
