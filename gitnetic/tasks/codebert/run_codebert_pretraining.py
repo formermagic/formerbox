@@ -58,7 +58,7 @@ class ValidSaveCallback(Callback):
 
         model_checkpoint.save_function = trainer.save_checkpoint
         # pylint: disable=protected-access
-        model_checkpoint._save_model(save_filepath)
+        model_checkpoint._save_model(save_filepath, trainer, pl_module)
 
         # keep last `save_top_k` files
         self._keep_last_files(num=self.save_top_k, dirname=self.filepath)
