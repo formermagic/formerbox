@@ -151,7 +151,7 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
         else:
             num_devices = 1
 
-        per_gpu_samples = batch_nums // max(1, num_devices)
-        per_gpu_samples //= self.trainer.accumulate_grad_batches
+        per_device_samples = batch_nums // max(1, num_devices)
+        per_device_samples //= self.trainer.accumulate_grad_batches
 
-        return per_gpu_samples * max_epochs
+        return per_device_samples * max_epochs
