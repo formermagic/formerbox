@@ -141,7 +141,7 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
 
         return batch_sampler
 
-    def training_steps(self, dataset_len: int) -> int:
+    def training_steps(self, batch_nums: int, max_epochs: int) -> int:
         assert self.trainer is not None, "Trainer must be not empty"
 
         if self.trainer.use_tpu:
@@ -151,11 +151,7 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
         else:
             num_devices = 1
 
-        if isinstance(num_devices, list):
-            num_devices = len(num_devices)
-
-        batch_size = self.training_params.batch_size
-        per_gpu_samples = dataset_len // (batch_size * max(1, num_devices))
+        per_gpu_samples = batch_nums // max(1, num_devices)
         per_gpu_samples //= self.trainer.accumulate_grad_batches
 
-        return per_gpu_samples * self.trainer.max_epochs
+        return per_gpu_samples * max_epochs
