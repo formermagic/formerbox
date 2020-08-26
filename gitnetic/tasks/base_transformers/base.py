@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional, Text, Union
+from typing import Optional
 
-from pytorch_lightning import LightningModule, Trainer
+from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from transformers import DataCollator
 from transformers.data.data_collator import DataCollatorForLanguageModeling
@@ -30,14 +29,11 @@ class TrainingParams:
     power: float
 
 
-class TrainingMixin:
-    training_params: TrainingParams
-
-
 # pylint: disable=too-many-ancestors
-class BaseTrainingMixin(LightningModule, TrainingMixin):
-    def __init__(self) -> None:
+class BaseTrainingMixin:
+    def __init__(self, training_params: TrainingParams) -> None:
         super().__init__()
+        self.training_params = training_params
         self.trainer: Optional[Trainer] = None
 
     def get_dataloader(
