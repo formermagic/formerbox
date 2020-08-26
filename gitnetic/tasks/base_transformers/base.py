@@ -146,8 +146,8 @@ class BaseTrainingMixin(LightningModule, TrainingMixin):
 
         if self.trainer.use_tpu:
             num_devices = self.trainer.tpu_cores
-        elif self.trainer.gpus is not None:
-            num_devices = self.trainer.gpus
+        elif self.trainer.num_gpus > 0:
+            num_devices = self.trainer.num_gpus
         else:
             num_devices = 1
 
