@@ -150,14 +150,34 @@ class TransformerModule(BaseTrainingMixin):
         self.training_params = training_params
 
         # lazy initialized properties
-        self.total_steps: Optional[
-            int
-        ] = None  # TODO: Figure out how to setup if max_epochs are given
+        self.total_train_steps = 0
         self.lr_scheduler: Optional[LambdaLR] = None
         self._train_dataloader: Optional[DataLoader[Tensor]] = None
         self._val_dataloader: Optional[DataLoader[Tensor]] = None
 
         self.register_buffer("best_val_loss", torch.tensor(0.0))
+
+    def setup(self, stage: Optional[Text] = None) -> None:
+        del stage  # we don't use `stage` to build a module
+
+        # calculate the total number of training steps
+        assert self.trainer is not None
+        if self.trainer.max_steps is not None:
+            self.total_train_steps = self.trainer.max_steps
+        else:
+            datamodule = self.trainer.datamodule
+            if isinstance(datamodule, TransformerDataModule):
+                assert datamodule.train_iterator is not None
+                train_batch_nums = len(datamodule.train_iterator)
+                self.total_train_steps = self.training_steps(
+                    train_batch_nums, self.trainer.max_epochs,
+                )
+            else:
+                raise ValueError(
+                    "Unable to calculate the total steps."
+                    " Please, include `--max_steps` argument"
+                    " in your training command."
+                )
 
     def forward(
         self, input_ids: Tensor, labels: Tensor, **kwargs: Any
@@ -246,7 +266,7 @@ class TransformerModule(BaseTrainingMixin):
         self.lr_scheduler = get_polynomial_decay_with_warmup(
             optimizer,
             num_warmup_steps=self.training_params.warmup_steps,
-            num_training_steps=self.total_steps or 0,
+            num_training_steps=self.total_train_steps,
             power=self.training_params.power,
         )
 
