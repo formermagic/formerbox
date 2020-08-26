@@ -240,7 +240,10 @@ class IndexedCachedDataset(IndexedDataset):
 
             # read a buffer to cache from file
             buffer = np.fromfile(
-                self.data_stream, dtype=self.dtype, count=item_size, offset=item_offset,
+                self.data_stream,
+                dtype=self.dtype,
+                count=item_size,
+                offset=item_offset,
             )
 
             # get back the original offset

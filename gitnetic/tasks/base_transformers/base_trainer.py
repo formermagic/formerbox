@@ -138,7 +138,9 @@ class TransformerTrainer:
         required_values = [wandb_project, wandb_name]
         if all(v for v in required_values):
             wandb_logger = WandbLogger(
-                project=wandb_project, name=wandb_name, id=wandb_id,
+                project=wandb_project,
+                name=wandb_name,
+                id=wandb_id,
             )
 
             wandb_logger.watch(self.module.model, log_freq=1)
@@ -147,7 +149,11 @@ class TransformerTrainer:
 
         # mark: setup early stopping
         early_stop_callback = EarlyStopping(
-            monitor="val_loss", min_delta=0.00, patience=5, verbose=False, mode="min",
+            monitor="val_loss",
+            min_delta=0.00,
+            patience=5,
+            verbose=False,
+            mode="min",
         )
 
         # mark: items to override in args

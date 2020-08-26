@@ -10,6 +10,7 @@ from torch import Tensor
 
 
 class SaveCheckpointAtStep(Callback):
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         save_step_frequency: int,
@@ -76,7 +77,7 @@ class SaveCheckpointAtStep(Callback):
             setattr(pl_module, self.best_monitor, monitor_value)
 
     def save_best_checkpoint(
-        self, filename: Text, trainer: Trainer, pl_module: LightningModule,
+        self, filename: Text, trainer: Trainer, pl_module: LightningModule
     ) -> None:
         metrics = trainer.callback_metrics
         monitor_value: Optional[Tensor] = metrics.get(self.monitor)
@@ -103,7 +104,7 @@ class SaveCheckpointAtStep(Callback):
             trainer.save_checkpoint(ckpt_path)
 
     def save_last_checkpoint(
-        self, filename: Text, trainer: Trainer, pl_module: LightningModule,
+        self, filename: Text, trainer: Trainer, pl_module: LightningModule
     ) -> None:
         metrics = trainer.callback_metrics
         monitor_value: Optional[Tensor] = metrics.get(self.monitor)

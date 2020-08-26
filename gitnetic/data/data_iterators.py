@@ -26,7 +26,7 @@ class DatasetIterator(Dataset):
         self.dataset = dataset
         self.collator = collator
         self.batch_sampler = self.make_batch_sampler(
-            dataset, max_tokens, batch_size, shuffle, drop_last,
+            dataset, max_tokens, batch_size, shuffle, drop_last
         )
 
         # read the sampled index batches

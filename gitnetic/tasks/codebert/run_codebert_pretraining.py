@@ -164,7 +164,7 @@ class CodeBertLMPretraining(LightningModule):
 
     # pylint: disable=arguments-differ
     def forward(
-        self, input_ids: torch.LongTensor, labels: torch.LongTensor, **kwargs: Any,
+        self, input_ids: torch.LongTensor, labels: torch.LongTensor, **kwargs: Any
     ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:
         self.roberta_lm.train()
         outputs = self.roberta_lm(input_ids=input_ids, labels=labels)
@@ -332,7 +332,7 @@ class CodeBertLMPretraining(LightningModule):
         return batch_sampler
 
     @staticmethod
-    def add_model_specific_args(parent_parser: ArgumentParser,) -> ArgumentParser:
+    def add_model_specific_args(parent_parser: ArgumentParser) -> ArgumentParser:
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         # fmt: off
         parser.add_argument("--tokenizer_path", type=str, default=None,
@@ -415,7 +415,9 @@ def main() -> None:
         )
         # find fitting batch_size with binsearch
         batch_size = dummy_trainer.scale_batch_size(
-            code_bert_model, mode="binsearch", steps_per_trial=args.steps_per_trial,
+            code_bert_model,
+            mode="binsearch",
+            steps_per_trial=args.steps_per_trial,
         )
         # clear allocated gpu memory
         cuda.empty_cache()
@@ -424,7 +426,9 @@ def main() -> None:
     code_bert_model.batch_size = batch_size
 
     wandb_logger = WandbLogger(
-        project=args.wandb_project, name=args.wandb_name, id=args.wandb_id,
+        project=args.wandb_project,
+        name=args.wandb_name,
+        id=args.wandb_id,
     )
     wandb_logger.watch(code_bert_model.roberta_lm, log="gradients", log_freq=1)
 

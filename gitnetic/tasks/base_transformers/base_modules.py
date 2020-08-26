@@ -26,7 +26,10 @@ from .base import BaseTrainingMixin, TrainingParams
 
 class DataLoadingMixin:
     def __init__(
-        self, max_tokens: Optional[int], batch_size: Optional[int], num_workers: int,
+        self,
+        max_tokens: Optional[int],
+        batch_size: Optional[int],
+        num_workers: int,
     ) -> None:
         super().__init__()
         self.max_tokens = max_tokens
@@ -169,7 +172,7 @@ class TransformerModule(BaseTrainingMixin, LightningModule):
                 assert datamodule.train_iterator is not None
                 train_batch_nums = len(datamodule.train_iterator)
                 self.total_train_steps = self.training_steps(
-                    train_batch_nums, self.trainer.max_epochs,
+                    train_batch_nums, self.trainer.max_epochs
                 )
             else:
                 raise ValueError(
@@ -278,7 +281,7 @@ class TransformerModule(BaseTrainingMixin, LightningModule):
         return [optimizer], [step_scheduler]
 
     @staticmethod
-    def add_argparse_args(parent_parser: ArgumentParser,) -> ArgumentParser:
+    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         # fmt: off
         parser.add_argument("--weight_decay", type=float, default=0.01, required=False,
