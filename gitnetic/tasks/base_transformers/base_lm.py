@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Tuple, Union
 
 import torch
-from pytorch_lightning import LightningDataModule
+from pytorch_lightning import LightningDataModule, LightningModule
 from torch import Tensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
@@ -133,7 +133,7 @@ class TransformerDataModule(DataLoadingMixin, LightningDataModule):
 
 
 # pylint: disable=arguments-differ
-class TransformerModule(BaseTrainingMixin):
+class TransformerModule(BaseTrainingMixin, LightningModule):
     # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
@@ -141,13 +141,12 @@ class TransformerModule(BaseTrainingMixin):
         tokenizer: PreTrainedTokenizerBase,
         training_params: TrainingParams,
     ) -> None:
-        super().__init__()
+        super().__init__(training_params)
 
         self.save_hyperparameters()
 
         self.model = model
         self.tokenizer = tokenizer
-        self.training_params = training_params
 
         # lazy initialized properties
         self.total_train_steps = 0
