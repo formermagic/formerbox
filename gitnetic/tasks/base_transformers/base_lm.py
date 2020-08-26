@@ -7,7 +7,7 @@ from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from transformers import (
     AdamW,
     DataCollator,
@@ -33,13 +33,13 @@ class DataLoadingMixin:
         self.batch_size = batch_size
         self.num_workers = num_workers
 
-    def get_dataloader(
+    def get_dataset_itr(
         self,
         dataset: IndexedDatasetMixin,
         collator: DataCollator,
         shuffle: bool,
         drop_last: bool,
-    ) -> DataLoader:
+    ) -> DatasetIterator:
         dataset_itr = DatasetIterator(
             dataset,
             collator=collator,
@@ -49,7 +49,7 @@ class DataLoadingMixin:
             drop_last=drop_last,
         )
 
-        return DataLoader(dataset_itr, num_workers=self.num_workers)
+        return dataset_itr
 
 
 class TransformerDataModule(DataLoadingMixin, LightningDataModule):
@@ -70,7 +70,11 @@ class TransformerDataModule(DataLoadingMixin, LightningDataModule):
         self.val_data_prefix = val_data_prefix
 
         self.train_dataset: Optional[IndexedDatasetMixin] = None
+        self.train_iterator: Optional[Dataset] = None
         self.val_dataset: Optional[IndexedDatasetMixin] = None
+        self.val_iterator: Optional[Dataset] = None
+
+        self.collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
 
     def prepare_data(self, *args: Any, **kwargs: Any) -> None:
         del args, kwargs  # no data to download
@@ -82,29 +86,29 @@ class TransformerDataModule(DataLoadingMixin, LightningDataModule):
     def setup(self, stage: Optional[Text] = None) -> None:
         del stage  # we don't use `stage` to build a dataloader
 
-        # prepare a train dataloader
+        # prepare a train dataset iterator
         train_path = path_to_posix(self.train_data_prefix)
         self.train_dataset = IndexedDatasetMixin.from_file(train_path)
+        self.train_iterator = self.get_dataset_itr(
+            self.train_dataset, collator=self.collator, shuffle=True, drop_last=False
+        )
 
-        # prepare a validation dataloader
+        # prepare a validation dataset iterator
         val_path = path_to_posix(self.val_data_prefix)
         self.val_dataset = IndexedDatasetMixin.from_file(val_path)
+        self.val_iterator = self.get_dataset_itr(
+            self.val_dataset, collator=self.collator, shuffle=False, drop_last=False
+        )
 
     def train_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
-        assert self.train_dataset is not None
-        collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
-        return self.get_dataloader(
-            self.train_dataset, collator=collator, shuffle=True, drop_last=False
-        )
+        assert self.train_iterator is not None
+        return DataLoader(self.train_iterator, num_workers=self.num_workers)
 
     def val_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
-        assert self.val_dataset is not None
-        collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
-        return self.get_dataloader(
-            self.val_dataset, collator=collator, shuffle=False, drop_last=False
-        )
+        assert self.val_iterator is not None
+        return DataLoader(self.val_iterator, num_workers=self.num_workers)
 
     def test_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
