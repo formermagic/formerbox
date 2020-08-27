@@ -4,7 +4,6 @@ from typing import Optional
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from transformers import DataCollator
-from transformers.data.data_collator import DataCollatorForLanguageModeling
 
 from gitnetic.data.indexed_dataset import IndexedDatasetMixin
 from gitnetic.data.samplers import (
@@ -46,10 +45,6 @@ class BaseTrainingMixin:
         drop_last: bool,
         num_workers: int,
     ) -> DataLoader:
-
-        # base collator for lanuage-modeling tasks
-        collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
-
         # prepare a batch sampler
         batch_sampler = self.batch_sampler(
             dataset=dataset,
