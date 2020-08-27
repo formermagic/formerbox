@@ -13,7 +13,8 @@ from transformers import (
     DataCollator,
     DataCollatorForLanguageModeling,
     PreTrainedModel,
-    PreTrainedTokenizerBase,
+    PreTrainedTokenizer,
+    PreTrainedTokenizerFast,
 )
 
 from gitnetic.data.data_iterators import DatasetIterator
@@ -22,6 +23,8 @@ from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
 from .base import BaseTrainingMixin, TrainingParams
+
+Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
 class DataLoadingMixin:
@@ -59,7 +62,7 @@ class TransformerDataModule(DataLoadingMixin, LightningDataModule):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        tokenizer: PreTrainedTokenizerBase,
+        tokenizer: Tokenizer,
         train_data_prefix: Union[Text, Path],
         val_data_prefix: Union[Text, Path],
         max_tokens: Optional[int],
@@ -141,7 +144,7 @@ class TransformerModule(BaseTrainingMixin, LightningModule):
     def __init__(
         self,
         model: PreTrainedModel,
-        tokenizer: PreTrainedTokenizerBase,
+        tokenizer: Tokenizer,
         training_params: TrainingParams,
     ) -> None:
         super().__init__(training_params)

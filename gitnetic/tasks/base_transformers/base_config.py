@@ -3,7 +3,14 @@ from pathlib import Path
 from typing import Any, Dict, Text, Type, Union
 
 import yaml
-from transformers import PretrainedConfig, PreTrainedModel, PreTrainedTokenizerBase
+from transformers import (
+    PretrainedConfig,
+    PreTrainedModel,
+    PreTrainedTokenizer,
+    PreTrainedTokenizerFast,
+)
+
+Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
 def import_class_from_string(path: Text) -> Type:
@@ -57,7 +64,7 @@ def model_from_config(config_path: Union[Text, Path], **kwargs: Any) -> PreTrain
 
 def tokenizer_from_config(
     config_path: Union[Text, Path], tokenizer_path: Union[Text, Path], **kwargs: Any
-) -> PreTrainedTokenizerBase:
+) -> Tokenizer:
     try:
         config_kwargs = parse_config(config_path)
         validate_tokenizer_config(config_kwargs)
@@ -66,7 +73,7 @@ def tokenizer_from_config(
     except AttributeError as err:
         raise err
 
-    assert issubclass(tokenizer_class, PreTrainedTokenizerBase)
+    assert issubclass(tokenizer_class, Tokenizer)
 
     if isinstance(tokenizer_path, Path):
         tokenizer_path = tokenizer_path.as_posix()

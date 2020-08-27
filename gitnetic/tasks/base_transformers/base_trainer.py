@@ -13,6 +13,8 @@ from .base_config import model_from_config, tokenizer_from_config
 from .base_modules import TransformerDataModule, TransformerModule
 from .callbacks import SaveCheckpointAtStep
 
+Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+
 
 def parse_args() -> Dict[Text, Any]:
     parser = ArgumentParser()
@@ -32,9 +34,7 @@ def parse_args() -> Dict[Text, Any]:
     return vars(parser.parse_args())
 
 
-def make_tokenizer(
-    args: Dict[Text, Any]
-) -> Union[PreTrainedTokenizer, PreTrainedTokenizerFast]:
+def make_tokenizer(args: Dict[Text, Any]) -> Tokenizer:
     config_path: Text = args["config_path"]
     tokenizer_path: Text = args["tokenizer_path"]
     tokenizer = tokenizer_from_config(config_path, tokenizer_path)
@@ -43,8 +43,7 @@ def make_tokenizer(
 
 
 def make_datamodule(
-    args: Dict[Text, Any],
-    tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+    args: Dict[Text, Any], tokenizer: Tokenizer
 ) -> TransformerDataModule:
     train_data_prefix: Text = args["train_data_prefix"]
     val_data_prefix: Text = args["val_data_prefix"]
@@ -64,10 +63,7 @@ def make_datamodule(
     return datamodule
 
 
-def make_model(
-    args: Dict[Text, Any],
-    tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
-) -> PreTrainedModel:
+def make_model(args: Dict[Text, Any], tokenizer: Tokenizer) -> PreTrainedModel:
     config_path: Text = args["config_path"]
     model = model_from_config(
         config_path,
@@ -83,7 +79,7 @@ def make_model(
 def make_module(
     args: Dict[Text, Any],
     model: PreTrainedModel,
-    tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+    tokenizer: Tokenizer,
 ) -> TransformerModule:
     weight_decay: float = args["weight_decay"]
     warmup_steps: int = args["warmup_steps"]
