@@ -1,5 +1,6 @@
+import inspect
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, Optional, Text, Type, TypeVar
 
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
@@ -18,6 +19,17 @@ try:
     import horovod.torch as hvd  # type: ignore
 except (ModuleNotFoundError, ImportError):
     pass
+
+
+class InitFromArgsMixin:
+    T = TypeVar("T")
+
+    @classmethod
+    def from_args(cls: Type[T], args: Dict[Text, Any], **kwargs: Any) -> T:
+        valid_kwargs = inspect.signature(cls.__init__).parameters
+        obj_kwargs = dict((name, args[name]) for name in valid_kwargs if name in args)
+        obj_kwargs.update(**kwargs)
+        return cls(**obj_kwargs)
 
 
 @dataclass
