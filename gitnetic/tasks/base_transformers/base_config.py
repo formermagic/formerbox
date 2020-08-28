@@ -73,7 +73,7 @@ def tokenizer_from_config(
     except AttributeError as err:
         raise err
 
-    assert issubclass(tokenizer_class, Tokenizer)
+    assert issubclass(tokenizer_class, Tokenizer.__args__)  # type: ignore
 
     if isinstance(tokenizer_path, Path):
         tokenizer_path = tokenizer_path.as_posix()
