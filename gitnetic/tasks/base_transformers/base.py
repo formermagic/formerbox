@@ -33,7 +33,7 @@ class InitFromArgsMixin:
 
 
 @dataclass
-class TrainingParams:
+class TrainingParams(InitFromArgsMixin):
     weight_decay: float
     warmup_steps: int
     learning_rate: float
