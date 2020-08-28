@@ -22,7 +22,7 @@ from gitnetic.data.indexed_dataset import IndexedDatasetMixin
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
-from .base import BaseTrainingMixin, TrainingParams
+from .base import BaseTrainingMixin, InitFromArgsMixin, TrainingParams
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
@@ -58,7 +58,7 @@ class DataLoadingMixin:
         return dataset_itr
 
 
-class TransformerDataModule(DataLoadingMixin, LightningDataModule):
+class TransformerDataModule(DataLoadingMixin, InitFromArgsMixin, LightningDataModule):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
@@ -139,7 +139,7 @@ class TransformerDataModule(DataLoadingMixin, LightningDataModule):
 
 
 # pylint: disable=arguments-differ
-class TransformerModule(BaseTrainingMixin, LightningModule):
+class TransformerModule(BaseTrainingMixin, InitFromArgsMixin, LightningModule):
     # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
