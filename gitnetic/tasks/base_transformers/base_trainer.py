@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
-from typing import Any, Dict, List, Text, Type
+from typing import Any, Dict, List, Optional, Text, Type
 
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, EarlyStopping
@@ -17,14 +17,16 @@ class TransformerTrainer:
     task: TransformerTask
 
     @classmethod
-    def from_task(cls, task_cls: Type[TransformerTask]) -> "TransformerTrainer":
-        # prepare the arg parser
-        parser = ArgumentParser()
-        parser = cls.add_argparse_args(parser)
-        parser = task_cls.add_argparse_args(parser)
-
-        # parse the arguments
-        args = vars(parser.parse_args())
+    def from_task(
+        cls, task_cls: Type[TransformerTask], args: Optional[Dict[Text, Any]] = None
+    ) -> "TransformerTrainer":
+        if args is None:
+            # prepare the arg parser
+            parser = ArgumentParser()
+            parser = cls.add_argparse_args(parser)
+            parser = task_cls.add_argparse_args(parser)
+            # parse the arguments
+            args = vars(parser.parse_args())
         # setup a task instance with args
         task = task_cls.setup(args)
         return cls(args, task)
