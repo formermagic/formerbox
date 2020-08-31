@@ -41,7 +41,7 @@ class UniformBatchSampler(BatchSampler):
         return math.ceil(batch_count_float)
 
 
-class UniformMaxTokensBatchSampler(BatchSampler):
+class UniformMaxTokensBatchSampler(UniformBatchSampler):
     data_source: IndexedDatasetMixin
 
     def __init__(

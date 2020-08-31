@@ -3,7 +3,14 @@ from pathlib import Path
 from typing import Any, Dict, Text, Type, Union
 
 import yaml
-from transformers import PretrainedConfig, PreTrainedModel, PreTrainedTokenizerBase
+from transformers import (
+    PretrainedConfig,
+    PreTrainedModel,
+    PreTrainedTokenizer,
+    PreTrainedTokenizerFast,
+)
+
+Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
 def import_class_from_string(path: Text) -> Type:
@@ -18,7 +25,9 @@ def validate_model_config(config: Any) -> None:
     assert "model" in config, "Config must contain a `model` property"
     assert "name" in config["model"], "Config must contain a `model.name` property"
     assert "config" in config["model"], "Config must contain a `model.config` property"
-    assert "params" in config["model"], "Config must contain `model.params` property"
+    assert (
+        "config_params" in config["model"]
+    ), "Config must contain `model.config_params` property"
 
 
 def validate_tokenizer_config(config: Any) -> None:
@@ -47,9 +56,9 @@ def model_from_config(config_path: Union[Text, Path], **kwargs: Any) -> PreTrain
     except AttributeError as err:
         raise err
 
-    params = config_kwargs["model"]["params"]
-    params.update(kwargs)
-    config = config_class(**params)
+    config_params = config_kwargs["model"]["config_params"]
+    config_params.update(kwargs)
+    config = config_class(**config_params)
     assert isinstance(config, PretrainedConfig)
 
     return model_class(config)
@@ -57,7 +66,7 @@ def model_from_config(config_path: Union[Text, Path], **kwargs: Any) -> PreTrain
 
 def tokenizer_from_config(
     config_path: Union[Text, Path], tokenizer_path: Union[Text, Path], **kwargs: Any
-) -> PreTrainedTokenizerBase:
+) -> Tokenizer:
     try:
         config_kwargs = parse_config(config_path)
         validate_tokenizer_config(config_kwargs)
@@ -66,7 +75,7 @@ def tokenizer_from_config(
     except AttributeError as err:
         raise err
 
-    assert issubclass(tokenizer_class, PreTrainedTokenizerBase)
+    assert issubclass(tokenizer_class, Tokenizer.__args__)  # type: ignore
 
     if isinstance(tokenizer_path, Path):
         tokenizer_path = tokenizer_path.as_posix()

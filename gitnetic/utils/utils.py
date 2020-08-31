@@ -1,9 +1,21 @@
+import inspect
 import os
 import typing
 from io import TextIOWrapper
 from itertools import islice
 from pathlib import Path
-from typing import Any, Iterable, Iterator, List, Optional, Text, Tuple, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Text,
+    Tuple,
+    Type,
+    Union,
+)
 
 import numpy as np
 import torch
@@ -30,11 +42,11 @@ def perplexity(
 ) -> torch.FloatTensor:
     ppl_tensor: torch.Tensor
     if loss is None:
-        ppl_tensor = torch.tensor([0.0])
+        ppl_tensor = torch.tensor(0.0)
     try:
-        ppl_tensor = torch.tensor([safe_round(base ** loss, ndigits)])
+        ppl_tensor = torch.tensor(safe_round(base ** loss, ndigits))
     except OverflowError:
-        ppl_tensor = torch.tensor([float("inf")])
+        ppl_tensor = torch.tensor(float("inf"))
 
     return typing.cast(torch.FloatTensor, ppl_tensor.float())
 
@@ -91,3 +103,20 @@ def path_to_posix(path: Union[Text, Path]) -> Text:
     if isinstance(path, Path):
         return path.as_posix()
     return path
+
+
+def all_subclasses(cls: Type[Any]) -> Iterable[Type[Any]]:
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in all_subclasses(c)]
+    )
+
+
+def init_from_args(cls: Type[T]) -> Type[T]:
+    def from_args(args: Dict[Text, Any], **kwargs: Any) -> T:
+        valid_kwargs = inspect.signature(cls.__init__).parameters
+        obj_kwargs = dict((name, args[name]) for name in valid_kwargs if name in args)
+        obj_kwargs.update(**kwargs)
+        return cls(**obj_kwargs)
+
+    setattr(cls, "from_args", from_args)
+    return cls

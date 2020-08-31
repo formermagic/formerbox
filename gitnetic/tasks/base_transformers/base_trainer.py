@@ -1,116 +1,147 @@
-from argparse import ArgumentParser
-from typing import Any, Dict, Text
+import os
+from argparse import ArgumentParser, Namespace
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Text, Type
 
-from pytorch_lightning import Trainer
-from transformers import PreTrainedTokenizerFast
+from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.callbacks import Callback, EarlyStopping
+from pytorch_lightning.loggers.wandb import LightningLoggerBase, WandbLogger
 
-from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
-
-from .base import DataParams, TrainingParams
-from .base_config import model_from_config, tokenizer_from_config
-from .base_lm import BaseLMTransformer
+from .base_task import TransformerTask
+from .callbacks import SaveCheckpointAtStep
 
 
-def parse_args() -> Dict[Text, Any]:
-    parser = ArgumentParser()
-    # fmt: off
-    parser.add_argument("--batch_size", type=int, default=None, required=False,
-                        help="")
-    parser.add_argument("--max_tokens", type=int, default=None, required=False,
-                        help="")
-    parser.add_argument("--weight_decay", type=float, default=0.01, required=False,
-                        help="")
-    parser.add_argument("--warmup_steps", type=int, default=None, required=False,
-                        help="")
-    parser.add_argument("--learning_rate", type=float, default=None, required=True,
-                        help="")
-    parser.add_argument("--power", type=float, default=1.0, required=False,
-                        help="")
+@dataclass
+class TransformerTrainer:
+    args: Dict[Text, Any]
+    task: TransformerTask
 
-    parser.add_argument("--config_path", type=str, default=None, required=True,
-                        help="")
-    parser.add_argument("--tokenizer_path", type=str, default=None, required=True,
-                        help="")
-    parser.add_argument("--train_data_prefix", type=str, default=None, required=True,
-                        help="")
-    parser.add_argument("--val_data_prefix", type=str, default=None, required=True,
-                        help="")
-    parser.add_argument("--num_workers", type=int, default=1, required=True,
-                        help="")
+    @classmethod
+    def from_task(
+        cls, task_cls: Type[TransformerTask], args: Optional[Dict[Text, Any]] = None
+    ) -> "TransformerTrainer":
+        if args is None:
+            # prepare the arg parser
+            parser = ArgumentParser()
+            parser = cls.add_argparse_args(parser)
+            parser = task_cls.add_argparse_args(parser)
+            # parse the arguments
+            args = vars(parser.parse_args())
+        # setup a task instance with args
+        task = task_cls.setup(args)
+        return cls(args, task)
 
-    parser.add_argument("--wandb_project", type=str, default=None, required=False,
-                        help="The WandB project name to write logs to.")
-    parser.add_argument("--wandb_name", type=str, default=None, required=False,
-                        help="The WandB experiment name to write logs to.")
-    parser.add_argument("--wandb_id", type=str, default=None, required=False,
-                        help="The WandB id to use for resuming.")
-    parser.add_argument("--save_dir", type=str, default=None, required=False,
-                        help="The dir to save training checkpoints.")
-    parser.add_argument("--save_interval_updates", type=int, default=None, required=False,
-                        help="The interval of steps between checkpoints saving.")
-    parser.add_argument("--seed", type=int, default=None, required=False,
-                        help="A seed to make experiments reproducible.")
-    # fmt: on
+    def train(self, *args: Any, **kwargs: Any) -> None:
+        del args, kwargs  # reserve for future args
 
-    # add indexed dataset setup to parse
-    IndexedDatasetSetup.add_arguments(parser)
+        # mark: setup deterministic mode
+        seed = self.args["seed"]
+        deterministic = self.args.pop("deterministic", False)
+        if seed is not None or deterministic:
+            seed_everything(seed)
 
-    return vars(parser.parse_args())
+        # mark: setup save checkpoint callbacks
+        callbacks: List[Callback] = []
+        save_dir = self.args["save_dir"] or os.getcwd()
+        save_step_frequency = self.args["save_step_frequency"]
+        if save_step_frequency is not None:
+            num_last_checkpoints = self.args["num_last_checkpoints"]
+            save_callback = SaveCheckpointAtStep(
+                save_step_frequency, save_dir, num_last_checkpoints
+            )
+
+            callbacks.append(save_callback)
+
+        # mark: setup loggers
+        loggers: List[LightningLoggerBase] = []
+
+        wandb_project = self.args["wandb_project"]
+        wandb_name = self.args["wandb_name"]
+        wandb_id = self.args["wandb_id"]
+
+        required_values = [wandb_project, wandb_name]
+        if all(v for v in required_values):
+            wandb_logger = WandbLogger(
+                project=wandb_project,
+                name=wandb_name,
+                id=wandb_id,
+            )
+
+            transformer_model = self.task.module.model
+            wandb_logger.watch(transformer_model, log_freq=1)
+
+            loggers.append(wandb_logger)
+
+        # mark: setup early stopping
+        early_stop_callback = EarlyStopping(
+            monitor="val_loss",
+            min_delta=0.00,
+            patience=5,
+            verbose=False,
+            mode="min",
+        )
+
+        # mark: items to override in args
+        override_kwargs: Dict[Text, Any] = {
+            "replace_sampler_ddp": False,
+            "reload_dataloaders_every_epoch": True,
+            "callbacks": callbacks,
+            "default_root_dir": save_dir,
+            "checkpoint_callback": False,
+            "early_stop_callback": early_stop_callback,
+            "deterministic": deterministic,
+            "logger": loggers,
+        }
+
+        # prepare a trainer
+        trainer_args = Namespace(**{**self.args, **override_kwargs})
+        pl_trainer = Trainer.from_argparse_args(trainer_args)
+
+        # run the train loop
+        pl_trainer.fit(model=self.task.module, datamodule=self.task.datamodule)
+
+    @staticmethod
+    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
+        parent_parser = Trainer.add_argparse_args(parent_parser)
+        parser = ArgumentParser(parents=[parent_parser], add_help=False)
+        # fmt: off
+        parser.add_argument("--wandb_project", type=str, default=None, required=False,
+                            help="The WandB project name to write logs to.")
+        parser.add_argument("--wandb_name", type=str, default=None, required=False,
+                            help="The WandB experiment name to write logs to.")
+        parser.add_argument("--wandb_id", type=str, default=None, required=False,
+                            help="The WandB id to use for resuming.")
+        parser.add_argument("--save_dir", type=str, default=None, required=False,
+                            help="The dir to save training checkpoints.")
+        parser.add_argument("--save_step_frequency", type=int, default=None, required=False,
+                            help="The interval of steps between checkpoints saving.")
+        parser.add_argument("--num_last_checkpoints", type=int, default=2, required=False,
+                            help="A number of last checkpoints to keep.")
+        parser.add_argument("--seed", type=int, default=17, required=False,
+                            help="A seed to make experiments reproducible.")
+        # fmt: on
+        return parser
 
 
 if __name__ == "__main__":
-    # parse the arguments
-    args = parse_args()
+    """Running on a GPU example command:
 
-    # prepare parsed arguments
-    config_path: Text = args["config_path"]
-    tokenizer_path: Text = args["tokenizer_path"]
-    train_data_prefix: Text = args["train_data_prefix"]
-    val_data_prefix: Text = args["val_data_prefix"]
-    num_workers: int = args["num_workers"]
-
-    max_tokens = args["max_tokens"]
-    batch_size = args["batch_size"]
-    dataset_impl = args["dataset_impl"]
-
-    # build a tokenizer from a config file
-    tokenizer = tokenizer_from_config(config_path, tokenizer_path)
-    assert isinstance(tokenizer, PreTrainedTokenizerFast)
-
-    # build a model from a config file
-    model = model_from_config(
-        config_path,
-        vocab_size=tokenizer.vocab_size,
-        pad_token_id=tokenizer.pad_token_id,
-        bos_token_id=tokenizer.bos_token_id,
-        eos_token_id=tokenizer.eos_token_id,
-    )
-
-    # prepare training params
-    training_params = TrainingParams(
-        batch_size=batch_size,
-        max_tokens=max_tokens,
-        weight_decay=0.01,
-        warmup_steps=4_000,
-        learning_rate=5e-5,
-        power=1.0,
-    )
-
-    # prepare data params
-    data_params = DataParams(
-        dataset_impl, train_data_prefix, val_data_prefix, num_workers
-    )
-
-    # build a transformer lightning module model
-    base_lm = BaseLMTransformer(model, tokenizer, training_params, data_params)
-
-    # prepare a trainer
-    trainer = Trainer(
-        max_steps=100_000,
-        gpus=0,
-        replace_sampler_ddp=False,
-        progress_bar_refresh_rate=1,
-    )
-
-    # run train loop
-    trainer.fit(base_lm)
+    ```
+        python -m gitnetic.tasks.base_transformers.base_trainer \
+            --config_path <path> \
+            --tokenizer_path <path> \
+            --train_data_prefix <path> \
+            --val_data_prefix <path> \
+            --num_workers <num> \
+            --max_tokens <num> \
+            --warmup_steps <num> \
+            --learning_rate <num> \
+            --power <num> \
+            --gpus 1 \
+            --num_nodes 1 \
+            --distributed_backend ddp \
+            --max_steps 10000
+    ```
+    """
+    trainer = TransformerTrainer.from_task(TransformerTask)
+    trainer.train()
