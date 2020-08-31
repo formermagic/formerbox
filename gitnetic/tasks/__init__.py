@@ -5,6 +5,4 @@ from .base_transformers import (
     TransformerModule,
     TransformerTask,
     TransformerTrainer,
-    model_from_config,
-    tokenizer_from_config,
 )
