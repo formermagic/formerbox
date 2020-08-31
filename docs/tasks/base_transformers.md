@@ -71,3 +71,83 @@ args = {
 trainer = TransformerTrainer.from_task(TransformerTask, args)
 trainer.train()
 ```
+
+## Training with a custom Task
+
+```python
+from argparse import ArgumentParser
+from typing import Any, Dict, Text
+
+from transformers import RobertaConfig, RobertaModel, RobertaTokenizer
+
+from gitnetic.tasks import (
+    TrainingParams,
+    TransformerDataModule,
+    TransformerModule,
+    TransformerTask,
+    TransformerTrainer,
+)
+
+
+class CustomTask(TransformerTask):
+    @classmethod
+    def setup(cls, args: Dict[Text, Any]) -> "TransformerTask":
+        del args  # we hardcode everything in this example
+
+        # prepare the pretrained tokenizer
+        tokenizer_path = "<PATH>"
+        tokenizer = RobertaTokenizer.from_pretrained(tokenizer_path)
+        assert isinstance(tokenizer, RobertaTokenizer)
+
+        # prepare a model to train
+        config = RobertaConfig(
+            vocab_size=tokenizer.vocab_size,
+            pad_token_id=tokenizer.pad_token_id,
+            bos_token_id=tokenizer.bos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+        model = RobertaModel(config)
+
+        # prepare a transformer module
+        training_params = TrainingParams(
+            weight_decay=0.01,
+            warmup_steps=4_000,
+            learning_rate=3e-4,
+            power=1.0,
+        )
+
+        module = TransformerModule(model, tokenizer, training_params)
+
+        # prepare a transformer datamodule
+        datamodule = TransformerDataModule(
+            tokenizer,
+            train_data_prefix="<PATH>/train.src",
+            val_data_prefix="<PATH>/val.src",
+            max_tokens=2048,
+            num_workers=16,
+        )
+
+        return cls(tokenizer, module, datamodule)
+
+    @staticmethod
+    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
+        return parent_parser
+
+
+###
+### Setup the Trainer
+###
+
+args = {
+    # trainer args
+    "save_step_frequency": 500,
+    "save_dir": "<SAVE_PATH>",
+    "val_check_interval": 1000,
+    "seed": 42,
+    "limit_val_batches": 0.1,
+}
+
+trainer = TransformerTrainer.from_task(CustomTask, args)
+trainer.train()
+```
