@@ -3,6 +3,7 @@ from .base_transformers import (
     TrainingParams,
     TransformerDataModule,
     TransformerModule,
+    TransformerTask,
     TransformerTrainer,
     model_from_config,
     tokenizer_from_config,
