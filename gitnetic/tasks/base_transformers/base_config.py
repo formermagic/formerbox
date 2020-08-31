@@ -25,7 +25,9 @@ def validate_model_config(config: Any) -> None:
     assert "model" in config, "Config must contain a `model` property"
     assert "name" in config["model"], "Config must contain a `model.name` property"
     assert "config" in config["model"], "Config must contain a `model.config` property"
-    assert "params" in config["model"], "Config must contain `model.params` property"
+    assert (
+        "config_params" in config["model"]
+    ), "Config must contain `model.config_params` property"
 
 
 def validate_tokenizer_config(config: Any) -> None:
@@ -54,9 +56,9 @@ def model_from_config(config_path: Union[Text, Path], **kwargs: Any) -> PreTrain
     except AttributeError as err:
         raise err
 
-    params = config_kwargs["model"]["params"]
-    params.update(kwargs)
-    config = config_class(**params)
+    config_params = config_kwargs["model"]["config_params"]
+    config_params.update(kwargs)
+    config = config_class(**config_params)
     assert isinstance(config, PretrainedConfig)
 
     return model_class(config)
