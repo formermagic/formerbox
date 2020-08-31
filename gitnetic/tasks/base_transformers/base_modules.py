@@ -65,9 +65,9 @@ class TransformerDataModule(DataLoadingMixin, InitFromArgsMixin, LightningDataMo
         tokenizer: Tokenizer,
         train_data_prefix: Union[Text, Path],
         val_data_prefix: Union[Text, Path],
-        max_tokens: Optional[int],
-        batch_size: Optional[int],
-        num_workers: int,
+        max_tokens: Optional[int] = None,
+        batch_size: Optional[int] = None,
+        num_workers: int = 0,
     ) -> None:
         super().__init__(max_tokens, batch_size, num_workers)
 
