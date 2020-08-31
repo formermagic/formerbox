@@ -116,9 +116,9 @@ class TransformerTrainer:
         parser.add_argument("--save_step_frequency", type=int, default=None, required=False,
                             help="The interval of steps between checkpoints saving.")
         parser.add_argument("--num_last_checkpoints", type=int, default=2, required=False,
-                            help="")
+                            help="A number of last checkpoints to keep.")
         parser.add_argument("--seed", type=int, default=17, required=False,
-                        help="A seed to make experiments reproducible.")
+                            help="A seed to make experiments reproducible.")
         # fmt: on
         return parser
 

@@ -49,9 +49,9 @@ class TransformerTask:
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         # fmt: off
         parser.add_argument("--config_path", type=str, default=None, required=True,
-                            help="")
+                            help="A path to the file with model and tokenizer configs.")
         parser.add_argument("--tokenizer_path", type=str, default=None, required=True,
-                            help="")
+                            help="A path to the dir with saved pretrained tokenizer.")
 
         # fmt: on
 

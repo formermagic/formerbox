@@ -125,15 +125,15 @@ class TransformerDataModule(DataLoadingMixin, InitFromArgsMixin, LightningDataMo
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         # fmt: off
         parser.add_argument("--batch_size", type=int, default=None, required=False,
-                            help="")
+                            help="A number of instances/sentences in a batch.")
         parser.add_argument("--max_tokens", type=int, default=None, required=False,
-                            help="")
+                            help="A number of tokens in a batch.")
         parser.add_argument("--train_data_prefix", type=str, default=None, required=True,
-                            help="")
+                            help="A prefix path for the train dataset file.")
         parser.add_argument("--val_data_prefix", type=str, default=None, required=True,
-                            help="")
+                            help="A prefix path for the validation dataset file.")
         parser.add_argument("--num_workers", type=int, default=1, required=True,
-                            help="")
+                            help="A number of workers for data loading.")
         # fmt: on
         return parser
 
@@ -288,12 +288,12 @@ class TransformerModule(BaseTrainingMixin, InitFromArgsMixin, LightningModule):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         # fmt: off
         parser.add_argument("--weight_decay", type=float, default=0.01, required=False,
-                            help="")
+                            help="A parameter for decaying weights while optimization steps.")
         parser.add_argument("--warmup_steps", type=int, default=4000, required=False,
-                            help="")
+                            help="A number of steps to get to the starting learning rate.")
         parser.add_argument("--learning_rate", type=float, default=5e-4, required=True,
-                            help="")
+                            help="A starting learning weight value after warmup.")
         parser.add_argument("--power", type=float, default=1.0, required=False,
-                            help="")
+                            help="A polynomial power for a learning rate scheduler.")
         # fmt: on
         return parser
