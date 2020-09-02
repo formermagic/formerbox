@@ -1,3 +1,4 @@
+import argparse
 import inspect
 import os
 import typing
@@ -120,3 +121,18 @@ def init_from_args(cls: Type[T]) -> Type[T]:
 
     setattr(cls, "from_args", from_args)
     return cls
+
+
+def str2bool(string: Text) -> bool:
+    if isinstance(string, bool):
+        return string
+
+    result: bool
+    if string.lower() in ("yes", "true", "t", "y", "1"):
+        result = True
+    elif string.lower() in ("no", "false", "f", "n", "0"):
+        result = False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+
+    return result
