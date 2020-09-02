@@ -103,15 +103,15 @@ def parse_args() -> Namespace:
     parser = ArgumentParser()
     # fmt: off
     parser.add_argument("--input_files", type=str, nargs="+", default=None, required=True,
-                        help="")
+                        help="A list of input files to tokenize.")
     parser.add_argument("--output_filepath", type=str, default=None, required=True,
-                        help="")
+                        help="A path to the output file with tokenized lines.")
     parser.add_argument("--num_workers", type=int, default=None, required=True,
-                        help="")
+                        help="A number of parallel workers.")
     parser.add_argument("--keep_comments", type=str2bool, default=True, required=False,
-                        help="")
+                        help="Whether should keep or remove comments from code.")
     parser.add_argument("--remove_temp_files", type=str2bool, default=True, required=False,
-                        help="")
+                        help="Whether should keep or remove temp files.")
     # fmt: on
 
     return parser.parse_args()
