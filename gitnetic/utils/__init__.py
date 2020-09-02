@@ -5,4 +5,5 @@ from .utils import (
     lines_in_file,
     path_to_posix,
     perplexity,
+    str2bool,
 )
