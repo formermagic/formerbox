@@ -17,12 +17,13 @@ from transformers import (
     PreTrainedTokenizerFast,
 )
 
+from gitnetic.common.from_args import FromArgs
 from gitnetic.data.data_iterators import DatasetIterator
 from gitnetic.data.indexed_dataset import IndexedDatasetMixin
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
-from .base import BaseTrainingMixin, FromArgs, TrainingParams
+from .base import BaseTrainingMixin, TrainingParams
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
