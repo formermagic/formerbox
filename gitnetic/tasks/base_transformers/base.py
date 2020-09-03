@@ -20,10 +20,10 @@ try:
 except (ModuleNotFoundError, ImportError):
     pass
 
+T = TypeVar("T")
 
-class InitFromArgsMixin:
-    T = TypeVar("T")
 
+class FromArgs:
     @classmethod
     def from_args(cls: Type[T], args: Dict[Text, Any], **kwargs: Any) -> T:
         valid_kwargs = inspect.signature(cls.__init__).parameters
@@ -33,7 +33,7 @@ class InitFromArgsMixin:
 
 
 @dataclass
-class TrainingParams(InitFromArgsMixin):
+class TrainingParams(FromArgs):
     weight_decay: float
     warmup_steps: int
     learning_rate: float
