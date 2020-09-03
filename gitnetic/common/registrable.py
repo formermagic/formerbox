@@ -16,20 +16,27 @@
 
 import importlib
 from collections import defaultdict
-from typing import Callable, Dict, Optional, Text, Type, TypeVar, Union
+from typing import Callable, Dict, Optional, Text, Tuple, Type, TypeVar, Union
 
 from gitnetic.common.from_args import FromArgs
 
 T = TypeVar("T", bound="Registrable")
 
+RegistryKey = Union[Text, Type[T]]
+RegistryRecord = Tuple[Type[T], Optional[Text]]
+RegistryMap = Dict[Text, RegistryRecord]
+
 
 class Registrable(FromArgs):
-    _registry: Dict[Union[Text, Type], Dict[Text, Type]] = defaultdict(dict)
+    _registry: Dict[RegistryKey, RegistryMap] = defaultdict(dict)
     default_implementation: Optional[Text] = None
 
     @classmethod
     def register(
-        cls: Type[T], name: Text, exist_ok: bool = False
+        cls: Type[T],
+        name: Text,
+        constructor: Optional[Text] = None,
+        exist_ok: bool = False,
     ) -> Callable[[Type[T]], Type[T]]:
         registry = Registrable._registry[cls]
 
@@ -38,21 +45,23 @@ class Registrable(FromArgs):
             if name in registry:
                 if not exist_ok:
                     message = (
-                        f"{name} has already been registered as {registry[name].__name__}, but "
+                        f"{name} has already been registered as {registry[name][0].__name__}, but "
                         f"exist_ok=True, so overwriting with {cls.__name__}"
                     )
                     raise RuntimeError(message)
 
-            registry[name] = subclass
+            registry[name] = (subclass, constructor)
             return subclass
 
         return add_subclass_to_registry
 
     @classmethod
-    def resolve_class_name(cls: Type[T], name: Text) -> Type[T]:
+    def resolve_class_name(cls: Type[T], name: Text) -> RegistryRecord:
         subclass: Type[T]
+        constructor: Optional[Text]
+
         if name in Registrable._registry[cls]:
-            subclass = Registrable._registry[cls][name]
+            subclass, constructor = Registrable._registry[cls][name]
         elif "." in name:
             # This might be a fully qualified class name, so we'll try importing its "module"
             # and finding it there.
@@ -70,6 +79,7 @@ class Registrable(FromArgs):
 
             try:
                 subclass = getattr(module, class_name)
+                constructor = None
             except AttributeError as err:
                 raise RuntimeError(
                     f"tried to interpret {name} as a path to a class "
@@ -86,9 +96,11 @@ class Registrable(FromArgs):
                 "in which case they will be automatically imported correctly."
             )
 
-        return subclass
+        return subclass, constructor
 
     @classmethod
     def from_registry(cls: Type[T], name: Text) -> Callable[..., T]:
-        subclass = cls.resolve_class_name(name)
-        return subclass
+        subclass, constructor = cls.resolve_class_name(name)
+        if constructor is None:
+            return subclass
+        return getattr(subclass, constructor)
