@@ -1,11 +1,11 @@
-import inspect
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Text, Type, TypeVar
+from typing import Optional
 
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from transformers import DataCollator
 
+from gitnetic.common.from_args import FromArgs
 from gitnetic.data.indexed_dataset import IndexedDatasetMixin
 from gitnetic.data.samplers import (
     BatchSampler,
@@ -19,17 +19,6 @@ try:
     import horovod.torch as hvd  # type: ignore
 except (ModuleNotFoundError, ImportError):
     pass
-
-T = TypeVar("T")
-
-
-class FromArgs:
-    @classmethod
-    def from_args(cls: Type[T], args: Dict[Text, Any], **kwargs: Any) -> T:
-        valid_kwargs = inspect.signature(cls.__init__).parameters
-        obj_kwargs = dict((name, args[name]) for name in valid_kwargs if name in args)
-        obj_kwargs.update(**kwargs)
-        return cls(**obj_kwargs)
 
 
 @dataclass
