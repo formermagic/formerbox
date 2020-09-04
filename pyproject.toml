@@ -25,6 +25,7 @@ jsonlines = "^1.2.0"
 dataclasses = { version = "^0.7", python = "<3.7" }
 sacrebleu = "^1.4.13"
 typing_extensions = "^3.7.4"
+traitlets = "^4.3.3"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.5.3"
