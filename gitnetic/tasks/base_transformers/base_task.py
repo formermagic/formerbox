@@ -35,12 +35,11 @@ class TransformerTask:
         )
 
         # prepare a transformer module
-        training_params = TrainingParams.from_args(args)
-
+        training_params = TrainingParams.from_args(**args)
         module = TransformerModule(model, tokenizer, training_params)
 
         # prepare a transformer datamodule
-        datamodule = TransformerDataModule.from_args(args, tokenizer=tokenizer)
+        datamodule = TransformerDataModule.from_args(tokenizer=tokenizer, **args)
 
         return cls(tokenizer, module, datamodule)
 
