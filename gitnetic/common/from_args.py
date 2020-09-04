@@ -10,5 +10,4 @@ class FromArgs:
         valid_kwargs = inspect.signature(cls.__init__).parameters
         obj_kwargs = dict((name, args[name]) for name in valid_kwargs if name in args)
         obj_kwargs.update(**kwargs)
-        assert isinstance(cls, Callable[..., T])
         return cls(**obj_kwargs)
