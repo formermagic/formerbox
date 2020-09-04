@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Callable, Dict, Text, Type, TypeVar
+from typing import Any, Dict, Text, Type, TypeVar
 
 T = TypeVar("T")
 
