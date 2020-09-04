@@ -33,7 +33,7 @@ class TokenizerTrainer(Registrable):
         raise NotImplementedError()
 
     @abstractmethod
-    def save_pretrained(self, tokenizer_output_path: Union[Text, Path]) -> None:
+    def save_pretrained(self, *args: Any, **kwargs: Any) -> None:
         raise NotImplementedError()
 
     @staticmethod
@@ -87,8 +87,8 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
         self,
         files: List[Text],
         vocab_size: int,
-        special_tokens: List[Token] = [],
         min_frequency: int = 2,
+        special_tokens: List[Token] = [],
         **extras: Any,
     ) -> None:
         # pylint: disable=dangerous-default-value, arguments-differ
@@ -106,7 +106,11 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
             special_tokens=special_tokens,
         )
 
-    def save_pretrained(self, tokenizer_output_path: Union[Text, Path]) -> None:
+    def save_pretrained(
+        self, tokenizer_output_path: Union[Text, Path], **extras: Any
+    ) -> None:
+        # pylint: disable=arguments-differ
+        del extras  # use only required params
         # make sure the `tokenizer_output_path` is a pathlike object
         if isinstance(tokenizer_output_path, str):
             tokenizer_output_path = Path(tokenizer_output_path)
