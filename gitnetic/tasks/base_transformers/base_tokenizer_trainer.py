@@ -37,13 +37,9 @@ class TokenizerTrainer(Registrable):
         raise NotImplementedError()
 
     @staticmethod
+    @abstractmethod
     def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        # fmt: off
-        parser.add_argument("--tokenizer_trainer_name", type=str, default=None, required=True,
-                            help="")
-        # fmt: on
-        return parser
+        raise NotImplementedError()
 
 
 @TokenizerTrainer.register(
