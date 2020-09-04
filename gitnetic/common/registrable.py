@@ -99,8 +99,8 @@ class Registrable(FromArgs):
         return subclass, constructor
 
     @classmethod
-    def from_registry(cls: Type[T], name: Text) -> Callable[..., T]:
+    def from_registry(cls: Type[T], name: Text) -> Tuple[Type[T], Callable[..., T]]:
         subclass, constructor = cls.resolve_class_name(name)
         if constructor is None:
-            return subclass
-        return getattr(subclass, constructor)
+            return subclass, subclass.__new__
+        return subclass, getattr(subclass, constructor)
