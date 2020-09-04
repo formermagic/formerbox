@@ -31,7 +31,7 @@ def main() -> None:
 
     # parse args for training the tokenizer
     args = vars(parser.parse_known_args()[0])
-    trainer = trainer_init(args)
+    trainer = trainer_init(**args)
     trainer.train(**args)
     trainer.save_pretrained(tokenizer_output_path)
 
