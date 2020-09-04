@@ -66,6 +66,8 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
     ) -> None:
         # pylint: disable=too-many-arguments
         self.add_prefix_space = add_prefix_space
+        self.lowercase = lowercase
+        self.dropout = dropout
         self.trim_offsets = trim_offsets
         self.special_tokens: List[Token] = [
             "<s>",
@@ -118,11 +120,13 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
         self.tokenizer.save_model(save_dir)
 
         # prepare the pre-trained tokenizer
-        fast_tokenizer = RobertaTokenizerFast(
+        fast_tokenizer = TransformerTokenizerFast(
             vocab_file=path_to_posix(tokenizer_output_path / "vocab.json"),
             merges_file=path_to_posix(tokenizer_output_path / "merges.txt"),
             add_prefix_space=self.add_prefix_space,
             trim_offsets=self.trim_offsets,
+            lowercase=self.lowercase,
+            dropout=self.dropout,
         )
 
         # save the pre-trained tokenizer
