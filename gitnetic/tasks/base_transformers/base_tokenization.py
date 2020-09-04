@@ -14,7 +14,7 @@ from transformers import (
 from gitnetic.common.registrable import Registrable
 from gitnetic.utils.utils import path_to_posix
 
-SpecialToken = Union[Text, AddedToken]
+Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
@@ -65,7 +65,7 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
         # pylint: disable=too-many-arguments
         self.add_prefix_space = add_prefix_space
         self.trim_offsets = trim_offsets
-        self.special_tokens: List[SpecialToken] = [
+        self.special_tokens: List[Token] = [
             "<s>",
             "<pad>",
             "</s>",
@@ -87,7 +87,7 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
         self,
         files: List[Text],
         vocab_size: int,
-        special_tokens: List[SpecialToken] = [],
+        special_tokens: List[Token] = [],
         min_frequency: int = 2,
         **extras: Any,
     ) -> None:
