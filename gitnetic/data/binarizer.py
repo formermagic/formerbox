@@ -45,6 +45,7 @@ def find_offsets(filename: Text, num_chunks: int) -> Tuple[int, List[int]]:
     return size, offsets
 
 
+# TODO: make modular (i.e. replacable/selectable)
 class Binarizer:
     # pylint: disable=too-many-arguments
     def __init__(
@@ -99,22 +100,28 @@ class Binarizer:
             f.seek(start_offset)
             line = read_line(f)
             while line:
+                # remove all special chars
+                line = line.rstrip()
+
                 # check if end_offset is reached
                 if end_offset and f.tell() > end_offset:
                     break
 
+                # TODO: support more truncation strategies
                 # prepare tokenization params
                 if max_length is not None:
                     kwargs = {"truncation": True, "max_length": max_length}
                 else:
                     kwargs = {}
 
-                # tokenize input text and feed to consumer handler
-                line = line.rstrip()
-                encoding = tokenizer(line, **kwargs)
-                encoding = encoding.convert_to_tensors(tensor_type="pt")
-                input_ids = encoding.input_ids.squeeze()
-                consumer(input_ids)
+                try:
+                    # tokenize input text and feed to consumer handler
+                    encoding = tokenizer(line, return_tensors="pt", **kwargs)
+                    input_ids = encoding.input_ids.squeeze()
+                    consumer(input_ids)
+                except TypeError as err:
+                    # TODO: add logging
+                    print(f"Unable to tokenize a text, error: {err}")
 
                 # get the next line to process
                 line = f.readline()
