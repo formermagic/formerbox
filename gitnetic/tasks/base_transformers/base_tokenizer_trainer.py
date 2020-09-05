@@ -1,16 +1,14 @@
-from abc import abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, List, Optional, Text, Union
+from typing import Any, List, Optional, Text, Type, Union
 
 from tokenizers import AddedToken
 from tokenizers.implementations import ByteLevelBPETokenizer
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
-from gitnetic.common.registrable import Registrable
 from gitnetic.utils.utils import path_to_posix
 
-from .base_tokenization import TransformerTokenizerFast
+from .tokenization_module import TokenizerFastModule, TokenizerTrainer
 
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
@@ -27,27 +25,10 @@ def fix_tokenizer(tokenizer: TransformersTokenizer) -> None:
     tokenizer.init_kwargs = init_kwargs
 
 
-class TokenizerTrainer(Registrable):
-    @abstractmethod
-    def train(self, *args: Any, **kwargs: Any) -> None:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def save_pretrained(self, *args: Any, **kwargs: Any) -> None:
-        raise NotImplementedError()
-
-    @staticmethod
-    @abstractmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        raise NotImplementedError()
-
-
-@TokenizerTrainer.register(
-    name="transformer-tokenizer-trainer", constructor="from_args"
-)
 class TransformerTokenizerTrainer(TokenizerTrainer):
     def __init__(
         self,
+        tokenizer_module_cls: Type[TokenizerFastModule],
         add_prefix_space: bool = False,
         lowercase: bool = False,
         dropout: Optional[float] = None,
@@ -57,10 +38,14 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
         trim_offsets: bool = False,
     ) -> None:
         # pylint: disable=too-many-arguments
+        super().__init__(tokenizer_module_cls)
+
         self.add_prefix_space = add_prefix_space
         self.lowercase = lowercase
         self.dropout = dropout
         self.trim_offsets = trim_offsets
+
+        # initial special tokens
         self.special_tokens: List[Token] = [
             "<s>",
             "<pad>",
@@ -116,7 +101,7 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
         self.tokenizer.save_model(save_dir)
 
         # prepare the pre-trained tokenizer
-        fast_tokenizer = TransformerTokenizerFast(
+        tokenizer_module = self.tokenizer_module_cls.from_args(
             vocab_file=path_to_posix(tokenizer_output_path / "vocab.json"),
             merges_file=path_to_posix(tokenizer_output_path / "merges.txt"),
             add_prefix_space=self.add_prefix_space,
@@ -126,8 +111,8 @@ class TransformerTokenizerTrainer(TokenizerTrainer):
         )
 
         # save the pre-trained tokenizer
-        fix_tokenizer(fast_tokenizer)
-        fast_tokenizer.save_pretrained(save_dir)
+        fix_tokenizer(tokenizer_module)
+        tokenizer_module.save_pretrained(save_dir)
 
     @staticmethod
     def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
