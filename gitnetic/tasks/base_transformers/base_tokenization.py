@@ -1,13 +1,9 @@
-from argparse import ArgumentParser
 from typing import Any, List, Optional, Text, Union
 
 from tokenizers import AddedToken
 from tokenizers.implementations import ByteLevelBPETokenizer
 from tokenizers.processors import RobertaProcessing
 from transformers import BatchEncoding, PreTrainedTokenizer, PreTrainedTokenizerFast
-
-from .base_tokenizer_trainer import TransformerTokenizerTrainer
-from .tokenization_module import TokenizerFastModule
 
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
@@ -26,16 +22,11 @@ PRETRAINED_VOCAB_FILES_MAP = {
 PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
 
 
-@TokenizerFastModule.register(
-    name="transformer-tokenizer-fast", constructor="from_args"
-)
-class TransformerTokenizerFast(TokenizerFastModule):
+class TransformerTokenizerFast(PreTrainedTokenizerFast):
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
     model_input_names = ["attention_mask"]
-
-    trainer_cls = TransformerTokenizerTrainer
 
     def __init__(
         self,
@@ -149,16 +140,3 @@ class TransformerTokenizerFast(TokenizerFastModule):
         if token_ids_1 is None:
             return len(cls + token_ids_0 + sep) * [0]
         return len(cls + token_ids_0 + sep + sep + token_ids_1 + sep) * [0]
-
-    @staticmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        # fmt: off
-        parser.add_argument("--add_prefix_space", type=bool, default=False, required=False,
-                            help="")
-        parser.add_argument("--trim_offsets", type=bool, default=True, required=False,
-                            help="")
-        parser.add_argument("--lowercase", type=bool, default=False, required=False,
-                            help="")
-        # fmt: on
-        return parser
