@@ -51,11 +51,11 @@ class Binarizer:
         self,
         dataset_setup: IndexedDatasetSetup,
         tokenizer: PreTrainedTokenizerFast,
-        tokenizer_max_length: Optional[int] = None,
+        max_length: Optional[int] = None,
     ) -> None:
         self.dataset_setup = dataset_setup
         self.tokenizer = tokenizer
-        self.tokenizer_max_length = tokenizer_max_length
+        self.max_length = max_length
 
     def binarize_dataset(
         self, filename: Text, output_prefix: Text, start_offset: int, end_offset: int
@@ -77,7 +77,7 @@ class Binarizer:
             consumer=dataset_builder.add_tokenized_ids,
             start_offset=start_offset,
             end_offset=end_offset,
-            max_length=self.tokenizer_max_length,
+            max_length=self.max_length,
         )
 
         # write meta data and type info
