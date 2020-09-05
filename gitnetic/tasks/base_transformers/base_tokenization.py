@@ -85,27 +85,25 @@ class TransformerTokenizerFast(PreTrainedTokenizerFast):
             trim_offsets=trim_offsets,
         )
 
-    def _batch_encode_plus(
-        self, is_pretokenized: bool = False, **kwargs: Any
-    ) -> BatchEncoding:
-        # pylint: disable=arguments-differ
+    def _batch_encode_plus(self, *args: Any, **kwargs: Any) -> BatchEncoding:
+        # pylint: disable=signature-differs
+        is_pretokenized = kwargs.get("is_pretokenized", False)
         assert self.add_prefix_space or not is_pretokenized, (
             f"You need to instantiate {self.__class__.__name__} with add_prefix_space=True "
             "to use it with pretokenized inputs."
         )
 
-        return super()._batch_encode_plus(**kwargs)
+        return super()._batch_encode_plus(*args, **kwargs)
 
-    def _encode_plus(
-        self, is_pretokenized: bool = False, **kwargs: Any
-    ) -> BatchEncoding:
-        # pylint: disable=arguments-differ
+    def _encode_plus(self, *args: Any, **kwargs: Any) -> BatchEncoding:
+        # pylint: disable=signature-differs
+        is_pretokenized = kwargs.get("is_pretokenized", False)
         assert self.add_prefix_space or not is_pretokenized, (
             f"You need to instantiate {self.__class__.__name__} with add_prefix_space=True "
             "to use it with pretokenized inputs."
         )
 
-        return super()._encode_plus(**kwargs)
+        return super()._encode_plus(*args, **kwargs)
 
     def build_inputs_with_special_tokens(
         self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None
