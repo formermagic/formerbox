@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from typing import Any, List, Optional, Text, Union
 
 from tokenizers import AddedToken
@@ -142,3 +143,16 @@ class TransformerTokenizerFast(PreTrainedTokenizerFast):
         if token_ids_1 is None:
             return len(cls + token_ids_0 + sep) * [0]
         return len(cls + token_ids_0 + sep + sep + token_ids_1 + sep) * [0]
+
+    @staticmethod
+    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
+        parser = ArgumentParser(parents=[parent_parser], add_help=False)
+        # fmt: off
+        parser.add_argument("--add_prefix_space", type=bool, default=False, required=False,
+                            help="")
+        parser.add_argument("--trim_offsets", type=bool, default=True, required=False,
+                            help="")
+        parser.add_argument("--lowercase", type=bool, default=False, required=False,
+                            help="")
+        # fmt: on
+        return parser
