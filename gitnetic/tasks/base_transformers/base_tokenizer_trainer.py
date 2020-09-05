@@ -132,13 +132,14 @@ class TransformerTokenizerModule(TokenizerModule):
 
         # fmt: off
         parser.add_argument("--tokenizer_path", type=str, default=None, required=True,
-                            help="")
+                            help="A path to pretrained tokenizer files or a save directory.")
         parser.add_argument("--add_prefix_space", type=bool, default=False, required=False,
-                            help="")
+                            help="Whether to add a leading space to the first word.")
         parser.add_argument("--trim_offsets", type=bool, default=True, required=False,
-                            help="")
+                            help="Whether the post processing step should trim " 
+                                "offsets to avoid including whitespaces.")
         parser.add_argument("--lowercase", type=bool, default=False, required=False,
-                            help="")
+                            help="Whether to preprocess text as lowercase.")
         # fmt: on
 
         return parser
