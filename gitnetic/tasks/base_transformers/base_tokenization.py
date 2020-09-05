@@ -6,6 +6,9 @@ from tokenizers.implementations import ByteLevelBPETokenizer
 from tokenizers.processors import RobertaProcessing
 from transformers import BatchEncoding, PreTrainedTokenizer, PreTrainedTokenizerFast
 
+from .base_tokenizer_trainer import TransformerTokenizerTrainer
+from .tokenization_module import TokenizerFastModule
+
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
@@ -23,11 +26,16 @@ PRETRAINED_VOCAB_FILES_MAP = {
 PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
 
 
-class TransformerTokenizerFast(PreTrainedTokenizerFast):
+@TokenizerFastModule.register(
+    name="transformer-tokenizer-fast", constructor="from_args"
+)
+class TransformerTokenizerFast(TokenizerFastModule):
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
     model_input_names = ["attention_mask"]
+
+    trainer_cls = TransformerTokenizerTrainer
 
     def __init__(
         self,
