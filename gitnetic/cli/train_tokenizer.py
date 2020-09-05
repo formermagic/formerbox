@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any, Dict, Text
 
-from gitnetic.tasks.base_transformers import TokenizerFastModule
+from gitnetic.tasks.base_transformers import TokenizerModule
 
 
 def parse_args(parent_parser: ArgumentParser) -> Dict[Text, Any]:
@@ -22,17 +22,15 @@ def main() -> None:
     args = parse_args(parser)
 
     tokenizer_type = args["tokenizer_type"]
-    tokenizer_cls, _ = TokenizerFastModule.from_registry(tokenizer_type)
-    trainer_cls = tokenizer_cls.trainer_cls
+    tokenizer_cls, _ = TokenizerModule.from_registry(tokenizer_type)
 
     # add selected tokenizer's args
-    parser = tokenizer_cls.add_argparse_args(parser)
-    parser = trainer_cls.add_argparse_args(parser)
+    parser = tokenizer_cls.add_argparse_args(parser, stage="train")
     args = vars(parser.parse_known_args()[0])
 
-    trainer = trainer_cls.from_args(tokenizer_module_cls=tokenizer_cls, **args)
-    trainer.train(**args)
-    trainer.save_pretrained(**args)
+    tokenizer = tokenizer_cls(**args)
+    tokenizer.train_tokenizer(**args)
+    tokenizer.save_pretrained(**args)
 
 
 if __name__ == "__main__":
