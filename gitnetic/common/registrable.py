@@ -21,6 +21,7 @@ from typing import Callable, Dict, Optional, Text, Tuple, Type, TypeVar, Union
 from gitnetic.common.from_args import FromArgs
 
 T = TypeVar("T", bound="Registrable")
+Entry = TypeVar("Entry", bound="Registrable")
 
 RegistryKey = Union[Text, Type[T]]
 RegistryRecord = Tuple[Type[T], Optional[Text]]
@@ -37,10 +38,10 @@ class Registrable(FromArgs):
         name: Text,
         constructor: Optional[Text] = None,
         exist_ok: bool = False,
-    ) -> Callable[[Type[T]], Type[T]]:
+    ) -> Callable[[Type[Entry]], Type[Entry]]:
         registry = Registrable._registry[cls]
 
-        def add_subclass_to_registry(subclass: Type[T]) -> Type[T]:
+        def add_subclass_to_registry(subclass: Type[Entry]) -> Type[Entry]:
             # Add to registry, raise an error if key has already been used.
             if name in registry:
                 if not exist_ok:
