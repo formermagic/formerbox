@@ -119,24 +119,12 @@ def make_parser() -> ArgumentParser:
                         help="Test dataset text file prefix (optional).")
     parser.add_argument("--tokenizer_type", type=str, required=True,
                         help="")
-    # parser.add_argument("--tokenizer_path", type=str, required=True,
-    #                     help="A path to pretrained tokenizer files.")
-    # parser.add_argument("--tokenizer_add_prefix_space", type=bool, default=False,
-    #                     help="Whether to add a leading space to the first word.")
-    # parser.add_argument("--tokenizer_trim_offsets", type=bool, default=True,
-    #                     help="Whether the post processing step should trim "
-    #                     "offsets to avoid including whitespaces.")
-    # parser.add_argument("--tokenizer_lowercase", type=bool, default=True,
-    #                     help="Whether to preprocess text as lowercase.")
     parser.add_argument("--max_length", type=int, default=512,
                         help="A maximum length of text sequence to encode.")
     parser.add_argument("--output_path", type=str, required=True,
                         help="An output path for writing output files to.")
     parser.add_argument("--num_workers", type=int, required=True,
                         help="A number of processes to perform actions in parallel.")
-    # parser.add_argument("--impl", type=str, required=True,
-    #                     choices=["lazy", "cached", "mmap"],
-    #                     help="Determines the type of a dataset to build.")
     # fmt: on
 
     # add indexed dataset impl argument
