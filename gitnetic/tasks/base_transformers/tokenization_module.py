@@ -1,21 +1,32 @@
 from abc import abstractmethod
 from argparse import ArgumentParser
-from typing import Any, Type
+from typing import Any, List, Optional, Text, Union
 
-from transformers import PreTrainedTokenizerFast
+from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
+from transformers.tokenization_utils_base import (
+    BatchEncoding,
+    PaddingStrategy,
+    TruncationStrategy,
+)
+from typing_extensions import Literal
 
 from gitnetic.common.registrable import Registrable
 
+Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
-class TokenizerTrainer(Registrable):
-    def __init__(
-        self, tokenizer_module_cls: Type["TokenizerFastModule"], **kwargs: Any
-    ) -> None:
-        self.tokenizer_module_cls = tokenizer_module_cls
+
+class TokenizerModule(Registrable):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.tokenizer: Optional[Tokenizer] = None
+        self.args = args
         self.kwargs = kwargs
 
     @abstractmethod
-    def train(self, *args: Any, **kwargs: Any) -> None:
+    def configure_tokenizer(self, *args: Any, **kwargs: Any) -> Tokenizer:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def train_tokenizer(self, *args: Any, **kwargs: Any) -> None:
         raise NotImplementedError()
 
     @abstractmethod
@@ -24,17 +35,51 @@ class TokenizerTrainer(Registrable):
 
     @staticmethod
     @abstractmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        raise NotImplementedError()
-
-
-class TokenizerFastModule(Registrable, PreTrainedTokenizerFast):
-    @property
-    @abstractmethod
-    def trainer_cls(self) -> Type[TokenizerTrainer]:
+    def from_pretrained(*args: Any, **kwargs: Any) -> Tokenizer:
         raise NotImplementedError()
 
     @staticmethod
     @abstractmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
+    def add_argparse_args(
+        parent_parser: ArgumentParser, stage: Literal["train", "tokenize"]
+    ) -> ArgumentParser:
         raise NotImplementedError()
+
+    def __call__(self, args: Any, **kwargs: Any) -> BatchEncoding:
+        return self.tokenizer.__call__(*args, **kwargs)
+
+    def tokenize(
+        self, text: str, pair: Optional[str] = None, add_special_tokens: bool = False
+    ) -> List[Text]:
+        return self.tokenizer.tokenize(
+            text=text, pair=pair, add_special_tokens=add_special_tokens
+        )
+
+    def convert_ids_to_tokens(
+        self, ids: Union[int, List[int]], skip_special_tokens: bool = False
+    ) -> Union[Text, List[Text]]:
+        return self.tokenizer.convert_ids_to_tokens(
+            ids=ids, skip_special_tokens=skip_special_tokens
+        )  # type: ignore
+
+    def convert_tokens_to_ids(
+        self, tokens: Union[Text, List[Text]]
+    ) -> Union[int, List[int]]:
+        return self.tokenizer.convert_tokens_to_ids(tokens=tokens)
+
+    def set_truncation_and_padding(
+        self,
+        padding_strategy: PaddingStrategy,
+        truncation_strategy: TruncationStrategy,
+        max_length: int,
+        stride: int,
+        pad_to_multiple_of: Optional[int],
+    ) -> None:
+        if isinstance(self.tokenizer, PreTrainedTokenizerFast):
+            self.tokenizer.set_truncation_and_padding(
+                padding_strategy=padding_strategy,
+                truncation_strategy=truncation_strategy,
+                max_length=max_length,
+                stride=stride,
+                pad_to_multiple_of=pad_to_multiple_of,
+            )
