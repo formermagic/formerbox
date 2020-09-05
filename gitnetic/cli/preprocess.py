@@ -17,7 +17,7 @@ from transformers import PreTrainedTokenizerFast
 
 from gitnetic.data import Binarizer, dataset_dest_filepath, find_offsets
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
-from gitnetic.tasks.base_transformers.base_tokenization import TokenizerFastModule
+from gitnetic.tasks.base_transformers import TokenizerModule
 
 logger = logging.getLogger(__name__)
 
@@ -119,8 +119,8 @@ def make_parser() -> ArgumentParser:
                         help="Test dataset text file prefix (optional).")
     parser.add_argument("--tokenizer_type", type=str, required=True,
                         help="")
-    parser.add_argument("--tokenizer_path", type=str, required=True,
-                        help="A path to pretrained tokenizer files.")
+    # parser.add_argument("--tokenizer_path", type=str, required=True,
+    #                     help="A path to pretrained tokenizer files.")
     # parser.add_argument("--tokenizer_add_prefix_space", type=bool, default=False,
     #                     help="Whether to add a leading space to the first word.")
     # parser.add_argument("--tokenizer_trim_offsets", type=bool, default=True,
@@ -148,15 +148,15 @@ def make_parser() -> ArgumentParser:
 def main() -> None:
     # parse args for basic preprocessing
     parser = make_parser()
-    args = vars(parser.parse_args())
+    args = vars(parser.parse_known_args()[0])
 
     # prepare args for loading a pre-trained tokenizer
-    tokenizer_cls, _ = TokenizerFastModule.from_registry(args["tokenizer_type"])
-    parser = tokenizer_cls.add_argparse_args(parser)
+    tokenizer_cls, _ = TokenizerModule.from_registry(args["tokenizer_type"])
+    parser = tokenizer_cls.add_argparse_args(parser, stage="tokenize")
     args = vars(parser.parse_known_args()[0])
 
     # build the selected pre-trained tokenizer
-    tokenizer_path = args.pop("tokenizer_path")
+    tokenizer_path = args["tokenizer_path"]
     tokenizer = tokenizer_cls.from_pretrained(tokenizer_path, **args)
     assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
