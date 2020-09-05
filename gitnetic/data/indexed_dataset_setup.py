@@ -28,7 +28,7 @@ class IndexedDatasetSetup:
             default=None,
             required=True,
             choices=["lazy", "cached", "mmap"],
-            help="",
+            help="Determines the type of a dataset to build.",
         )
 
     # pylint: disable=no-else-return
