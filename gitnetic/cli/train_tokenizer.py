@@ -1,8 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any, Dict, Text
 
-
-from gitnetic.tasks.base_transformers import TokenizerFastModule, TokenizerTrainer
+from gitnetic.tasks.base_transformers import TokenizerFastModule
 
 
 def parse_args(parent_parser: ArgumentParser) -> Dict[Text, Any]:
