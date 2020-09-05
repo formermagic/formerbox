@@ -10,14 +10,14 @@ import os
 import time
 from argparse import ArgumentParser
 from multiprocessing import Pool
-from typing import Optional, Text
+from typing import Any, Optional, Text
 
 from tqdm import tqdm
 from transformers import PreTrainedTokenizerFast
 
 from gitnetic.data import Binarizer, dataset_dest_filepath, find_offsets
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
-from gitnetic.tasks.codebert import CodeBertTokenizerFast
+from gitnetic.tasks.base_transformers.base_tokenization import TokenizerFastModule
 
 logger = logging.getLogger(__name__)
 
@@ -28,44 +28,23 @@ def temp_filepath(filepath: Text, suffix: Text, output_path: Text) -> Text:
     return output_prefix
 
 
-def load_tokenizer(
-    tokenizer_path: Text,
-    tokenizer_add_prefix_space: bool,
-    tokenizer_trim_offsets: bool,
-    tokenizer_lowercase: bool,
-) -> PreTrainedTokenizerFast:
-    tokenizer = CodeBertTokenizerFast.from_pretrained(
-        pretrained_model_name_or_path=tokenizer_path,
-        add_prefix_space=tokenizer_add_prefix_space,
-        trim_offsets=tokenizer_trim_offsets,
-        lowercase=tokenizer_lowercase,
-    )
-
-    assert isinstance(
-        tokenizer, PreTrainedTokenizerFast
-    ), "Tokenizer must be a subclass of PreTrainedTokenizerFast."
-
-    return tokenizer
-
-
 # pylint: disable=too-many-arguments, too-many-locals
 def preprocess(
+    tokenizer: PreTrainedTokenizerFast,
     train_prefix: Text,
     valid_prefix: Optional[Text],
     test_prefix: Optional[Text],
-    tokenizer_path: Text,
-    tokenizer_add_prefix_space: bool,
-    tokenizer_trim_offsets: bool,
-    tokenizer_lowercase: bool,
-    tokenizer_max_length: int,
     output_path: Text,
+    max_length: int,
     num_workers: int,
-    impl: Text,
+    dataset_impl: Text,
+    **extras: Any,
 ) -> None:
+    del extras  # use only explicit args
     os.makedirs(output_path, exist_ok=True)
 
     # prepare an indexed dataset setup
-    dataset_setup = IndexedDatasetSetup.from_args(impl)
+    dataset_setup = IndexedDatasetSetup.from_args(dataset_impl)
 
     for filepath in [train_prefix, valid_prefix, test_prefix]:
         if filepath is None:
@@ -82,17 +61,10 @@ def preprocess(
             for worker_idx in range(num_workers):
                 output_prefix = temp_filepath(filepath, str(worker_idx), output_path)
 
-                tokenizer = load_tokenizer(
-                    tokenizer_path,
-                    tokenizer_add_prefix_space,
-                    tokenizer_trim_offsets,
-                    tokenizer_lowercase,
-                )
-
                 binarizer = Binarizer(
                     dataset_setup=dataset_setup,
                     tokenizer=tokenizer,
-                    tokenizer_max_length=tokenizer_max_length,
+                    max_length=max_length,
                 )
 
                 pool.apply_async(
@@ -145,24 +117,26 @@ def make_parser() -> ArgumentParser:
                         help="Validation dataset text file prefix (optional).")
     parser.add_argument("--test_prefix", type=str, default=None,
                         help="Test dataset text file prefix (optional).")
+    parser.add_argument("--tokenizer_type", type=str, required=True,
+                        help="")
     parser.add_argument("--tokenizer_path", type=str, required=True,
                         help="A path to pretrained tokenizer files.")
-    parser.add_argument("--tokenizer_add_prefix_space", type=bool, default=False,
-                        help="Whether to add a leading space to the first word.")
-    parser.add_argument("--tokenizer_trim_offsets", type=bool, default=True,
-                        help="Whether the post processing step should trim "
-                        "offsets to avoid including whitespaces.")
-    parser.add_argument("--tokenizer_lowercase", type=bool, default=True,
-                        help="Whether to preprocess text as lowercase.")
-    parser.add_argument("--tokenizer_max_length", type=int, default=512,
+    # parser.add_argument("--tokenizer_add_prefix_space", type=bool, default=False,
+    #                     help="Whether to add a leading space to the first word.")
+    # parser.add_argument("--tokenizer_trim_offsets", type=bool, default=True,
+    #                     help="Whether the post processing step should trim "
+    #                     "offsets to avoid including whitespaces.")
+    # parser.add_argument("--tokenizer_lowercase", type=bool, default=True,
+    #                     help="Whether to preprocess text as lowercase.")
+    parser.add_argument("--max_length", type=int, default=512,
                         help="A maximum length of text sequence to encode.")
     parser.add_argument("--output_path", type=str, required=True,
                         help="An output path for writing output files to.")
     parser.add_argument("--num_workers", type=int, required=True,
                         help="A number of processes to perform actions in parallel.")
-    parser.add_argument("--impl", type=str, required=True,
-                        choices=["lazy", "cached", "mmap"],
-                        help="Determines the type of a dataset to build.")
+    # parser.add_argument("--impl", type=str, required=True,
+    #                     choices=["lazy", "cached", "mmap"],
+    #                     help="Determines the type of a dataset to build.")
     # fmt: on
 
     # add indexed dataset impl argument
@@ -172,9 +146,22 @@ def make_parser() -> ArgumentParser:
 
 
 def main() -> None:
+    # parse args for basic preprocessing
     parser = make_parser()
-    args = parser.parse_args()
-    preprocess(**vars(args))
+    args = vars(parser.parse_args())
+
+    # prepare args for loading a pre-trained tokenizer
+    tokenizer_cls, _ = TokenizerFastModule.from_registry(args["tokenizer_type"])
+    parser = tokenizer_cls.add_argparse_args(parser)
+    args = vars(parser.parse_known_args()[0])
+
+    # build the selected pre-trained tokenizer
+    tokenizer_path = args.pop("tokenizer_path")
+    tokenizer = tokenizer_cls.from_pretrained(tokenizer_path, **args)
+    assert isinstance(tokenizer, PreTrainedTokenizerFast)
+
+    # preprocess inputs with the selected tokenizer
+    preprocess(tokenizer, **args)
 
 
 if __name__ == "__main__":
