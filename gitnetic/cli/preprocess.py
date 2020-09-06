@@ -10,7 +10,7 @@ import os
 import time
 from argparse import ArgumentParser
 from multiprocessing import Pool
-from typing import Any, Optional, Text
+from typing import Any, Callable, Optional, Text
 
 from tqdm import tqdm
 from transformers import PreTrainedTokenizerFast
@@ -30,21 +30,16 @@ def temp_filepath(filepath: Text, suffix: Text, output_path: Text) -> Text:
 
 # pylint: disable=too-many-arguments, too-many-locals
 def preprocess(
-    tokenizer: PreTrainedTokenizerFast,
+    make_binarizer: Callable[[], Binarizer],
     train_prefix: Text,
     valid_prefix: Optional[Text],
     test_prefix: Optional[Text],
     output_path: Text,
-    max_length: int,
     num_workers: int,
     dataset_impl: Text,
-    **extras: Any,
+    **kwargs: Any,
 ) -> None:
-    del extras  # use only explicit args
     os.makedirs(output_path, exist_ok=True)
-
-    # prepare an indexed dataset setup
-    dataset_setup = IndexedDatasetSetup.from_args(dataset_impl)
 
     for filepath in [train_prefix, valid_prefix, test_prefix]:
         if filepath is None:
@@ -61,11 +56,7 @@ def preprocess(
             for worker_idx in range(num_workers):
                 output_prefix = temp_filepath(filepath, str(worker_idx), output_path)
 
-                binarizer = Binarizer(
-                    dataset_setup=dataset_setup,
-                    tokenizer=tokenizer,
-                    max_length=max_length,
-                )
+                binarizer = make_binarizer()
 
                 pool.apply_async(
                     binarizer.binarize_dataset,
@@ -75,6 +66,7 @@ def preprocess(
                         offsets[worker_idx],
                         offsets[worker_idx + 1],
                     ),
+                    kwds=kwargs,
                     callback=lambda _: pbar.update(),  # pylint: disable=cell-var-from-loop
                 )
 
@@ -87,6 +79,7 @@ def preprocess(
         index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
 
         # prepare a dataset builder instance
+        dataset_setup = IndexedDatasetSetup.from_args(dataset_impl)
         dataset_builder = dataset_setup.dataset_builder_type(
             data_filepath,
             index_filepath,
@@ -119,8 +112,8 @@ def make_parser() -> ArgumentParser:
                         help="Test dataset text file prefix (optional).")
     parser.add_argument("--tokenizer_type", type=str, required=True,
                         help="")
-    parser.add_argument("--max_length", type=int, default=512,
-                        help="A maximum length of text sequence to encode.")
+    parser.add_argument("--binarizer_type", type=str, required=True,
+                        help="")
     parser.add_argument("--output_path", type=str, required=True,
                         help="An output path for writing output files to.")
     parser.add_argument("--num_workers", type=int, required=True,
@@ -141,15 +134,28 @@ def main() -> None:
     # prepare args for loading a pre-trained tokenizer
     tokenizer_cls, _ = TokenizerModule.from_registry(args["tokenizer_type"])
     parser = tokenizer_cls.add_argparse_args(parser, stage="tokenize")
+    # prepare args for building a binarizer
+    binarizer_cls, _ = Binarizer.from_registry(args["binarizer_type"])
+    parser = binarizer_cls.add_argparse_args(parser)
+
     args = vars(parser.parse_known_args()[0])
 
     # build the selected pre-trained tokenizer
     tokenizer_path = args["tokenizer_path"]
     tokenizer = tokenizer_cls.from_pretrained(tokenizer_path, **args)
-    assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
-    # preprocess inputs with the selected tokenizer
-    preprocess(tokenizer, **args)
+    # prepare a binarizer builder
+    def make_binarizer() -> Binarizer:
+        # prepare the selected dataset setup
+        dataset_impl = args["dataset_impl"]
+        dataset_setup = IndexedDatasetSetup.from_args(dataset_impl)
+        # build a binarizer with the selected dataset setup and tokenizer
+        assert isinstance(tokenizer, PreTrainedTokenizerFast)
+        binarizer = binarizer_cls(dataset_setup, tokenizer)
+        return binarizer
+
+    # preprocess inputs with added args, selected tokenizer and binarizer
+    preprocess(make_binarizer, **args)
 
 
 if __name__ == "__main__":
