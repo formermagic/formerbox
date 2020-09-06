@@ -152,6 +152,7 @@ def main() -> None:
         # build a binarizer with the selected dataset setup and tokenizer
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
         binarizer = binarizer_cls(dataset_setup, tokenizer)
+        # return the built binarizer
         return binarizer
 
     # preprocess inputs with added args, selected tokenizer and binarizer
