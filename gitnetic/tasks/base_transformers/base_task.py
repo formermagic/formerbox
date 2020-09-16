@@ -1,27 +1,50 @@
+from abc import abstractmethod
 from argparse import ArgumentParser
-from dataclasses import dataclass
-from typing import Any, Dict, Text, Union
+from typing import Any, Text, Type, TypeVar, Union
 
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
+
+from gitnetic.common.registrable import Registrable
 
 from .base import TrainingParams
 from .base_config import model_from_config, tokenizer_from_config
 from .base_modules import TransformerDataModule, TransformerModule
 
+T = TypeVar("T")
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
-@dataclass
-class TransformerTask:
-    tokenizer: Tokenizer
-    module: TransformerModule
-    datamodule: TransformerDataModule
+class TaskModule(Registrable):
+    def __init__(
+        self,
+        tokenizer: Tokenizer,
+        module: TransformerModule,
+        datamodule: TransformerDataModule,
+    ) -> None:
+        self.tokenizer = tokenizer
+        self.module = module
+        self.datamodule = datamodule
 
     @classmethod
-    def setup(cls, args: Dict[Text, Any]) -> "TransformerTask":
+    @abstractmethod
+    def setup(cls: Type[T], *args: Any, **kwargs: Any) -> T:
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
+        raise NotImplementedError()
+
+
+@TaskModule.register("transformer-task")
+class TransformerTask(TaskModule):
+    @classmethod
+    def setup(cls, *args: Any, **kwargs: Any) -> "TransformerTask":
+        del args  # use designated args
+
         # prepare the pretrained tokenizer
-        config_path: Text = args["config_path"]
-        tokenizer_path: Text = args["tokenizer_path"]
+        config_path: Text = kwargs["config_path"]
+        tokenizer_path: Text = kwargs["tokenizer_path"]
         tokenizer = tokenizer_from_config(config_path, tokenizer_path)
         assert isinstance(tokenizer, Tokenizer.__args__)  # type: ignore
 
@@ -35,11 +58,11 @@ class TransformerTask:
         )
 
         # prepare a transformer module
-        training_params = TrainingParams.from_args(**args)
+        training_params = TrainingParams.from_args(**kwargs)
         module = TransformerModule(model, tokenizer, training_params)
 
         # prepare a transformer datamodule
-        datamodule = TransformerDataModule.from_args(tokenizer=tokenizer, **args)
+        datamodule = TransformerDataModule.from_args(tokenizer=tokenizer, **kwargs)
 
         return cls(tokenizer, module, datamodule)
 
@@ -51,7 +74,6 @@ class TransformerTask:
                             help="A path to the file with model and tokenizer configs.")
         parser.add_argument("--tokenizer_path", type=str, default=None, required=True,
                             help="A path to the dir with saved pretrained tokenizer.")
-
         # fmt: on
 
         # parser = TransformerTrainer.add_argparse_args(parser)
