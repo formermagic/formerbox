@@ -1,35 +1,21 @@
 import os
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Text, Type
+from typing import Any, Dict, List, Text
 
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, EarlyStopping
 from pytorch_lightning.loggers.wandb import LightningLoggerBase, WandbLogger
 
-from .base_task import TransformerTask
+from gitnetic.common.from_args import FromArgs
+
+from .base_task import TaskModule
 from .callbacks import SaveCheckpointAtStep
 
 
-@dataclass
-class TransformerTrainer:
-    args: Dict[Text, Any]
-    task: TransformerTask
-
-    @classmethod
-    def from_task(
-        cls, task_cls: Type[TransformerTask], args: Optional[Dict[Text, Any]] = None
-    ) -> "TransformerTrainer":
-        if args is None:
-            # prepare the arg parser
-            parser = ArgumentParser()
-            parser = cls.add_argparse_args(parser)
-            parser = task_cls.add_argparse_args(parser)
-            # parse the arguments
-            args = vars(parser.parse_args())
-        # setup a task instance with args
-        task = task_cls.setup(args)
-        return cls(args, task)
+class TransformerTrainer(FromArgs):
+    def __init__(self, task: TaskModule, args: Dict[Text, Any]) -> None:
+        self.task = task
+        self.args = args
 
     def train(self, *args: Any, **kwargs: Any) -> None:
         del args, kwargs  # reserve for future args
@@ -105,6 +91,8 @@ class TransformerTrainer:
         parent_parser = Trainer.add_argparse_args(parent_parser)
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         # fmt: off
+        parser.add_argument("--task", type=str, default=None, required=True,
+                            help="The task that should be running for training.")
         parser.add_argument("--wandb_project", type=str, default=None, required=False,
                             help="The WandB project name to write logs to.")
         parser.add_argument("--wandb_name", type=str, default=None, required=False,
@@ -121,6 +109,20 @@ class TransformerTrainer:
                             help="A seed to make experiments reproducible.")
         # fmt: on
         return parser
+
+
+def main() -> None:
+    parser = ArgumentParser()
+    parser = TransformerTrainer.add_argparse_args(parser)
+    args = vars(parser.parse_known_args()[0])
+
+    task_cls, _ = TaskModule.from_registry(args["task"])
+    parser = task_cls.add_argparse_args(parser)
+    args = vars(parser.parse_known_args()[0])
+
+    task = task_cls.setup(**args)
+    trainer = TransformerTrainer(task, args)
+    trainer.train()
 
 
 if __name__ == "__main__":
@@ -143,5 +145,4 @@ if __name__ == "__main__":
             --max_steps 10000
     ```
     """
-    trainer = TransformerTrainer.from_task(TransformerTask)
-    trainer.train()
+    main()
