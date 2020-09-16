@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Tuple, Union
 
+import pytorch_lightning as pl
 import torch
 from pytorch_lightning import LightningDataModule, LightningModule
 from torch import Tensor
@@ -206,7 +207,7 @@ class TransformerModule(BaseTrainingMixin, FromArgs, LightningModule):
 
     def training_step(
         self, batch: Dict[Text, Tensor], batch_idx: int
-    ) -> Dict[Text, Union[Tensor, Dict[Text, Tensor]]]:
+    ) -> pl.TrainResult:
         self.prepare_batch(batch, batch_idx)
         loss, _ = self.forward(**batch)
         train_perplexity = perplexity(loss)
@@ -222,38 +223,37 @@ class TransformerModule(BaseTrainingMixin, FromArgs, LightningModule):
             except IndexError:
                 learning_rate = torch.tensor(float("nan"))
 
-        return {
-            "loss": loss,
-            "log": {
-                "train_loss": loss,
-                "train_ppl": train_perplexity,
-                "train_lr": learning_rate,
-                "train_bz": batch_size,
-            },
-            "progress_bar": {
+        result = pl.TrainResult(loss)
+        result.log("train_loss", value=loss)
+        result.log("train_ppl", value=train_perplexity)
+        result.log("train_lr", value=learning_rate)
+        result.log("train_bz", value=batch_size)
+
+        # write training logs to the progress bar
+        result.log_dict(
+            {
                 "ppl": train_perplexity,
                 "lr": learning_rate,
                 "bz": batch_size,
             },
-        }
+            prog_bar=True,
+            logger=False,
+            on_step=True,
+            on_epoch=False,
+        )
+
+        return result
 
     def validation_step(
         self, batch: Dict[Text, Tensor], batch_idx: int
-    ) -> Dict[Text, Union[Tensor, Dict[Text, Tensor]]]:
+    ) -> pl.EvalResult:
         self.prepare_batch(batch, batch_idx)
         loss, _ = self.forward(**batch)
         val_perplexity = perplexity(loss)
-        return {"val_loss": loss, "val_ppl": val_perplexity}
-
-    def validation_epoch_end(
-        self, outputs: List[Dict[Text, Tensor]]
-    ) -> Dict[Text, Dict[Text, Tensor]]:
-        avg_val_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        avg_val_ppl = torch.stack([x["val_ppl"] for x in outputs]).mean()
-        return {
-            "log": {"val_loss": avg_val_loss, "val_ppl": avg_val_ppl},
-            "progress_bar": {"val_loss": avg_val_loss, "val_ppl": avg_val_ppl},
-        }
+        result = pl.EvalResult()
+        result.log("val_loss", value=loss, prog_bar=True)
+        result.log("val_ppl", value=val_perplexity, prog_bar=True)
+        return result
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
         parameters = weight_decay_params(
