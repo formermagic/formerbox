@@ -7,17 +7,17 @@ import numpy as np
 from gitnetic.data.indexed_dataset import (
     IndexedCachedDataset,
     IndexedDataset,
+    IndexedDatasetBase,
     IndexedDatasetBuilder,
-    IndexedDatasetBuilderMixin,
-    IndexedDatasetMixin,
+    IndexedDatasetBuilderBase,
 )
 from gitnetic.data.mmap_dataset import MMapIndexedDataset, MMapIndexedDatasetBuilder
 
 
 @dataclass
 class IndexedDatasetSetup:
-    dataset_builder_type: Type[IndexedDatasetBuilderMixin]
-    dataset_type: Type[IndexedDatasetMixin]
+    dataset_builder_type: Type[IndexedDatasetBuilderBase]
+    dataset_type: Type[IndexedDatasetBase]
     dataset_dtype: np.dtype
 
     @staticmethod
