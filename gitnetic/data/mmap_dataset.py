@@ -121,7 +121,7 @@ class MMapIndexedDataset(MMapIndexedDatasetBase):
             del self.data_buffer_mmap
 
 
-class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
+class MMapIndexedDatasetBuilder(IndexedDatasetBuilderBase):
     def __init__(
         self,
         data_filepath: Text,
