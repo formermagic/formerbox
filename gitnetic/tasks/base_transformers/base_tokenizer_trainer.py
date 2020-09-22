@@ -1,3 +1,4 @@
+import os
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Any, List, Optional, Text, Union
@@ -7,6 +8,7 @@ from tokenizers.implementations import ByteLevelBPETokenizer
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 from typing_extensions import Literal
 
+from gitnetic.utils.code_tokenizer import SpecialToken
 from gitnetic.utils.utils import path_to_posix
 
 from .base_tokenization import TransformerTokenizerFast
@@ -50,6 +52,9 @@ class TransformerTokenizerModule(TokenizerModule):
             "<unk>",
             "<mask>",
         ]
+
+        for token in SpecialToken:
+            self.special_tokens.append(token.value)
 
         self.backend_tokenizer = ByteLevelBPETokenizer(
             add_prefix_space=add_prefix_space,
