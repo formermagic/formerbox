@@ -279,7 +279,7 @@ class IndexedCachedDataset(IndexedDataset):
         return item
 
 
-class IndexedDatasetBuilderMixin:
+class IndexedDatasetBuilderBase:
     stream: Union[FileIO, BufferedWriter]
 
     def __init__(
@@ -315,7 +315,7 @@ class IndexedDatasetBuilderMixin:
             self.stream.close()
 
 
-class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
+class IndexedDatasetBuilder(IndexedDatasetBuilderBase):
     def __init__(
         self,
         data_filepath: Text,
