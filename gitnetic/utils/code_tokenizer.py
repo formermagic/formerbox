@@ -46,6 +46,7 @@ def process_string(
     char2token: Dict[Text, Text],
     token2char: Dict[Text, Text],
     is_comment: bool,
+    use_bleu_tokenization: bool = False,
 ) -> Text:
     if is_comment:
         token = re.sub(" +", " ", token)
@@ -65,6 +66,7 @@ def process_string(
     token = token.replace("\n", f" {SpecialToken.STRNEWLINE.value} ")
     token = token.replace("\t", f" {SpecialToken.TABSYMBOL.value} ")
     token = re.sub(" +", " ", token)
+    if use_bleu_tokenization:
     token = tokenize_v14_international(token)
     token = re.sub(" +", " ", token)
 
