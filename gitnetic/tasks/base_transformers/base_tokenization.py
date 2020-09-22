@@ -5,6 +5,8 @@ from tokenizers.implementations import ByteLevelBPETokenizer
 from tokenizers.processors import RobertaProcessing
 from transformers import BatchEncoding, PreTrainedTokenizer, PreTrainedTokenizerFast
 
+from gitnetic.utils.code_tokenizer import SpecialToken
+
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
@@ -45,7 +47,7 @@ class TransformerTokenizerFast(PreTrainedTokenizerFast):
         dropout: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
         # Mask token behave like a normal word, i.e. include the space before it
         if isinstance(mask_token, str):
             mask_token = AddedToken(mask_token, lstrip=True, rstrip=False)
@@ -54,6 +56,13 @@ class TransformerTokenizerFast(PreTrainedTokenizerFast):
         kwargs.setdefault("sep_token", sep_token)
         kwargs.setdefault("cls_token", cls_token)
         kwargs.setdefault("mask_token", mask_token)
+
+        additional_special_tokens: List[Token] = []
+        for token in SpecialToken:
+            kwargs.setdefault(token.name, token.value)
+            additional_special_tokens.append(token.value)
+
+        kwargs.setdefault("additional_special_tokens", additional_special_tokens)
 
         super().__init__(
             ByteLevelBPETokenizer(
