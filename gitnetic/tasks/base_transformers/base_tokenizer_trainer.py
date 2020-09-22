@@ -101,6 +101,8 @@ class TransformerTokenizerModule(TokenizerModule):
 
         # save the trained tokenizer to `tokenizer_output_path`
         save_dir = path_to_posix(tokenizer_path)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir, exist_ok=True)
         self.backend_tokenizer.save_model(save_dir)
 
         # prepare the pre-trained tokenizer
