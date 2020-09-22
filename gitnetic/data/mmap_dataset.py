@@ -12,8 +12,8 @@ import torch
 from torch import Tensor
 
 from gitnetic.data.indexed_dataset import (
-    IndexedDatasetBuilderMixin,
-    IndexedDatasetMixin,
+    IndexedDatasetBase,
+    IndexedDatasetBuilderBase,
     element_code,
     element_codes,
 )
@@ -25,7 +25,7 @@ def _warmup_mmap_file(filepath: Text) -> None:
             pass
 
 
-class MMapIndexedDatasetMixin(IndexedDatasetMixin, metaclass=ABCMeta):
+class MMapIndexedDatasetBase(IndexedDatasetBase, metaclass=ABCMeta):
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__(filepath_prefix)
         self.index_buffer_mmap: Optional[np.memmap] = None
@@ -34,7 +34,7 @@ class MMapIndexedDatasetMixin(IndexedDatasetMixin, metaclass=ABCMeta):
         self.data_buffer: Optional[memoryview] = None
 
 
-class MMapIndexedDataset(MMapIndexedDatasetMixin):
+class MMapIndexedDataset(MMapIndexedDatasetBase):
     magic_code = b"MMID\x00\x00"
 
     def __init__(self, filepath_prefix: Text) -> None:
@@ -127,7 +127,7 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderMixin):
         data_filepath: Text,
         index_filepath: Text,
         dtype: np.dtype = np.dtype(np.int64),
-        dataset_type: Type[IndexedDatasetMixin] = MMapIndexedDataset,
+        dataset_type: Type[IndexedDatasetBase] = MMapIndexedDataset,
     ) -> None:
         super().__init__(data_filepath, index_filepath, dtype, dataset_type)
         self.dim_offsets = [0]
