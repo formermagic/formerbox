@@ -20,7 +20,7 @@ from transformers import (
 
 from gitnetic.common.from_args import FromArgs
 from gitnetic.data.dataset_iterators import DatasetIterator
-from gitnetic.data.indexed_dataset import IndexedDatasetMixin
+from gitnetic.data.indexed_dataset import IndexedDatasetBase
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
@@ -43,7 +43,7 @@ class DataLoadingMixin:
 
     def get_dataset_itr(
         self,
-        dataset: IndexedDatasetMixin,
+        dataset: IndexedDatasetBase,
         collator: DataCollator,
         shuffle: bool,
         drop_last: bool,
@@ -77,9 +77,9 @@ class TransformerDataModule(DataLoadingMixin, FromArgs, LightningDataModule):
         self.train_data_prefix = train_data_prefix
         self.val_data_prefix = val_data_prefix
 
-        self.train_dataset: Optional[IndexedDatasetMixin] = None
+        self.train_dataset: Optional[IndexedDatasetBase] = None
         self.train_iterator: Optional[Dataset] = None
-        self.val_dataset: Optional[IndexedDatasetMixin] = None
+        self.val_dataset: Optional[IndexedDatasetBase] = None
         self.val_iterator: Optional[Dataset] = None
 
         self.collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
@@ -96,14 +96,14 @@ class TransformerDataModule(DataLoadingMixin, FromArgs, LightningDataModule):
 
         # prepare a train dataset iterator
         train_path = path_to_posix(self.train_data_prefix)
-        self.train_dataset = IndexedDatasetMixin.from_file(train_path)
+        self.train_dataset = IndexedDatasetBase.from_file(train_path)
         self.train_iterator = self.get_dataset_itr(
             self.train_dataset, collator=self.collator, shuffle=True, drop_last=False
         )
 
         # prepare a validation dataset iterator
         val_path = path_to_posix(self.val_data_prefix)
-        self.val_dataset = IndexedDatasetMixin.from_file(val_path)
+        self.val_dataset = IndexedDatasetBase.from_file(val_path)
         self.val_iterator = self.get_dataset_itr(
             self.val_dataset, collator=self.collator, shuffle=False, drop_last=False
         )

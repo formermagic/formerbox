@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from transformers import DataCollator
 
 from gitnetic.common.from_args import FromArgs
-from gitnetic.data.indexed_dataset import IndexedDatasetMixin
+from gitnetic.data.indexed_dataset import IndexedDatasetBase
 from gitnetic.data.samplers import (
     BatchSampler,
     DistributedBatchSampler,
@@ -38,7 +38,7 @@ class BaseTrainingMixin:
 
     def get_dataloader(
         self,
-        dataset: IndexedDatasetMixin,
+        dataset: IndexedDatasetBase,
         collator: DataCollator,
         batch_size: Optional[int],
         max_tokens: Optional[int],
@@ -64,7 +64,7 @@ class BaseTrainingMixin:
 
     def batch_sampler(
         self,
-        dataset: IndexedDatasetMixin,
+        dataset: IndexedDatasetBase,
         max_tokens: Optional[int],
         batch_size: Optional[int],
         shuffle: bool = True,
