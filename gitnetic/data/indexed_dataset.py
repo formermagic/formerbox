@@ -50,7 +50,7 @@ def make_data_filepath(prefix_path: Text) -> Text:
     return prefix_path + ".bin"
 
 
-class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
+class IndexedDatasetBase(Dataset, metaclass=ABCMeta):
     """A base class for loading preprocessed binary datasets.
     Binary datasets are represented as 2 files (.bin, .idx),
     containing the data sequences (.bin) and indices (.idx).
@@ -108,15 +108,15 @@ class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
             raise IndexError(f"Index({index}) is out of bounds")
 
     @staticmethod
-    def from_file(filepath_prefix: Union[Text, Path]) -> "IndexedDatasetMixin":
+    def from_file(filepath_prefix: Union[Text, Path]) -> "IndexedDatasetBase":
         filepath = path_to_posix(filepath_prefix)
         filepath = make_index_filepath(filepath)
-        dataset: Optional[IndexedDatasetMixin] = None
+        dataset: Optional[IndexedDatasetBase] = None
 
-        candidates = all_subclasses(IndexedDatasetMixin)
+        candidates = all_subclasses(IndexedDatasetBase)
         with open(filepath, mode="rb") as stream:
             for candidate in candidates:
-                assert issubclass(candidate, IndexedDatasetMixin)
+                assert issubclass(candidate, IndexedDatasetBase)
                 if inspect.isabstract(candidate):
                     continue
 
@@ -139,7 +139,7 @@ class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
         return dataset
 
 
-class IndexedDataset(IndexedDatasetMixin):
+class IndexedDataset(IndexedDatasetBase):
     magic_code = b"ID\x00\x00"
 
     def __init__(self, filepath_prefix: Text) -> None:
@@ -287,7 +287,7 @@ class IndexedDatasetBuilderMixin:
         data_filepath: Text,
         index_filepath: Text,
         dtype: np.dtype,
-        dataset_type: Type[IndexedDatasetMixin],
+        dataset_type: Type[IndexedDatasetBase],
     ) -> None:
         self.data_filepath = data_filepath
         self.index_filepath = index_filepath
@@ -321,7 +321,7 @@ class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
         data_filepath: Text,
         index_filepath: Text,
         dtype: np.dtype = np.dtype(np.int32),
-        dataset_type: Type[IndexedDatasetMixin] = IndexedDataset,
+        dataset_type: Type[IndexedDatasetBase] = IndexedDataset,
     ) -> None:
         super().__init__(data_filepath, index_filepath, dtype, dataset_type)
         self.data_offsets = [0]
