@@ -28,6 +28,14 @@ def temp_filepath(filepath: Text, suffix: Text, output_path: Text) -> Text:
     return output_prefix
 
 
+def tqdm_callback(pbar: tqdm) -> Callable[[Any], None]:
+    def update(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        pbar.update()
+
+    return update
+
+
 # pylint: disable=too-many-arguments, too-many-locals
 def preprocess(
     make_binarizer: Callable[[], Binarizer],
@@ -67,7 +75,7 @@ def preprocess(
                         offsets[worker_idx + 1],
                     ),
                     kwds=kwargs,
-                    callback=lambda _: pbar.update(),  # pylint: disable=cell-var-from-loop
+                    callback=tqdm_callback(pbar),
                 )
 
             pool.close()
