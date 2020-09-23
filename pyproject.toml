@@ -26,6 +26,9 @@ dataclasses = { version = "^0.7", python = "<3.7" }
 sacrebleu = "^1.4.13"
 typing_extensions = "^3.7.4"
 traitlets = "^4.3.3"
+overrides = "^3.1.0"
+typeguard = "^2.9.1"
+typing_inspect = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.5.3"
