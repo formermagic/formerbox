@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 AllenNLP Authors and The Former Magic Inc. team.
+# Copyright 2020 AllenNLP Authors and The FormerMagic Inc. team.
 # All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
