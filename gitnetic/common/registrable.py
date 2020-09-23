@@ -15,9 +15,11 @@
 # limitations under the License.
 
 import importlib
+from abc import abstractmethod
 from collections import defaultdict
 from typing import Callable, Dict, Optional, Text, Tuple, Type, TypeVar, Union
 
+from gitnetic.common.dataclass_argparse import DataclassArgumentParser
 from gitnetic.common.from_args import FromArgs
 
 T = TypeVar("T", bound="Registrable")
@@ -105,3 +107,12 @@ class Registrable(FromArgs):
         if constructor is None:
             return subclass, subclass.__new__
         return subclass, getattr(subclass, constructor)
+
+
+class ArgumentRegistrable(Registrable):
+    @classmethod
+    @abstractmethod
+    def add_argparse_args(
+        cls, parent_parser: DataclassArgumentParser
+    ) -> DataclassArgumentParser:
+        raise NotImplementedError()
