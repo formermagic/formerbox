@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Text, Union
 
 from datasets import Dataset, DatasetDict, load_dataset
+from typeguard import typechecked
 
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
 from gitnetic.common.registrable import ArgumentRegistrable
@@ -18,6 +19,7 @@ class DatasetProcessingMixin:
         df = dataset.data.column(column).to_pandas()
         return df.drop_duplicates().index.to_list()
 
+    @typechecked
     def distinct_dataset(
         self,
         dataset: Union[Dataset, DatasetDict],
@@ -73,12 +75,13 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         batch_size: int = field(default=128, metadata={"help": ""})
         num_proc: int = field(default=1, metadata={"help": ""})
 
+    @typechecked
     def __init__(self, params: Params) -> None:
         self.params = params
 
+    @typechecked
     def convert(self, *args: Any, **kwargs: Any) -> None:
         del args, kwargs  # use only designated args
-
         dataset = load_dataset(
             self.params.script_path,
             data_files=self.params.data_files,
@@ -107,6 +110,7 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
             result = self.tokenize_text(content)
         return {"output_data": result}
 
+    @typechecked
     def save_dataset(
         self, dataset: Union[Dataset, DatasetDict], output_path: Text
     ) -> None:
@@ -116,6 +120,7 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
                 stream.write("\n".join(group))
 
     @classmethod
+    @typechecked
     def add_argparse_args(
         cls, parent_parser: DataclassArgumentParser
     ) -> DataclassArgumentParser:
@@ -125,6 +130,8 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
             add_help=False,
         )
 
+    @typechecked
     def tokenize_text(self, text: Text) -> Text:
         tokens = tokenize_python(text, keep_comments=True)
-        return " ".join(tokens)
+        result = " ".join(tokens)
+        return result
