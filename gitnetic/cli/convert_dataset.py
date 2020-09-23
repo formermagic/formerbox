@@ -23,10 +23,10 @@ def main() -> None:
     )
 
     parser = converter_cls.add_argparse_args(parser)
-    params, _ = parser.parse_args_into_dataclasses()
+    params = parser.parse_args_into_dataclasses()
 
     start = time()
-    converter = converter_init(params=params)
+    converter = converter_init(params=params[0])
     converter.convert()
     print(f"Time elapsed: {time() - start}")
 
