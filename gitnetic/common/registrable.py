@@ -133,7 +133,5 @@ class Registrable(FromArgs):
 class ArgumentRegistrable(Registrable):
     @classmethod
     @abstractmethod
-    def add_argparse_args(
-        cls, parent_parser: DataclassArgumentParser
-    ) -> DataclassArgumentParser:
+    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
         raise NotImplementedError()
