@@ -17,7 +17,7 @@
 import importlib
 from abc import abstractmethod
 from collections import defaultdict
-from typing import Callable, Dict, Optional, Text, Tuple, Type, TypeVar, Union
+from typing import Callable, Dict, List, Optional, Text, Tuple, Type, TypeVar, Union
 
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser
 from gitnetic.common.from_args import FromArgs
@@ -108,6 +108,12 @@ class Registrable(FromArgs):
             return subclass, subclass.__new__
         return subclass, getattr(subclass, constructor)
 
+    @classmethod
+    def from_name(cls: Type[T], name: Text) -> Callable[..., T]:
+        subclass, constructor = cls.resolve_class_name(name)
+        if not constructor:
+            return subclass
+        return getattr(subclass, constructor)
 
 class ArgumentRegistrable(Registrable):
     @classmethod
