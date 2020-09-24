@@ -113,6 +113,9 @@ class DataclassArgumentParser(ArgumentParser):
             self.dataclass_types = []
 
     def add_arguments(self, dataclass_type: DataclassBaseType) -> None:
+        if dataclass_type not in self.dataclass_types:
+            self.dataclass_types.append(dataclass_type)
+
         for attribute in dataclass_type.attributes():
             arg_name = f"--{attribute}"
 
