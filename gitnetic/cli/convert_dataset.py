@@ -22,7 +22,10 @@ class ConvertDataset(Subcommand):
             """Convert a raw dataset into a prepared for processing text dataset."""
         )
         subparser = self._add_parser(
-            parser, name=self.name, description=description, help="Train a model."
+            parser,
+            name=self.name,
+            description=description,
+            help=description,
         )
 
         # get the type of a converter to use
