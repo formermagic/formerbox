@@ -1,3 +1,4 @@
+import logging
 from argparse import Namespace
 from time import time
 from typing import Any, Dict, Text, Tuple, Union
@@ -11,6 +12,8 @@ from gitnetic.common.dataclass_argparse import (
     get_parsed_attr,
 )
 from gitnetic.data.dataset_converter import DatasetConverter
+
+logger = logging.getLogger(__name__)
 
 
 @Subcommand.register("convert_dataset")
@@ -63,6 +66,7 @@ def convert_dataset(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None
     converter_cls = DatasetConverter.from_name(converter_type)
     converter = converter_cls(params=params[0])
 
-    start = time()
+    start_time = time()
     converter.convert()
-    print(f"Time elapsed: {time() - start}")
+    time_delta = time() - start_time
+    logger.info("Wall time: %.3fs", time_delta)
