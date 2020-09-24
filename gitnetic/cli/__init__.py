@@ -39,7 +39,8 @@ def main(prog: Optional[Text] = None) -> None:
         # Import any additional modules needed (to register custom classes).
         for package_name in args.include_package:
             import_module_and_submodules(package_name)
-        parser.dataclass_types = args.dataclass_types
+        if hasattr(args, "add_dynamic_args"):
+            args.add_dynamic_args(parser)
         params = parser.parse_args_into_dataclasses()
         args.func(params)
     else:
