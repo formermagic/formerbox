@@ -1,5 +1,6 @@
 from typing import Optional, Text
 
+from gitnetic.cli.convert_dataset import ConvertDataset
 from gitnetic.cli.subcommand import Subcommand
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser
 from gitnetic.common.utils import import_module_and_submodules
