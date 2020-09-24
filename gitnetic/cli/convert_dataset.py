@@ -4,7 +4,6 @@ from typing import Any, Dict, Text, Tuple, Union
 
 from typeguard import typechecked
 
-from gitnetic.cli import main
 from gitnetic.cli.subcommand import Subcommand, _SubParsersAction
 from gitnetic.common.dataclass_argparse import (
     DataclassArgumentParser,
@@ -55,7 +54,3 @@ def convert_dataset(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None
     start = time()
     converter.convert()
     print(f"Time elapsed: {time() - start}")
-
-
-if __name__ == "__main__":
-    main()
