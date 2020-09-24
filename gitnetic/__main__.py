@@ -14,6 +14,7 @@ sys.path.insert(0, PROJECT_DIR)
 
 LOGGING_FORMAT = "%(asctime)s - %(levelname)s - %(name)s: %(message)s"
 logging.basicConfig(format=LOGGING_FORMAT, level=LEVEL)
+logging.getLogger("filelock").setLevel(logging.WARNING)
 
 
 def run_main() -> None:
