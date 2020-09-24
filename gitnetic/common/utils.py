@@ -34,7 +34,8 @@ def push_python_path(path: PathType) -> ContextManagerFunctionReturnType[None]:
     This method is intended to use with `with`, so after its usage, its value willbe removed from
     `sys.path`.
     """
-    # In some environments, such as TC, it fails when sys.path contains a relative path, such as ".".
+    # In some environments, such as TC, it fails when sys.path
+    # contains a relative path, such as ".".
     path = Path(path).resolve()
     path = str(path)
     sys.path.insert(0, path)
