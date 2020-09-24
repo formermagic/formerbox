@@ -7,7 +7,7 @@ model:
     num_attention_heads: 8
     intermediate_size: 3072
     hidden_act: gelu
-    max_position_embeddings: 514
+    max_position_embeddings: 514 # RoBERTa models add padding index to start/end
     hidden_dropout_prob: 0.1
     attention_probs_dropout_prob: 0.1
     type_vocab_size: 2
@@ -16,7 +16,7 @@ model:
     gradient_checkpointing: false
 
 tokenizer:
-  name: gitnetic.tasks.codebert.CodeBertTokenizerFast
+  name: gitnetic.tasks.base_transformers.TransformerTokenizerFast
   params:
     add_prefix_space: false
     trim_offsets: true
