@@ -1,5 +1,4 @@
-from argparse import ArgumentParser
-from pathlib import Path
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Text, Tuple, Union
 
 import pytorch_lightning as pl
@@ -17,19 +16,22 @@ from transformers import (
     PreTrainedTokenizer,
     PreTrainedTokenizerFast,
 )
+from typeguard import check_argument_types, typechecked
 
-from gitnetic.common.from_args import FromArgs
+from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
+from gitnetic.common.registrable import ArgumentRegistrable
 from gitnetic.data.dataset_iterators import DatasetIterator
 from gitnetic.data.indexed_dataset import IndexedDatasetBase
 from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 
-from .base import BaseTrainingMixin, TrainingParams
+from .base import BaseTrainingMixin
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
 class DataLoadingMixin:
+    @typechecked
     def __init__(
         self,
         max_tokens: Optional[int],
@@ -60,22 +62,34 @@ class DataLoadingMixin:
         return dataset_itr
 
 
-class TransformerDataModule(DataLoadingMixin, FromArgs, LightningDataModule):
-    # pylint: disable=too-many-arguments
-    def __init__(
-        self,
-        tokenizer: Tokenizer,
-        train_data_prefix: Union[Text, Path],
-        val_data_prefix: Union[Text, Path],
-        max_tokens: Optional[int] = None,
-        batch_size: Optional[int] = None,
-        num_workers: int = 0,
-    ) -> None:
-        super().__init__(max_tokens, batch_size, num_workers)
+class TransformerDataModule(DataLoadingMixin, ArgumentRegistrable, LightningDataModule):
+    @dataclass
+    class Params(DataclassBase):
+        train_data_prefix: Text = field(
+            metadata={"help": "A prefix path for the train dataset file."}
+        )
+        val_data_prefix: Text = field(
+            metadata={"help": "A prefix path for the validation dataset file."}
+        )
+        batch_size: Optional[int] = field(
+            default=None,
+            metadata={"help": "A number of instances/sentences in a batch."},
+        )
+        max_tokens: Optional[int] = field(
+            default=None,
+            metadata={"help": "A number of tokens in a batch."},
+        )
+        num_workers: int = field(
+            default=1,
+            metadata={"help": "A number of workers for data loading."},
+        )
+
+    @typechecked
+    def __init__(self, tokenizer: Tokenizer, params: Params) -> None:
+        super().__init__(params.max_tokens, params.batch_size, params.num_workers)
 
         self.tokenizer = tokenizer
-        self.train_data_prefix = train_data_prefix
-        self.val_data_prefix = val_data_prefix
+        self.params = params
 
         self.train_dataset: Optional[IndexedDatasetBase] = None
         self.train_iterator: Optional[Dataset] = None
@@ -95,14 +109,14 @@ class TransformerDataModule(DataLoadingMixin, FromArgs, LightningDataModule):
         del stage  # we don't use `stage` to build a dataloader
 
         # prepare a train dataset iterator
-        train_path = path_to_posix(self.train_data_prefix)
+        train_path = path_to_posix(self.params.train_data_prefix)
         self.train_dataset = IndexedDatasetBase.from_file(train_path)
         self.train_iterator = self.get_dataset_itr(
             self.train_dataset, collator=self.collator, shuffle=True, drop_last=False
         )
 
         # prepare a validation dataset iterator
-        val_path = path_to_posix(self.val_data_prefix)
+        val_path = path_to_posix(self.params.val_data_prefix)
         self.val_dataset = IndexedDatasetBase.from_file(val_path)
         self.val_iterator = self.get_dataset_itr(
             self.val_dataset, collator=self.collator, shuffle=False, drop_last=False
@@ -122,39 +136,49 @@ class TransformerDataModule(DataLoadingMixin, FromArgs, LightningDataModule):
         del args, kwargs  # use initialized properties to make a dataloader
         raise NotImplementedError()
 
-    @staticmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        # fmt: off
-        parser.add_argument("--batch_size", type=int, default=None, required=False,
-                            help="A number of instances/sentences in a batch.")
-        parser.add_argument("--max_tokens", type=int, default=None, required=False,
-                            help="A number of tokens in a batch.")
-        parser.add_argument("--train_data_prefix", type=str, default=None, required=True,
-                            help="A prefix path for the train dataset file.")
-        parser.add_argument("--val_data_prefix", type=str, default=None, required=True,
-                            help="A prefix path for the validation dataset file.")
-        parser.add_argument("--num_workers", type=int, default=1, required=True,
-                            help="A number of workers for data loading.")
-        # fmt: on
-        return parser
+    @classmethod
+    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
+        parser.add_arguments(cls.Params)
 
 
 # pylint: disable=arguments-differ
-class TransformerModule(BaseTrainingMixin, FromArgs, LightningModule):
-    # pylint: disable=too-many-instance-attributes
+class TransformerModule(BaseTrainingMixin, ArgumentRegistrable, LightningModule):
+    @dataclass
+    class Params(DataclassBase):
+        weight_decay: float = field(
+            default=0.01,
+            metadata={
+                "help": "A parameter for decaying weights while optimization steps."
+            },
+        )
+        warmup_steps: int = field(
+            default=4000,
+            metadata={
+                "help": "A number of steps to get to the starting learning rate."
+            },
+        )
+        learning_rate: float = field(
+            default=5e-4,
+            metadata={"help": "A starting learning weight value after warmup."},
+        )
+        power: float = field(
+            default=1.0,
+            metadata={"help": "A polynomial power for a learning rate scheduler."},
+        )
+
     def __init__(
         self,
         model: PreTrainedModel,
         tokenizer: Tokenizer,
-        training_params: TrainingParams,
+        params: Params,
     ) -> None:
-        super().__init__(training_params)
-
+        super().__init__()
+        assert check_argument_types()
         self.save_hyperparameters()
 
         self.model = model
         self.tokenizer = tokenizer
+        self.params = params
 
         # lazy initialized properties
         self.total_train_steps = 0
@@ -258,7 +282,7 @@ class TransformerModule(BaseTrainingMixin, FromArgs, LightningModule):
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
         parameters = weight_decay_params(
             self.model,
-            weight_decay=self.training_params.weight_decay,
+            weight_decay=self.params.weight_decay,
             skip_list=["bias", "LayerNorm.weight"],
         )
 
@@ -266,14 +290,14 @@ class TransformerModule(BaseTrainingMixin, FromArgs, LightningModule):
             parameters,  # type: ignore
             betas=(0.9, 0.98),
             eps=1e-6,
-            lr=self.training_params.learning_rate,
+            lr=self.params.learning_rate,
         )
 
         self.lr_scheduler = get_polynomial_decay_with_warmup(
             optimizer,
-            num_warmup_steps=self.training_params.warmup_steps,
+            num_warmup_steps=self.params.warmup_steps,
             num_training_steps=self.total_train_steps,
-            power=self.training_params.power,
+            power=self.params.power,
         )
 
         # called after each training steps
@@ -284,17 +308,6 @@ class TransformerModule(BaseTrainingMixin, FromArgs, LightningModule):
 
         return [optimizer], [step_scheduler]
 
-    @staticmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        # fmt: off
-        parser.add_argument("--weight_decay", type=float, default=0.01, required=False,
-                            help="A parameter for decaying weights while optimization steps.")
-        parser.add_argument("--warmup_steps", type=int, default=4000, required=False,
-                            help="A number of steps to get to the starting learning rate.")
-        parser.add_argument("--learning_rate", type=float, default=5e-4, required=True,
-                            help="A starting learning weight value after warmup.")
-        parser.add_argument("--power", type=float, default=1.0, required=False,
-                            help="A polynomial power for a learning rate scheduler.")
-        # fmt: on
-        return parser
+    @classmethod
+    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
+        parser.add_arguments(cls.Params)
