@@ -9,6 +9,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
+from typeguard import typechecked
 from typing_inspect import (
     get_args,
     get_origin,
@@ -22,6 +23,19 @@ from gitnetic.utils import str2bool
 
 DataclassBaseType = Type["DataclassBase"]
 DataclassTypes = Union[DataclassBaseType, typing.Iterable[DataclassBaseType]]
+
+
+@typechecked
+def get_parsed_attr(
+    params: Tuple[Union["DataclassBase", Namespace], ...],
+    attribute_name: Text,
+    default: Optional[Any] = None,
+) -> Optional[Any]:
+    attribute = default
+    for args in params[1:]:
+        if hasattr(args, attribute_name):
+            attribute = getattr(args, attribute_name)
+    return attribute
 
 
 @dataclass
@@ -100,15 +114,15 @@ class DataclassArgumentParser(ArgumentParser):
 
         # add dataclass args if specified
         if dataclass_types is not None:
-        # make sure the `dataclass_types` is a list
-        if not isinstance(dataclass_types, collections.Iterable):
-            self.dataclass_types = [dataclass_types]
-        else:
-            self.dataclass_types = list(dataclass_types)
+            # make sure the `dataclass_types` is a list
+            if not isinstance(dataclass_types, collections.Iterable):
+                self.dataclass_types = [dataclass_types]
+            else:
+                self.dataclass_types = list(dataclass_types)
 
-        # add dataclass fields as argparser arguments
-        for dataclass_type in self.dataclass_types:
-            self.add_arguments(dataclass_type)
+            # add dataclass fields as argparser arguments
+            for dataclass_type in self.dataclass_types:
+                self.add_arguments(dataclass_type)
         else:
             self.dataclass_types = []
 
