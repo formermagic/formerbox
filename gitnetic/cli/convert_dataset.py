@@ -38,12 +38,18 @@ class ConvertDataset(Subcommand):
             help="",
         )
 
-        # add designated dataclass argparse args
-        args = subparser.parse_known_args()[0]
-        converter_cls, _ = DatasetConverter.from_registry(args.converter_type)
-        converter_cls.add_argparse_args(subparser)
-        # prepare the parser default values
-        defaults = dict(func=convert_dataset, dataclass_types=subparser.dataclass_types)
+        def add_dynamic_args(parser: DataclassArgumentParser) -> None:
+            # add dybamic args to the subparser
+            args = subparser.parse_known_args()[0]
+            converter_cls, _ = DatasetConverter.from_registry(args.converter_type)
+            converter_cls.add_argparse_args(subparser)
+            # inject dataclass_types to the parent parser
+            parser.dataclass_types = subparser.dataclass_types
+
+        defaults = dict(
+            func=convert_dataset,
+            add_dynamic_args=add_dynamic_args,
+        )
 
         return subparser, defaults
 
