@@ -1,3 +1,4 @@
+import logging
 import os
 from abc import abstractmethod
 from argparse import ArgumentParser
@@ -11,6 +12,8 @@ from typing_extensions import Literal
 from gitnetic.common.registrable import Registrable
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.utils import str2bool
+
+logger = logging.getLogger(__name__)
 
 Truncation = Literal[
     "only_first",
@@ -166,8 +169,7 @@ class FlatBinarizer(Binarizer):
                             consumer(torch.tensor(encoding.input_ids))
 
                 except TypeError as err:
-                    # TODO: add logging
-                    print(f"Unable to tokenize a text, error: {err}")
+                    logger.warning("Unable to tokenize a text, error: %s", err)
 
                 # get the next line to process
                 line = stream.readline()
