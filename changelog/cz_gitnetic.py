@@ -35,7 +35,7 @@ class GitneticCz(BaseCommitizen):
     )
     changelog_pattern = r"^(BREAKING[\-\ ]CHANGE|feat|fix|refactor|perf)(\(.+\))?(!)?"
     change_type_map = {
-        "feat": "Features 222",
+        "feat": "Features",
         "fix": "Fix",
         "refactor": "Refactor",
         "perf": "Performance",
@@ -145,7 +145,6 @@ class GitneticCz(BaseCommitizen):
         return questions
 
     def message(self, answers: Dict[Text, Any]) -> Text:
-        print(answers)
         prefix = answers["prefix"]
         scope = answers["scope"]
         subject = answers["subject"]
