@@ -22,7 +22,7 @@ from typing import Callable, Dict, List, Optional, Text, Tuple, Type, TypeVar, U
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser
 from gitnetic.common.from_args import FromArgs
 
-T = TypeVar("T", bound="Registrable")
+T = TypeVar("T", bound="Registrable")  # pylint: disable=invalid-name
 Entry = TypeVar("Entry", bound="Registrable")
 
 RegistryKey = Union[Text, Type[T]]

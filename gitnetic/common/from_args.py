@@ -1,7 +1,7 @@
 import inspect
 from typing import Any, Type, TypeVar
 
-T = TypeVar("T")
+T = TypeVar("T")  # pylint: disable=invalid-name
 
 
 class FromArgs:

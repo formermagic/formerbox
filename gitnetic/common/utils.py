@@ -22,7 +22,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator, Text, TypeVar, Union
 
-T = TypeVar("T")
+T = TypeVar("T")  # pylint: disable=invalid-name
 PathType = Union[os.PathLike, Text]
 ContextManagerFunctionReturnType = Generator[T, None, None]
 
