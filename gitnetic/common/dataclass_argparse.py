@@ -207,7 +207,9 @@ class DataclassArgumentParser(ArgumentParser):
 
                 kwargs["nargs"] = "+"
                 kwargs["type"] = container_types[0]
-                if field_obj.default_factory is not dataclasses.MISSING:
+                if field_obj.default is not dataclasses.MISSING:
+                    kwargs["default"] = field_obj.default
+                elif field_obj.default_factory is not dataclasses.MISSING:
                     kwargs["default"] = field_obj.default_factory()
                 else:
                     kwargs["required"] = True
