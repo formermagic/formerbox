@@ -2,7 +2,7 @@ import collections
 import dataclasses
 import sys
 import typing
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from dataclasses import Field, dataclass
 from enum import Enum
 from pathlib import Path
@@ -196,10 +196,10 @@ class DataclassArgumentParser(ArgumentParser):
 
     def parse_args_into_dataclasses(
         self,
-        args: typing.Sequence[Text] = None,
+        args: Optional[typing.Sequence[Text]] = None,
         return_remaining_strings: bool = False,
         look_for_args_file: bool = True,
-    ) -> Tuple[DataclassBase, ...]:
+    ) -> Tuple[Union[DataclassBase, Namespace], ...]:
         if look_for_args_file and sys.argv:
             args_file = Path(sys.argv[0]).with_suffix(".args")
             if args_file.exists():
@@ -222,7 +222,7 @@ class DataclassArgumentParser(ArgumentParser):
             # additional namespace
             outputs.append(namespace)
 
-        result: Tuple[DataclassBase, ...]
+        result: Tuple[Union[DataclassBase, Namespace], ...]
         if return_remaining_strings:
             result = (*outputs, remaining_args)
         else:
