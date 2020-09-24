@@ -1,11 +1,9 @@
-from dataclasses import dataclass
 from typing import Optional
 
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from transformers import DataCollator
 
-from gitnetic.common.from_args import FromArgs
 from gitnetic.data.indexed_dataset import IndexedDatasetBase
 from gitnetic.data.samplers import (
     BatchSampler,
@@ -21,19 +19,11 @@ except (ModuleNotFoundError, ImportError):
     pass
 
 
-@dataclass
-class TrainingParams(FromArgs):
-    weight_decay: float
-    warmup_steps: int
-    learning_rate: float
-    power: float
-
-
 # pylint: disable=too-many-ancestors
 class BaseTrainingMixin:
-    def __init__(self, training_params: TrainingParams) -> None:
+    def __init__(self) -> None:
+        # this ensures that all parents get __init__ called
         super().__init__()
-        self.training_params = training_params
         self.trainer: Optional[Trainer] = None
 
     def get_dataloader(
