@@ -1,13 +1,13 @@
 import os
-from argparse import ArgumentParser
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, List, Optional, Text, Union
 
 from tokenizers import AddedToken
 from tokenizers.implementations import ByteLevelBPETokenizer
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
-from typing_extensions import Literal
 
+from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
 from gitnetic.utils.code_tokenizer import SpecialToken
 from gitnetic.utils.utils import path_to_posix
 
@@ -31,20 +31,64 @@ def fix_tokenizer(tokenizer: TransformersTokenizer) -> None:
 
 @TokenizerModule.register(name="transformer-tokenizer-fast", constructor="from_args")
 class TransformerTokenizerModule(TokenizerModule):
-    def __init__(
-        self,
-        add_prefix_space: bool = False,
-        lowercase: bool = False,
-        dropout: Optional[float] = None,
-        unicode_normalizer: Optional[Text] = None,
-        continuing_subword_prefix: Optional[Text] = None,
-        end_of_word_suffix: Optional[Text] = None,
-        trim_offsets: bool = False,
-        **kwargs: Any,
-    ) -> None:
-        # pylint: disable=too-many-arguments
-        super().__init__(**kwargs)
+    # pylint: disable=arguments-differ
+    @dataclass
+    class Params(DataclassBase):
+        files: Optional[List[Text]] = field(
+            default=None,
+            metadata={"help": ""},
+        )
+        vocab_size: Optional[int] = field(
+            default=None,
+            metadata={"help": ""},
+        )
+        min_frequency: int = field(
+            default=2,
+            metadata={"help": ""},
+        )
+        tokenizer_path: Optional[Text] = field(
+            default=None,
+            metadata={
+                "help": "A path to pretrained tokenizer files or a save directory."
+            },
+        )
+        add_prefix_space: bool = field(
+            default=False,
+            metadata={"help": "Whether to add a leading space to the first word."},
+        )
+        trim_offsets: bool = field(
+            default=True,
+            metadata={
+                "help": (
+                    "Whether the post processing step should trim"
+                    " offsets to avoid including whitespaces."
+                )
+            },
+        )
+        lowercase: bool = field(
+            default=False,
+            metadata={"help": "Whether to preprocess text as lowercase."},
+        )
+        dropout: Optional[float] = field(
+            default=None,
+            metadata={"help": ""},
+        )
+        unicode_normalizer: Optional[Text] = field(
+            default=None,
+            metadata={"help": ""},
+        )
+        continuing_subword_prefix: Optional[Text] = field(
+            default=None,
+            metadata={"help": ""},
+        )
+        end_of_word_suffix: Optional[Text] = field(
+            default=None,
+            metadata={"help": ""},
+        )
 
+    def __init__(self, params: Params, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.params = params
         self.special_tokens: List[Token] = [
             "<s>",
             "<pad>",
@@ -57,19 +101,18 @@ class TransformerTokenizerModule(TokenizerModule):
             self.special_tokens.append(token.value)
 
         self.backend_tokenizer = ByteLevelBPETokenizer(
-            add_prefix_space=add_prefix_space,
-            lowercase=lowercase,
-            dropout=dropout,
-            unicode_normalizer=unicode_normalizer,
-            continuing_subword_prefix=continuing_subword_prefix,
-            end_of_word_suffix=end_of_word_suffix,
-            trim_offsets=trim_offsets,
+            add_prefix_space=params.add_prefix_space,
+            lowercase=params.lowercase,
+            dropout=params.dropout,
+            unicode_normalizer=params.unicode_normalizer,
+            continuing_subword_prefix=params.continuing_subword_prefix,
+            end_of_word_suffix=params.end_of_word_suffix,
+            trim_offsets=params.trim_offsets,
         )
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
     ) -> PreTrainedTokenizerFast:
-        # pylint: disable=arguments-differ
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
         vocab_file = path_to_posix(tokenizer_path / "vocab.json")
@@ -78,34 +121,29 @@ class TransformerTokenizerModule(TokenizerModule):
             vocab_file=vocab_file, merges_file=merges_file, **kwargs
         )
 
-    def train_tokenizer(
-        self,
-        files: List[Text],
-        vocab_size: int,
-        min_frequency: int = 2,
-        special_tokens: Optional[List[Token]] = None,
-        **extras: Any,
-    ) -> None:
-        # pylint: disable=arguments-differ
-        del extras  # use designated args
-        # prepare special tokens with an initial set
-        special_tokens = self.special_tokens + (special_tokens or [])
+    def train_tokenizer(self, *args: Any, **kwargs: Any) -> None:
+        del args, kwargs  # use designated args
         # train a tokenizer model
+        assert self.params.files is not None
+        assert self.params.vocab_size is not None
         self.backend_tokenizer.train(
-            files,
-            vocab_size=vocab_size,
-            min_frequency=min_frequency,
-            special_tokens=special_tokens,
+            files=self.params.files,
+            vocab_size=self.params.vocab_size,
+            min_frequency=self.params.min_frequency,
+            special_tokens=self.special_tokens,
         )
 
-    def save_pretrained(self, tokenizer_path: Union[Text, Path], **kwargs: Any) -> None:
-        # pylint: disable=arguments-differ
+    def save_pretrained(self, *args: Any, **kwargs: Any) -> None:
+        del args  # use designated args
         # make sure the `tokenizer_output_path` is a pathlike object
-        if isinstance(tokenizer_path, str):
-            tokenizer_path = Path(tokenizer_path)
+        assert self.params.tokenizer_path is not None
+        if isinstance(self.params.tokenizer_path, str):
+            tokenizer_path = Path(self.params.tokenizer_path)
+        else:
+            tokenizer_path = self.params.tokenizer_path
 
         # save the trained tokenizer to `tokenizer_output_path`
-        save_dir = path_to_posix(tokenizer_path)
+        save_dir = path_to_posix(self.params.tokenizer_path)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir, exist_ok=True)
         self.backend_tokenizer.save_model(save_dir)
@@ -118,35 +156,20 @@ class TransformerTokenizerModule(TokenizerModule):
         tokenizer.save_pretrained(save_dir)
 
     @staticmethod
-    def from_pretrained(*args: Any, **kwargs: Any) -> PreTrainedTokenizerFast:
-        tokenizer = TransformerTokenizerFast.from_pretrained(*args, **kwargs)
+    def from_pretrained(params: Params, **kwargs: Any) -> PreTrainedTokenizerFast:
+        assert params.tokenizer_path is not None
+        non_positional_params = vars(params).copy()
+        non_positional_params.pop("tokenizer_path")
+        kwargs.update(non_positional_params)
+
+        tokenizer = TransformerTokenizerFast.from_pretrained(
+            params.tokenizer_path, **kwargs
+        )
+
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
+
         return tokenizer
 
-    @staticmethod
-    def add_argparse_args(
-        parent_parser: ArgumentParser, stage: Literal["train", "tokenize"]
-    ) -> ArgumentParser:
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-
-        if stage == "train":
-            # fmt: off
-            parser.add_argument("--files", type=str, nargs="+", default=None, required=True,
-                                help="")
-            parser.add_argument("--vocab_size", type=int, default=None, required=True,
-                                help="")
-            # fmt: on
-
-        # fmt: off
-        parser.add_argument("--tokenizer_path", type=str, default=None, required=True,
-                            help="A path to pretrained tokenizer files or a save directory.")
-        parser.add_argument("--add_prefix_space", type=bool, default=False, required=False,
-                            help="Whether to add a leading space to the first word.")
-        parser.add_argument("--trim_offsets", type=bool, default=True, required=False,
-                            help="Whether the post processing step should trim " 
-                                "offsets to avoid including whitespaces.")
-        parser.add_argument("--lowercase", type=bool, default=False, required=False,
-                            help="Whether to preprocess text as lowercase.")
-        # fmt: on
-
-        return parser
+    @classmethod
+    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
+        parser.add_arguments(cls.Params)
