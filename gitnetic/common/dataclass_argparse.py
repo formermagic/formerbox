@@ -91,8 +91,6 @@ def is_list_type(dtype: Type[Any]) -> bool:
 
 
 class DataclassArgumentParser(ArgumentParser):
-    dataclass_types: List[DataclassBaseType]
-
     def __init__(
         self,
         dataclass_types: Optional[DataclassTypes] = None,
@@ -100,10 +98,8 @@ class DataclassArgumentParser(ArgumentParser):
     ) -> None:
         super().__init__(**kwargs)
 
-        # skip arguments setup if no dataclass specified
-        if dataclass_types is None:
-            return
-
+        # add dataclass args if specified
+        if dataclass_types is not None:
         # make sure the `dataclass_types` is a list
         if not isinstance(dataclass_types, collections.Iterable):
             self.dataclass_types = [dataclass_types]
@@ -113,6 +109,8 @@ class DataclassArgumentParser(ArgumentParser):
         # add dataclass fields as argparser arguments
         for dataclass_type in self.dataclass_types:
             self.add_arguments(dataclass_type)
+        else:
+            self.dataclass_types = []
 
     def add_arguments(self, dataclass_type: DataclassBaseType) -> None:
         for attribute in dataclass_type.attributes():
