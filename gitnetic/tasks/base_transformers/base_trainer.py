@@ -1,37 +1,79 @@
 import os
 from argparse import ArgumentParser, Namespace
-from typing import Any, Dict, List, Text
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Text
 
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, EarlyStopping
 from pytorch_lightning.loggers.wandb import LightningLoggerBase, WandbLogger
+from typeguard import typechecked
 
-from gitnetic.common.from_args import FromArgs
+from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
+from gitnetic.common.registrable import ArgumentRegistrable
 
 from .base_task import TaskModule
 from .callbacks import SaveCheckpointAtStep
 
 
-class TransformerTrainer(FromArgs):
-    def __init__(self, task: TaskModule, args: Dict[Text, Any]) -> None:
-        self.task = task
-        self.args = args
+class TransformerTrainer(ArgumentRegistrable):
+    @dataclass
+    class Params(DataclassBase):
+        wandb_project: Optional[Text] = field(
+            default=None,
+            metadata={"help": "The WandB project name to write logs to."},
+        )
+        wandb_name: Optional[Text] = field(
+            default=None,
+            metadata={"help": "The WandB experiment name to write logs to."},
+        )
+        wandb_id: Optional[Text] = field(
+            default=None,
+            metadata={"help": "The WandB id to use for resuming."},
+        )
+        save_dir: Optional[Text] = field(
+            default=None,
+            metadata={"help": "The dir to save training checkpoints."},
+        )
+        save_step_frequency: Optional[int] = field(
+            default=None,
+            metadata={"help": "The interval of steps between checkpoints saving."},
+        )
+        num_last_checkpoints: int = field(
+            default=2,
+            metadata={"help": "A number of last checkpoints to keep."},
+        )
+        seed: int = field(
+            default=17,
+            metadata={"help": "A seed to make experiments reproducible."},
+        )
 
-    def train(self, *args: Any, **kwargs: Any) -> None:
-        del args, kwargs  # reserve for future args
+    @typechecked
+    def __init__(
+        self,
+        task: TaskModule,
+        params: Params,
+        trainer_args: Dict[Text, Any],
+    ) -> None:
+        self.task = task
+        self.params = params
+        self.trainer_args = trainer_args
+
+    def train(self) -> None:
+        # make a mutable copy of trainer args
+        args = self.trainer_args.copy()
 
         # mark: setup deterministic mode
-        seed = self.args["seed"]
-        deterministic = self.args.pop("deterministic", False)
+        seed = self.params.seed
+        deterministic = args.pop("deterministic", False)
         if seed is not None or deterministic:
             seed_everything(seed)
 
         # mark: setup save checkpoint callbacks
         callbacks: List[Callback] = []
-        save_dir = self.args["save_dir"] or os.getcwd()
-        save_step_frequency = self.args["save_step_frequency"]
+        save_dir = self.params.save_dir or os.getcwd()
+        save_step_frequency = self.params.save_step_frequency
         if save_step_frequency is not None:
-            num_last_checkpoints = self.args["num_last_checkpoints"]
+            num_last_checkpoints = self.params.num_last_checkpoints
             save_callback = SaveCheckpointAtStep(
                 save_step_frequency, save_dir, num_last_checkpoints
             )
@@ -41,9 +83,9 @@ class TransformerTrainer(FromArgs):
         # mark: setup loggers
         loggers: List[LightningLoggerBase] = []
 
-        wandb_project = self.args["wandb_project"]
-        wandb_name = self.args["wandb_name"]
-        wandb_id = self.args["wandb_id"]
+        wandb_project = self.params.wandb_project
+        wandb_name = self.params.wandb_name
+        wandb_id = self.params.wandb_id
 
         required_values = [wandb_project, wandb_name]
         if all(v for v in required_values):
@@ -80,41 +122,28 @@ class TransformerTrainer(FromArgs):
         }
 
         # prepare a trainer
-        trainer_args = Namespace(**{**self.args, **override_kwargs})
+        trainer_args = Namespace(**{**args, **override_kwargs})
         pl_trainer = Trainer.from_argparse_args(trainer_args)
 
         # run the train loop
         pl_trainer.fit(model=self.task.module, datamodule=self.task.datamodule)
 
-    @staticmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        parent_parser = Trainer.add_argparse_args(parent_parser)
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        # fmt: off
-        parser.add_argument("--task", type=str, default=None, required=True,
-                            help="The task that should be running for training.")
-        parser.add_argument("--wandb_project", type=str, default=None, required=False,
-                            help="The WandB project name to write logs to.")
-        parser.add_argument("--wandb_name", type=str, default=None, required=False,
-                            help="The WandB experiment name to write logs to.")
-        parser.add_argument("--wandb_id", type=str, default=None, required=False,
-                            help="The WandB id to use for resuming.")
-        parser.add_argument("--save_dir", type=str, default=None, required=False,
-                            help="The dir to save training checkpoints.")
-        parser.add_argument("--save_step_frequency", type=int, default=None, required=False,
-                            help="The interval of steps between checkpoints saving.")
-        parser.add_argument("--num_last_checkpoints", type=int, default=2, required=False,
-                            help="A number of last checkpoints to keep.")
-        parser.add_argument("--seed", type=int, default=17, required=False,
-                            help="A seed to make experiments reproducible.")
-        # fmt: on
-        return parser
+    @classmethod
+    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
+        parser.add_arguments(cls.Params)
+        cls.add_pl_argparse_args(parser)
 
+    @classmethod
+    def add_pl_argparse_args(cls, parser: DataclassArgumentParser) -> None:
+        # pylint: disable=protected-access
+        pl_parser = ArgumentParser()
+        pl_parser = Trainer.add_argparse_args(pl_parser)
+        for action in pl_parser._actions:
+            # skip ambigious help actions
+            if action.dest == "help":
+                continue
+            parser._add_action(action)
 
-def main() -> None:
-    parser = ArgumentParser()
-    parser = TransformerTrainer.add_argparse_args(parser)
-    args = vars(parser.parse_known_args()[0])
 
     task_cls, _ = TaskModule.from_registry(args["task"])
     parser = task_cls.add_argparse_args(parser)
@@ -144,5 +173,4 @@ if __name__ == "__main__":
             --distributed_backend ddp \
             --max_steps 10000
     ```
-    """
-    main()
+"""
