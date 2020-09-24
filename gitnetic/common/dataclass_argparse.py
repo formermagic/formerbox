@@ -32,7 +32,7 @@ def get_parsed_attr(
     default: Optional[Any] = None,
 ) -> Optional[Any]:
     attribute = default
-    for args in params[1:]:
+    for args in params:
         if hasattr(args, attribute_name):
             attribute = getattr(args, attribute_name)
     return attribute
