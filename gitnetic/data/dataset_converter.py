@@ -121,14 +121,8 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
 
     @classmethod
     @typechecked
-    def add_argparse_args(
-        cls, parent_parser: DataclassArgumentParser
-    ) -> DataclassArgumentParser:
-        return DataclassArgumentParser(
-            dataclass_types=cls.Params,
-            parents=[parent_parser],
-            add_help=False,
-        )
+    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
+        parser.add_arguments(cls.Params)
 
     @typechecked
     def tokenize_text(self, text: Text) -> Text:
