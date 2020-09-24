@@ -29,9 +29,12 @@ class ConvertDataset(Subcommand):
         )
 
         # get the type of a converter to use
+        choices = sorted(DatasetConverter.list_available())
         subparser.add_argument(
             "--converter_type",
             type=str,
+            choices=choices,
+            required=True,
             help="",
         )
 
