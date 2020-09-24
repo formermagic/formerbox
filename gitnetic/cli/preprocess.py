@@ -1,171 +1,133 @@
-"""Preprocess text datasets represented as strings separated by newline.
-The script will output two files – an index file (.idx) and a data file (.bin).
-Files can be read by `IndexedDataset` and its subclasses.
-
-Preprocessed data file contains binarized texts as token ids. Index file
-contains meta information about binarized data (e.g. step size, total length, etc).
-"""
 import logging
-import os
-import time
-from argparse import ArgumentParser
-from multiprocessing import Pool
-from typing import Any, Callable, Optional, Text
+from argparse import Namespace, _SubParsersAction
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, Text, Tuple, Union
 
-from tqdm import tqdm
-from transformers import PreTrainedTokenizerFast
+from typeguard import typechecked
 
-from gitnetic.data import Binarizer, dataset_dest_filepath, find_offsets
+import gitnetic.cli.functional.preprocess as F
+from gitnetic.cli.subcommand import Subcommand
+from gitnetic.common.dataclass_argparse import (
+    DataclassArgumentParser,
+    DataclassBase,
+    get_params_item,
+)
+from gitnetic.data.binarizer import Binarizer
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.tasks.base_transformers import TokenizerModule
 
 logger = logging.getLogger(__name__)
 
 
-def temp_filepath(filepath: Text, suffix: Text, output_path: Text) -> Text:
-    filename = os.path.basename(filepath)
-    output_prefix = os.path.join(output_path, f"{filename}{suffix}")
-    return output_prefix
-
-
-def tqdm_callback(pbar: tqdm) -> Callable[[Any], None]:
-    def update(*args: Any, **kwargs: Any) -> None:
-        del args, kwargs
-        pbar.update()
-
-    return update
-
-
-# pylint: disable=too-many-arguments, too-many-locals
-def preprocess(
-    make_binarizer: Callable[[], Binarizer],
-    train_prefix: Text,
-    valid_prefix: Optional[Text],
-    test_prefix: Optional[Text],
-    output_path: Text,
-    num_workers: int,
-    dataset_impl: Text,
-    **kwargs: Any,
-) -> None:
-    os.makedirs(output_path, exist_ok=True)
-
-    for filepath in [train_prefix, valid_prefix, test_prefix]:
-        if filepath is None:
-            continue
-
-        # split file into chunks for processing in parallel
-        _, offsets = find_offsets(filepath, num_chunks=num_workers)
-        logger.info("Preprocessing %s file...", filepath)
-        start_time = time.time()
-
-        # binarize file with num_workers processes
-        with tqdm(total=num_workers) as pbar:
-            pool = Pool(processes=num_workers)
-            for worker_idx in range(num_workers):
-                output_prefix = temp_filepath(filepath, str(worker_idx), output_path)
-
-                binarizer = make_binarizer()
-
-                pool.apply_async(
-                    binarizer.binarize_dataset,
-                    args=(
-                        filepath,
-                        output_prefix,
-                        offsets[worker_idx],
-                        offsets[worker_idx + 1],
-                    ),
-                    kwds=kwargs,
-                    callback=tqdm_callback(pbar),
-                )
-
-            pool.close()
-            pool.join()
-
-        # prepare dest paths for merged files
-        output_prefix = temp_filepath(filepath, "", output_path)
-        data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
-        index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
-
-        # prepare a dataset builder instance
-        dataset_setup = IndexedDatasetSetup.from_args(dataset_impl)
-        dataset_builder = dataset_setup.dataset_builder_type(
-            data_filepath,
-            index_filepath,
-            dataset_setup.dataset_dtype,
-            dataset_setup.dataset_type,
+@Subcommand.register("preprocess")
+class Preprocess(Subcommand):
+    @dataclass
+    class Params(DataclassBase):
+        tokenizer: Text = field(
+            metadata={
+                "choices": sorted(TokenizerModule.list_available()),
+                "help": "",
+            },
+        )
+        binarizer: Text = field(
+            metadata={
+                "choices": sorted(Binarizer.list_available()),
+                "help": "",
+            },
+        )
+        output_path: Text = field(
+            metadata={"help": "An output path for writing output files to."},
+        )
+        train_prefix: Text = field(
+            metadata={"help": "Train dataset text file prefix."},
+        )
+        valid_prefix: Optional[Text] = field(
+            default=None,
+            metadata={"help": "Validation dataset text file prefix."},
+        )
+        test_prefix: Optional[Text] = field(
+            default=None,
+            metadata={"help": "Test dataset text file prefix."},
+        )
+        num_workers: int = field(
+            default=1,
+            metadata={"help": "A number of processes to perform actions in parallel."},
         )
 
-        # merge temp files contents and remove files from disk
-        for worker_idx in range(num_workers):
-            output_prefix = temp_filepath(filepath, str(worker_idx), output_path)
-            temp_file_path = dataset_dest_filepath(output_prefix, extension="")
-            dataset_builder.merge_file(temp_file_path)
+    def add_subparser(
+        self, parser: _SubParsersAction
+    ) -> Tuple[DataclassArgumentParser, Dict[Text, Any]]:
+        description = """Preprocess the text dataset into indexed datasets."""
+        subparser = self._add_parser(
+            parser,
+            name=self.name,
+            description=description,
+            help=description,
+        )
 
-        # write final meta and type data
-        dataset_builder.finalize()
+        # add command arguments
+        subparser.add_arguments(self.Params)
+        # add index setup arguments
+        IndexedDatasetSetup.add_argparse_args(subparser)
 
-        # log execution wall time
-        time_delta = time.time() - start_time
-        logger.info("Wall time: %.3fs", time_delta)
+        def add_dynamic_args(parser: DataclassArgumentParser) -> None:
+            # get the parsed command arguments
+            parsed_params = subparser.parse_args_into_dataclasses(
+                return_remaining_strings=True
+            )
+            params = parsed_params[0]
+            assert isinstance(params, self.Params)
 
+            # add dybamic args to the subparser
+            tokenizer_cls, _ = TokenizerModule.from_registry(params.tokenizer)
+            tokenizer_cls.add_argparse_args(subparser)
+            binarizer_cls, _ = Binarizer.from_registry(params.binarizer)
+            binarizer_cls.add_argparse_args(subparser)
 
-def make_parser() -> ArgumentParser:
-    parser = ArgumentParser(description=__doc__)
-    # fmt: off
-    parser.add_argument("--train_prefix", type=str, required=True,
-                        help="Train dataset text file prefix.")
-    parser.add_argument("--valid_prefix", type=str, default=None,
-                        help="Validation dataset text file prefix (optional).")
-    parser.add_argument("--test_prefix", type=str, default=None,
-                        help="Test dataset text file prefix (optional).")
-    parser.add_argument("--tokenizer_type", type=str, required=True,
-                        help="")
-    parser.add_argument("--binarizer_type", type=str, required=True,
-                        help="")
-    parser.add_argument("--output_path", type=str, required=True,
-                        help="An output path for writing output files to.")
-    parser.add_argument("--num_workers", type=int, required=True,
-                        help="A number of processes to perform actions in parallel.")
-    # fmt: on
+            # inject dataclass_types to the parent parser
+            parser.dataclass_types = subparser.dataclass_types
 
-    # add indexed dataset impl argument
-    IndexedDatasetSetup.add_arguments(parser)
+        defaults = dict(
+            func=preprocess,
+            add_dynamic_args=add_dynamic_args,
+        )
 
-    return parser
+        return subparser, defaults
 
 
-def main() -> None:
-    # parse args for basic preprocessing
-    parser = make_parser()
+@typechecked
+def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     args = vars(parser.parse_known_args()[0])
 
-    # prepare args for loading a pre-trained tokenizer
-    tokenizer_cls, _ = TokenizerModule.from_registry(args["tokenizer_type"])
-    parser = tokenizer_cls.add_argparse_args(parser, stage="tokenize")
-    # prepare args for building a binarizer
-    binarizer_cls, _ = Binarizer.from_registry(args["binarizer_type"])
-    parser = binarizer_cls.add_argparse_args(parser)
+    cmd_params = get_params_item(params, params_type=Preprocess.Params)
 
-    args = vars(parser.parse_known_args()[0])
+    # prepare the pretrained tokenizer
+    tokenizer_cls, _ = TokenizerModule.from_registry(cmd_params.tokenizer)
+    tokenizer_params = get_params_item(params, params_type=tokenizer_cls.Params)
+    tokenizer = tokenizer_cls.from_pretrained(params=tokenizer_params)
 
-    # build the selected pre-trained tokenizer
-    tokenizer_path = args["tokenizer_path"]
-    tokenizer = tokenizer_cls.from_pretrained(tokenizer_path, **args)
+    # prepare the dataset setup
+    dataset_setup_params = get_params_item(
+        params, params_type=IndexedDatasetSetup.Params
+    )
+    dataset_setup = IndexedDatasetSetup.from_args(dataset_setup_params)
 
-    # prepare a binarizer builder
-    def make_binarizer() -> Binarizer:
-        # prepare the selected dataset setup
-        dataset_impl = args["dataset_impl"]
-        dataset_setup = IndexedDatasetSetup.from_args(dataset_impl)
-        # build a binarizer with the selected dataset setup and tokenizer
-        assert isinstance(tokenizer, PreTrainedTokenizerFast)
-        binarizer = binarizer_cls(dataset_setup, tokenizer)
-        # return the built binarizer
-        return binarizer
+    # prepare the dataset binarizer
+    binarizer_cls, binarizer_init = Binarizer.from_registry(cmd_params.binarizer)
+    binarizer_params = get_params_item(params, params_type=binarizer_cls.Params)
+    binarizer = binarizer_init(
+        dataset_setup=dataset_setup,
+        tokenizer=tokenizer,
+        params=binarizer_params,
+    )
 
-    # preprocess inputs with added args, selected tokenizer and binarizer
-    preprocess(make_binarizer, **args)
-
-
-if __name__ == "__main__":
-    main()
+    # run the preprocessing internal method
+    F.preprocess(
+        binarizer=binarizer,
+        train_prefix=cmd_params.train_prefix,
+        valid_prefix=cmd_params.valid_prefix,
+        test_prefix=cmd_params.test_prefix,
+        output_path=cmd_params.output_path,
+        num_workers=cmd_params.num_workers,
+        dataset_setup=dataset_setup,
+    )
