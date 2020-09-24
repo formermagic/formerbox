@@ -21,6 +21,7 @@ from typing_inspect import (
 
 from gitnetic.utils import str2bool
 
+T = typing.TypeVar("T")  # pylint: disable=invalid-name
 DataclassBaseType = Type["DataclassBase"]
 DataclassTypes = Union[DataclassBaseType, typing.Iterable[DataclassBaseType]]
 
@@ -36,6 +37,18 @@ def get_parsed_attr(
         if hasattr(args, attribute_name):
             attribute = getattr(args, attribute_name)
     return attribute
+
+
+@typechecked
+def get_params_item(
+    params: Tuple[Union["DataclassBase", Namespace], ...],
+    params_type: Type[T],
+    default: Optional[Any] = None,
+) -> Optional[T]:
+    for args in params:
+        if isinstance(args, params_type):
+            return args
+    return default
 
 
 @dataclass
