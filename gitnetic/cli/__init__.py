@@ -1,6 +1,7 @@
 from typing import Optional, Text
 
 from gitnetic.cli.convert_dataset import ConvertDataset
+from gitnetic.cli.preprocess import Preprocess
 from gitnetic.cli.subcommand import Subcommand
 from gitnetic.cli.train import Train
 from gitnetic.cli.train_tokenizer import TrainTokenizer
