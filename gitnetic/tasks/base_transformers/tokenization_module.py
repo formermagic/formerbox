@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from argparse import ArgumentParser
+from dataclasses import dataclass
 from typing import Any, List, Optional, Text, Union
 
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
@@ -8,14 +8,18 @@ from transformers.tokenization_utils_base import (
     PaddingStrategy,
     TruncationStrategy,
 )
-from typing_extensions import Literal
 
-from gitnetic.common.registrable import Registrable
+from gitnetic.common.dataclass_argparse import DataclassBase
+from gitnetic.common.registrable import ArgumentRegistrable
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
-class TokenizerModule(Registrable):
+class TokenizerModule(ArgumentRegistrable):
+    @dataclass
+    class Params(DataclassBase):
+        ...
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.tokenizer: Optional[Tokenizer] = None
         self.args = args
@@ -36,13 +40,6 @@ class TokenizerModule(Registrable):
     @staticmethod
     @abstractmethod
     def from_pretrained(*args: Any, **kwargs: Any) -> Tokenizer:
-        raise NotImplementedError()
-
-    @staticmethod
-    @abstractmethod
-    def add_argparse_args(
-        parent_parser: ArgumentParser, stage: Literal["train", "tokenize"]
-    ) -> ArgumentParser:
         raise NotImplementedError()
 
     def __call__(self, args: Any, **kwargs: Any) -> BatchEncoding:
