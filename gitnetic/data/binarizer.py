@@ -1,17 +1,17 @@
 import logging
 import os
 from abc import abstractmethod
-from argparse import ArgumentParser
+from dataclasses import dataclass, field
 from io import TextIOWrapper
-from typing import Any, Callable, List, Optional, Text, Tuple
+from typing import Callable, List, Optional, Text, Tuple
 
 import torch
 from transformers import PreTrainedTokenizerFast
 from typing_extensions import Literal
 
-from gitnetic.common.registrable import Registrable
+from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
+from gitnetic.common.registrable import ArgumentRegistrable
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
-from gitnetic.utils import str2bool
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +60,12 @@ def find_offsets(filename: Text, num_chunks: int) -> Tuple[int, List[int]]:
     return size, offsets
 
 
-class Binarizer(Registrable):
+class Binarizer(ArgumentRegistrable):
     # pylint: disable=too-many-arguments
+    @dataclass
+    class Params(DataclassBase):
+        ...
+
     def __init__(
         self, dataset_setup: IndexedDatasetSetup, tokenizer: PreTrainedTokenizerFast
     ) -> None:
@@ -74,7 +78,6 @@ class Binarizer(Registrable):
         output_prefix: Text,
         start_offset: int,
         end_offset: int,
-        **kwargs: Any,
     ) -> None:
         # prepare indexed dataset builder
         data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
@@ -93,7 +96,6 @@ class Binarizer(Registrable):
             consumer=dataset_builder.add_tokenized_ids,
             start_offset=start_offset,
             end_offset=end_offset,
-            **kwargs,
         )
 
         # write meta data and type info
@@ -107,19 +109,41 @@ class Binarizer(Registrable):
         consumer: Callable[[torch.Tensor], None],
         start_offset: int = 0,
         end_offset: int = -1,
-        **kwargs: Any,
     ) -> None:
         """Binarize the given chunk of file and pass to a consumer."""
         raise NotImplementedError()
 
-    @staticmethod
-    @abstractmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        raise NotImplementedError()
 
-
-@Binarizer.register(name="flat-binarizer")
+@Binarizer.register(name="flat-binarizer", constructor="from_args")
 class FlatBinarizer(Binarizer):
+    @dataclass
+    class Params(DataclassBase):
+        truncation: Truncation = field(
+            default="do_not_truncate",
+            metadata={"help": ""},
+        )
+        max_length: Optional[int] = field(
+            default=None,
+            metadata={"help": ""},
+        )
+        stride: int = field(
+            default=0,
+            metadata={"help": ""},
+        )
+        return_overflowing_tokens: bool = field(
+            default=False,
+            metadata={"help": ""},
+        )
+
+    def __init__(
+        self,
+        dataset_setup: IndexedDatasetSetup,
+        tokenizer: PreTrainedTokenizerFast,
+        params: Params,
+    ) -> None:
+        super().__init__(dataset_setup, tokenizer)
+        self.params = params
+
     def binarize(
         self,
         filename: Text,
@@ -127,19 +151,14 @@ class FlatBinarizer(Binarizer):
         consumer: Callable[[torch.Tensor], None],
         start_offset: int = 0,
         end_offset: int = -1,
-        truncation: Truncation = "do_not_truncate",
-        max_length: Optional[int] = None,
-        stride: int = 0,
-        return_overflowing_tokens: bool = False,
-        **kwargs: Any,
     ) -> None:
-        # pylint: disable=arguments-differ, too-many-locals, too-many-arguments
-        del kwargs  # use only designated args
-
+        # pylint: disable=too-many-arguments
         # make sure we explicitly truncate if max_length is provided
-        if max_length is not None and truncation == "do_not_truncate":
+        truncation = self.params.truncation
+        if truncation == "do_not_truncate" and self.params.max_length is not None:
             truncation = "longest_first"
 
+        # TODO: use a dataset reader instead of reading the file directly
         with open(filename, mode="r", encoding="utf-8") as stream:
             stream.seek(start_offset)
             line = read_line(stream)
@@ -155,10 +174,10 @@ class FlatBinarizer(Binarizer):
                     # tokenize input text and feed to consumer handler
                     encoding = tokenizer(
                         line,
-                        truncation=truncation,
-                        max_length=max_length,
-                        stride=stride,
-                        return_overflowing_tokens=return_overflowing_tokens,
+                        truncation=self.params.truncation,
+                        max_length=self.params.max_length,
+                        stride=self.params.stride,
+                        return_overflowing_tokens=self.params.return_overflowing_tokens,
                     )
 
                     if encoding.input_ids:
@@ -174,21 +193,6 @@ class FlatBinarizer(Binarizer):
                 # get the next line to process
                 line = stream.readline()
 
-    @staticmethod
-    def add_argparse_args(parent_parser: ArgumentParser) -> ArgumentParser:
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        truncation_choices = list(Truncation.__args__)  # type: ignore
-
-        # fmt: off
-        parser.add_argument("--truncation", type=str, choices=truncation_choices,
-                            default="do_not_truncate", required=False,
-                            help="")
-        parser.add_argument("--max_length", type=int, default=None, required=False,
-                            help="A maximum length of text sequence to encode.")
-        parser.add_argument("--stride", type=int, default=0, required=False,
-                            help="")
-        parser.add_argument("--return_overflowing_tokens", type=str2bool, default=False,
-                            required=False, help="")
-        # fmt: on
-
-        return parser
+    @classmethod
+    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
+        parser.add_arguments(cls.Params)
