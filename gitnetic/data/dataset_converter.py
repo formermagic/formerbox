@@ -1,6 +1,7 @@
+import logging
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Text, Union
+from typing import Any, Dict, List, Optional, Text, Union
 
 from datasets import Dataset, DatasetDict, load_dataset
 from typeguard import typechecked
@@ -9,6 +10,10 @@ from gitnetic.common.dataclass_argparse import DataclassArgumentParser, Dataclas
 from gitnetic.common.registrable import ArgumentRegistrable
 from gitnetic.utils import lazy_groups_of
 from gitnetic.utils.code_tokenizer import tokenize_python
+
+logger = logging.getLogger(__name__)
+
+Instance = Optional[Text]
 
 
 class DatasetProcessingMixin:
@@ -102,7 +107,7 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         self.save_dataset(dataset, self.params.output_path)
 
     def encode(self, instance: Dict[Text, Any]) -> Dict[Text, Any]:
-        result: Union[Text, List[Text]]
+        result: Union[Instance, List[Instance]]
         content = instance["content"]
         if isinstance(content, list):
             result = [self.tokenize_text(text) for text in content]
@@ -117,7 +122,8 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         data: List[Text] = dataset["output_data"]  # type: ignore
         with open(output_path, mode="w") as stream:
             for group in lazy_groups_of(data, group_size=1000):
-                stream.write("\n".join(group))
+                instances = [instance for instance in group if instance]
+                stream.write("\n".join(instances))
 
     @classmethod
     @typechecked
@@ -125,7 +131,9 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         parser.add_arguments(cls.Params)
 
     @typechecked
-    def tokenize_text(self, text: Text) -> Text:
+    def tokenize_text(self, text: Text) -> Instance:
         tokens = tokenize_python(text, keep_comments=True)
         result = " ".join(tokens)
+        if not result:
+            return None
         return result
