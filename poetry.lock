@@ -28,7 +28,7 @@ version = "1.4.4"
 [[package]]
 category = "dev"
 description = "Disable App Nap on OS X 10.9"
-marker = "sys_platform == \"darwin\" or platform_system == \"Darwin\" or python_version >= \"3.3\" and sys_platform == \"darwin\""
+marker = "python_version >= \"3.3\" and sys_platform == \"darwin\" or platform_system == \"Darwin\""
 name = "appnope"
 optional = false
 python-versions = "*"
@@ -104,6 +104,7 @@ tests_no_zope = ["coverage (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0
 [[package]]
 category = "dev"
 description = "Specifications for callback functions passed in to an API"
+marker = "python_version >= \"3.3\""
 name = "backcall"
 optional = false
 python-versions = "*"
@@ -148,7 +149,7 @@ description = "An easy safelist-based HTML-sanitizing tool."
 name = "bleach"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "3.1.5"
+version = "3.2.1"
 
 [package.dependencies]
 packaging = "*"
@@ -236,13 +237,14 @@ description = "Python commitizen client tool"
 name = "commitizen"
 optional = false
 python-versions = ">=3.6.1,<4.0.0"
-version = "1.25.0"
+version = "2.4.0"
 
 [package.dependencies]
 colorama = ">=0.4.1,<0.5.0"
-decli = ">=0.5.0,<0.6.0"
+decli = ">=0.5.2,<0.6.0"
 jinja2 = ">=2.10.3,<3.0.0"
 packaging = ">=19,<21"
+pyyaml = ">=3.08"
 questionary = ">=1.4.0,<2.0.0"
 termcolor = ">=1.1,<2.0"
 tomlkit = ">=0.5.3,<0.6.0"
@@ -433,10 +435,9 @@ torch = "*"
 tqdm = "*"
 
 [package.source]
-reference = "23d8502bdde88a3e58e0910e2ee49834f8478b39"
+reference = "66101b0564d99daa598ead2cc75615e96b362411"
 type = "git"
 url = "https://github.com/pytorch/fairseq.git"
-
 [[package]]
 category = "main"
 description = "A platform independent file lock."
@@ -481,7 +482,7 @@ description = "Google Authentication Library"
 name = "google-auth"
 optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
-version = "1.21.2"
+version = "1.21.3"
 
 [package.dependencies]
 cachetools = ">=2.0.0,<5.0"
@@ -528,7 +529,7 @@ description = "A framework for elegantly configuring complex applications"
 name = "hydra-core"
 optional = false
 python-versions = "*"
-version = "1.0.1"
+version = "1.0.3"
 
 [package.dependencies]
 antlr4-python3-runtime = "4.8"
@@ -553,7 +554,7 @@ marker = "python_version < \"3.8\""
 name = "importlib-metadata"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
-version = "1.7.0"
+version = "2.0.0"
 
 [package.dependencies]
 zipp = ">=0.5"
@@ -664,7 +665,7 @@ description = "A Python utility / library to sort Python imports."
 name = "isort"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "5.5.2"
+version = "5.5.3"
 
 [package.extras]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
@@ -674,6 +675,7 @@ requirements_deprecated_finder = ["pipreqs", "pip-api"]
 [[package]]
 category = "dev"
 description = "An autocompletion tool for Python that can be used for text editors."
+marker = "python_version >= \"3.3\""
 name = "jedi"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
@@ -998,7 +1000,7 @@ description = "Converting Jupyter Notebooks"
 name = "nbconvert"
 optional = false
 python-versions = ">=3.6"
-version = "6.0.2"
+version = "6.0.6"
 
 [package.dependencies]
 bleach = "*"
@@ -1155,6 +1157,7 @@ version = "1.4.2"
 [[package]]
 category = "dev"
 description = "A Python Parser"
+marker = "python_version >= \"3.3\""
 name = "parso"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -1182,7 +1185,7 @@ version = "0.1.2"
 [[package]]
 category = "dev"
 description = "Pexpect allows easy control of interactive console applications."
-marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\""
+marker = "python_version >= \"3.3\" and sys_platform != \"win32\""
 name = "pexpect"
 optional = false
 python-versions = "*"
@@ -1194,6 +1197,7 @@ ptyprocess = ">=0.5"
 [[package]]
 category = "dev"
 description = "Tiny 'shelve'-like database with concurrency support"
+marker = "python_version >= \"3.3\""
 name = "pickleshare"
 optional = false
 python-versions = "*"
@@ -1312,7 +1316,7 @@ test = ["ipaddress", "mock", "unittest2", "enum34", "pywin32", "wmi"]
 [[package]]
 category = "dev"
 description = "Run a subprocess in a pseudo terminal"
-marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\" or os_name != \"nt\" or python_version >= \"3.3\" and sys_platform != \"win32\" and (python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\")"
+marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or os_name != \"nt\""
 name = "ptyprocess"
 optional = false
 python-versions = "*"
@@ -1375,7 +1379,7 @@ description = "Pygments is a syntax highlighting package written in Python."
 name = "pygments"
 optional = false
 python-versions = ">=3.5"
-version = "2.7.0"
+version = "2.7.1"
 
 [[package]]
 category = "dev"
@@ -1676,7 +1680,7 @@ description = "Python client for Sentry (https://sentry.io)"
 name = "sentry-sdk"
 optional = false
 python-versions = "*"
-version = "0.17.6"
+version = "0.17.8"
 
 [package.dependencies]
 certifi = "*"
@@ -1819,11 +1823,11 @@ version = "1.1.0"
 
 [[package]]
 category = "dev"
-description = "Terminals served to xterm.js using Tornado websockets"
+description = "Tornado websocket backend for the Xterm.js Javascript terminal emulator library."
 name = "terminado"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "0.8.3"
+python-versions = ">=3.6"
+version = "0.9.1"
 
 [package.dependencies]
 ptyprocess = "*"
@@ -1966,7 +1970,7 @@ description = "State-of-the-art Natural Language Processing for TensorFlow 2.0 a
 name = "transformers"
 optional = false
 python-versions = ">=3.6.0"
-version = "3.1.0"
+version = "3.2.0"
 
 [package.dependencies]
 filelock = "*"
@@ -1981,17 +1985,17 @@ tqdm = ">=4.27"
 
 [package.extras]
 all = ["pydantic", "uvicorn", "fastapi", "starlette", "tensorflow", "torch"]
-dev = ["pytest", "pytest-xdist", "timeout-decorator", "psutil", "black (>=20.8b1)", "isort (>=5)", "flake8", "fugashi (>=1.0)", "ipadic (>=1.0.0,<2.0)", "unidic-lite (>=1.0.7)", "unidic (>=1.0.2)", "scikit-learn", "tensorflow", "torch"]
+dev = ["pytest", "pytest-xdist", "timeout-decorator", "psutil", "parameterized", "black (>=20.8b1)", "isort (>=5)", "flake8 (>=3.8.3)", "fugashi (>=1.0)", "ipadic (>=1.0.0,<2.0)", "unidic-lite (>=1.0.7)", "unidic (>=1.0.2)", "scikit-learn", "tensorflow", "torch"]
 docs = ["recommonmark", "sphinx", "sphinx-markdown-tables", "sphinx-rtd-theme (0.4.3)", "sphinx-copybutton"]
 ja = ["fugashi (>=1.0)", "ipadic (>=1.0.0,<2.0)", "unidic-lite (>=1.0.7)", "unidic (>=1.0.2)"]
 onnxruntime = ["onnxruntime (>=1.4.0)", "onnxruntime-tools (>=1.4.2)"]
-quality = ["black (>=20.8b1)", "isort (>=5)", "flake8"]
+quality = ["black (>=20.8b1)", "isort (>=5)", "flake8 (>=3.8.3)"]
 serving = ["pydantic", "uvicorn", "fastapi", "starlette"]
 sklearn = ["scikit-learn"]
-testing = ["pytest", "pytest-xdist", "timeout-decorator", "psutil"]
-tf = ["tensorflow", "onnxconverter-common", "keras2onnx"]
-tf-cpu = ["tensorflow-cpu", "onnxconverter-common", "keras2onnx"]
-torch = ["torch"]
+testing = ["pytest", "pytest-xdist", "timeout-decorator", "psutil", "parameterized"]
+tf = ["tensorflow (>=2.0)", "onnxconverter-common", "keras2onnx"]
+tf-cpu = ["tensorflow-cpu (>=2.0)", "onnxconverter-common", "keras2onnx"]
+torch = ["torch (>=1.0)"]
 
 [[package]]
 category = "main"
@@ -2060,7 +2064,7 @@ description = "A CLI and library for interacting with the Weights and Biases API
 name = "wandb"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "0.10.0"
+version = "0.10.2"
 
 [package.dependencies]
 Click = ">=7.0"
@@ -2181,14 +2185,14 @@ marker = "python_version < \"3.8\""
 name = "zipp"
 optional = false
 python-versions = ">=3.6"
-version = "3.1.0"
+version = "3.2.0"
 
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
-testing = ["jaraco.itertools", "func-timeout"]
+testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [metadata]
-content-hash = "9f9f4177d4ac12838ede1a18217ee89a673d3c4e4b7c7f7549fdac878170e7bb"
+content-hash = "7b9563b160660bafa598bec4a2d89374b7115cbe81442c6c23246146341bf4df"
 lock-version = "1.0"
 python-versions = "^3.7"
 
@@ -2255,8 +2259,8 @@ black = [
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
 ]
 bleach = [
-    {file = "bleach-3.1.5-py2.py3-none-any.whl", hash = "sha256:2bce3d8fab545a6528c8fa5d9f9ae8ebc85a56da365c7f85180bfe96a35ef22f"},
-    {file = "bleach-3.1.5.tar.gz", hash = "sha256:3c4c520fdb9db59ef139915a5db79f8b51bc2a7257ea0389f30c846883430a4b"},
+    {file = "bleach-3.2.1-py2.py3-none-any.whl", hash = "sha256:9f8ccbeb6183c6e6cddea37592dfb0167485c1e3b13b3363bc325aa8bda3adbd"},
+    {file = "bleach-3.2.1.tar.gz", hash = "sha256:52b5919b81842b1854196eaae5ca29679a2f2e378905c346d3ca8227c2c66080"},
 ]
 blis = [
     {file = "blis-0.4.1-cp27-cp27m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:135450caabc8aea9bb9250329ebdf7189982d9b57d5c92789b2ba2fe52c247a7"},
@@ -2339,8 +2343,8 @@ colorama = [
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
 ]
 commitizen = [
-    {file = "commitizen-1.25.0-py3-none-any.whl", hash = "sha256:d2d461c9a9e4e153e74f7799a60b254ffa336d542d518eda55d8c66610e7fc5f"},
-    {file = "commitizen-1.25.0.tar.gz", hash = "sha256:c2dd66db3f50c8a56271ad8d9a98e3c05a7ea352a4aef81cd6d0eb3f43710f05"},
+    {file = "commitizen-2.4.0-py3-none-any.whl", hash = "sha256:72d918479a765749e6dc9ce49a4408bcf2bd776ceb3600a2296cfd8e696e7356"},
+    {file = "commitizen-2.4.0.tar.gz", hash = "sha256:b7d43a3f5411db0f6cde34e67807aac519e77d5062c2e5af203717158c5b5a77"},
 ]
 configparser = [
     {file = "configparser-5.0.0-py3-none-any.whl", hash = "sha256:cffc044844040c7ce04e9acd1838b5f2e5fa3170182f6fda4d2ea8b0099dbadd"},
@@ -2486,8 +2490,8 @@ gitpython = [
     {file = "GitPython-3.1.8.tar.gz", hash = "sha256:080bf8e2cf1a2b907634761c2eaefbe83b69930c94c66ad11b65a8252959f912"},
 ]
 google-auth = [
-    {file = "google-auth-1.21.2.tar.gz", hash = "sha256:7084c50c03f7a8a5696ef4500e65df0c525a0f6909f3c70b9ee65900a230c755"},
-    {file = "google_auth-1.21.2-py2.py3-none-any.whl", hash = "sha256:dcf86c5adc3a8a7659be190b12bb8912ae019cfd9ee2a571ea881e289fafbe39"},
+    {file = "google-auth-1.21.3.tar.gz", hash = "sha256:31941bf019fb242c04d0de32845da10180788bfddb0de87d78c4bdf55555dda1"},
+    {file = "google_auth-1.21.3-py2.py3-none-any.whl", hash = "sha256:873051a6317294b083795cffc467bcd05b6df483ef542bfe0069ddbfbac0a096"},
 ]
 google-auth-oauthlib = [
     {file = "google-auth-oauthlib-0.4.1.tar.gz", hash = "sha256:88d2cd115e3391eb85e1243ac6902e76e77c5fe438b7276b297fbe68015458dd"},
@@ -2535,16 +2539,16 @@ grpcio = [
     {file = "grpcio-1.32.0.tar.gz", hash = "sha256:01d3046fe980be25796d368f8fc5ff34b7cf5e1444f3789a017a7fe794465639"},
 ]
 hydra-core = [
-    {file = "hydra-core-1.0.1.tar.gz", hash = "sha256:bd7a0a277226739c3a6a6252a878f63ab39dbed18ab4c97f65275ddbb297ae84"},
-    {file = "hydra_core-1.0.1-py3-none-any.whl", hash = "sha256:f9f3add2aa706f4d873ca101893cd9acec4797f4563c23df95dbbab8d926a698"},
+    {file = "hydra-core-1.0.3.tar.gz", hash = "sha256:d03f0189fdabe8a99e0b9a425b630580020f87eebdf3db208df0adf5bfdfeae1"},
+    {file = "hydra_core-1.0.3-py3-none-any.whl", hash = "sha256:f102b81bc28b6315822a2b7ebd49cc508a37a6cc4716d85886797d74c620cf42"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
     {file = "idna-2.10.tar.gz", hash = "sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6"},
 ]
 importlib-metadata = [
-    {file = "importlib_metadata-1.7.0-py2.py3-none-any.whl", hash = "sha256:dc15b2969b4ce36305c51eebe62d418ac7791e9a157911d58bfb1f9ccd8e2070"},
-    {file = "importlib_metadata-1.7.0.tar.gz", hash = "sha256:90bb658cdbbf6d1735b6341ce708fc7024a3e14e99ffdc5783edea9f9b077f83"},
+    {file = "importlib_metadata-2.0.0-py2.py3-none-any.whl", hash = "sha256:cefa1a2f919b866c5beb7c9f7b0ebb4061f30a8a9bf16d609b000e2dfaceb9c3"},
+    {file = "importlib_metadata-2.0.0.tar.gz", hash = "sha256:77a540690e24b0305878c37ffd421785a6f7e53c8b5720d211b211de8d0e95da"},
 ]
 importlib-resources = [
     {file = "importlib_resources-3.0.0-py2.py3-none-any.whl", hash = "sha256:d028f66b66c0d5732dae86ba4276999855e162a749c92620a38c1d779ed138a7"},
@@ -2567,8 +2571,8 @@ ipywidgets = [
     {file = "ipywidgets-7.5.1.tar.gz", hash = "sha256:e945f6e02854a74994c596d9db83444a1850c01648f1574adf144fbbabe05c97"},
 ]
 isort = [
-    {file = "isort-5.5.2-py3-none-any.whl", hash = "sha256:ba91218eee31f1e300ecc079ef0c524cea3fc41bfbb979cbdf5fd3a889e3cfed"},
-    {file = "isort-5.5.2.tar.gz", hash = "sha256:171c5f365791073426b5ed3a156c2081a47f88c329161fd28228ff2da4c97ddb"},
+    {file = "isort-5.5.3-py3-none-any.whl", hash = "sha256:c16eaa7432a1c004c585d79b12ad080c6c421dd18fe27982ca11f95e6898e432"},
+    {file = "isort-5.5.3.tar.gz", hash = "sha256:6187a9f1ce8784cbc6d1b88790a43e6083a6302f03e9ae482acc0f232a98c843"},
 ]
 jedi = [
     {file = "jedi-0.17.2-py2.py3-none-any.whl", hash = "sha256:98cc583fa0f2f8304968199b01b6b4b94f469a1f4a74c1560506ca2a211378b5"},
@@ -2766,8 +2770,8 @@ nbclient = [
     {file = "nbclient-0.5.0.tar.gz", hash = "sha256:8ad52d27ba144fca1402db014857e53c5a864a2f407be66ca9d74c3a56d6591d"},
 ]
 nbconvert = [
-    {file = "nbconvert-6.0.2-py3-none-any.whl", hash = "sha256:e3994dbcb8029c91425d945797135573b9efbd52278908685c7ae81f84280a2e"},
-    {file = "nbconvert-6.0.2.tar.gz", hash = "sha256:4cb5c66d04737a42076536fa64fa951e97cddbf4c517c418591314a3d14013dc"},
+    {file = "nbconvert-6.0.6-py3-none-any.whl", hash = "sha256:d8549f62e739a4d51f275c2932b1783ee5039dde07a2b71de70c0296a42c8394"},
+    {file = "nbconvert-6.0.6.tar.gz", hash = "sha256:68335477288aab8a9b9ec03002dce59b4eb1ca967116741ec218a4e78c129efd"},
 ]
 nbformat = [
     {file = "nbformat-5.0.7-py3-none-any.whl", hash = "sha256:ea55c9b817855e2dfcd3f66d74857342612a60b1f09653440f4a5845e6e3523f"},
@@ -3032,8 +3036,8 @@ pydriller = [
     {file = "PyDriller-1.15.2.tar.gz", hash = "sha256:2d3322591d63c8fea590b1ac6b3cd6a9707417fdde675927a9589fe2d85e5c42"},
 ]
 pygments = [
-    {file = "Pygments-2.7.0-py3-none-any.whl", hash = "sha256:2df50d16b45b977217e02cba6c8422aaddb859f3d0570a88e09b00eafae89c6e"},
-    {file = "Pygments-2.7.0.tar.gz", hash = "sha256:2594e8fdb06fef91552f86f4fd3a244d148ab24b66042036e64f29a291515048"},
+    {file = "Pygments-2.7.1-py3-none-any.whl", hash = "sha256:307543fe65c0947b126e83dd5a61bd8acbd84abec11f43caebaf5534cbc17998"},
+    {file = "Pygments-2.7.1.tar.gz", hash = "sha256:926c3f319eda178d1bd90851e4317e6d8cdb5e292a3386aac9bd75eca29cf9c7"},
 ]
 pylint = [
     {file = "pylint-2.6.0-py3-none-any.whl", hash = "sha256:bfe68f020f8a0fece830a22dd4d5dddb4ecc6137db04face4c3420a46a52239f"},
@@ -3252,8 +3256,8 @@ sentencepiece = [
     {file = "sentencepiece-0.1.91.tar.gz", hash = "sha256:f9700cf607ea064d9fad34c751fbf49953dcc56fe68c54b277481aa0aec5c18f"},
 ]
 sentry-sdk = [
-    {file = "sentry-sdk-0.17.6.tar.gz", hash = "sha256:1a086486ff9da15791f294f6e9915eb3747d161ef64dee2d038a4d0b4a369b24"},
-    {file = "sentry_sdk-0.17.6-py2.py3-none-any.whl", hash = "sha256:45486deb031cea6bbb25a540d7adb4dd48cd8a1cc31e6a5ce9fb4f792a572e9a"},
+    {file = "sentry-sdk-0.17.8.tar.gz", hash = "sha256:e159f7c919d19ae86e5a4ff370fccc45149fab461fbeb93fb5a735a0b33a9cb1"},
+    {file = "sentry_sdk-0.17.8-py2.py3-none-any.whl", hash = "sha256:c9c0fa1412bad87104c4eee8dd36c7bbf60b0d92ae917ab519094779b22e6d9a"},
 ]
 shortuuid = [
     {file = "shortuuid-1.0.1-py3-none-any.whl", hash = "sha256:492c7402ff91beb1342a5898bd61ea953985bf24a41cd9f247409aa2e03c8f77"},
@@ -3307,8 +3311,8 @@ termcolor = [
     {file = "termcolor-1.1.0.tar.gz", hash = "sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"},
 ]
 terminado = [
-    {file = "terminado-0.8.3-py2.py3-none-any.whl", hash = "sha256:a43dcb3e353bc680dd0783b1d9c3fc28d529f190bc54ba9a229f72fe6e7a54d7"},
-    {file = "terminado-0.8.3.tar.gz", hash = "sha256:4804a774f802306a7d9af7322193c5390f1da0abb429e082a10ef1d46e6fb2c2"},
+    {file = "terminado-0.9.1-py3-none-any.whl", hash = "sha256:c55f025beb06c2e2669f7ba5a04f47bb3304c30c05842d4981d8f0fc9ab3b4e3"},
+    {file = "terminado-0.9.1.tar.gz", hash = "sha256:3da72a155b807b01c9e8a5babd214e052a0a45a975751da3521a1c3381ce6d76"},
 ]
 testpath = [
     {file = "testpath-0.4.4-py2.py3-none-any.whl", hash = "sha256:bfcf9411ef4bf3db7579063e0546938b1edda3d69f4e1fb8756991f5951f85d4"},
@@ -3391,8 +3395,8 @@ traitlets = [
     {file = "traitlets-4.3.3.tar.gz", hash = "sha256:d023ee369ddd2763310e4c3eae1ff649689440d4ae59d7485eb4cfbbe3e359f7"},
 ]
 transformers = [
-    {file = "transformers-3.1.0-py3-none-any.whl", hash = "sha256:42cde6911b1224e86e4dd78b529aa7cf126c7eca71cdaa2159278a449a85f43e"},
-    {file = "transformers-3.1.0.tar.gz", hash = "sha256:51b76910798d1478b5ebe398b717a157baaeb338d673241787878c51105e5a34"},
+    {file = "transformers-3.2.0-py3-none-any.whl", hash = "sha256:779eaf6ac96c3380068f8f1c467e2f6e45360d2f9774320959d96074131ca150"},
+    {file = "transformers-3.2.0.tar.gz", hash = "sha256:d17b175a85e18dce399e81cde1a1198d6fc52a507168a06a2548cdea7e0cbbb4"},
 ]
 tree-sitter = [
     {file = "tree_sitter-0.1.1-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:14e556f9369445d27ae0e6d678299a3f0f5a54dc0b75c365d7beb43c183d95bc"},
@@ -3440,8 +3444,8 @@ urllib3 = [
     {file = "urllib3-1.25.10.tar.gz", hash = "sha256:91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a"},
 ]
 wandb = [
-    {file = "wandb-0.10.0-py2.py3-none-any.whl", hash = "sha256:e2ddb8ea21af53b0a12598f73d70561a16eb9bc0fb617384000d79efa5593a36"},
-    {file = "wandb-0.10.0.tar.gz", hash = "sha256:e24ab8d143ea99c31e94293cbcffba32f18aed7bceee2e9da20c8fd79705ca09"},
+    {file = "wandb-0.10.2-py2.py3-none-any.whl", hash = "sha256:ee10e4e34566964b7ba6e17d93b1ffb55ac67d3803d3953994d22b4145305c67"},
+    {file = "wandb-0.10.2.tar.gz", hash = "sha256:8ec1ebc53f57b9d760328703e2b97ae123d9dce6549f38ab84ef7f06bf7aaf5b"},
 ]
 wasabi = [
     {file = "wasabi-0.8.0-py3-none-any.whl", hash = "sha256:98bc9c492c6aa8628303a02961a5cfa7b0c7fa6d2b397abdeb0adc4b39397c49"},
@@ -3526,6 +3530,6 @@ xxhash = [
     {file = "xxhash-2.0.0.tar.gz", hash = "sha256:58ca818554c1476fa1456f6cd4b87002e2294f09baf0f81e5a2a4968e62c423c"},
 ]
 zipp = [
-    {file = "zipp-3.1.0-py3-none-any.whl", hash = "sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b"},
-    {file = "zipp-3.1.0.tar.gz", hash = "sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96"},
+    {file = "zipp-3.2.0-py3-none-any.whl", hash = "sha256:43f4fa8d8bb313e65d8323a3952ef8756bf40f9a5c3ea7334be23ee4ec8278b6"},
+    {file = "zipp-3.2.0.tar.gz", hash = "sha256:b52f22895f4cfce194bc8172f3819ee8de7540aa6d873535a8668b730b8b411f"},
 ]

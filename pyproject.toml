@@ -36,7 +36,7 @@ pylint = "^2.5.3"
 black = "^20.8b1"
 jupyter = "^1.0.0"
 jupyterlab = "^2.1.4"
-commitizen = "^1.23.0"
+commitizen = "^2.4.0"
 cookiecutter = "^1.7.2"
 
 [tool.commitizen]
