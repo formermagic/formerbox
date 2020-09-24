@@ -115,6 +115,21 @@ class Registrable(FromArgs):
             return subclass
         return getattr(subclass, constructor)
 
+    @classmethod
+    def list_available(cls) -> List[Text]:
+        """List default first if it exists"""
+        keys = list(Registrable._registry[cls].keys())
+        default = cls.default_implementation
+        result: List[Text]
+        if default is None:
+            result = keys
+        elif default not in keys:
+            raise RuntimeError(f"Default implementation {default} is not registered")
+        else:
+            result = [default] + [k for k in keys if k != default]
+        return result
+
+
 class ArgumentRegistrable(Registrable):
     @classmethod
     @abstractmethod
