@@ -1,4 +1,4 @@
-# Copyright (c) 2019-present, Facebook, Inc.
+# Copyright (c) 2019-present, Facebook, Inc. and The FormerMagic Inc. team.
 # All rights reserved.
 #
 # This source code is licensed under the license found in the
