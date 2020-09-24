@@ -143,34 +143,3 @@ class TransformerTrainer(ArgumentRegistrable):
             if action.dest == "help":
                 continue
             parser._add_action(action)
-
-
-    task_cls, _ = TaskModule.from_registry(args["task"])
-    parser = task_cls.add_argparse_args(parser)
-    args = vars(parser.parse_known_args()[0])
-
-    task = task_cls.setup(**args)
-    trainer = TransformerTrainer(task, args)
-    trainer.train()
-
-
-if __name__ == "__main__":
-    """Running on a GPU example command:
-
-    ```
-        python -m gitnetic.tasks.base_transformers.base_trainer \
-            --config_path <path> \
-            --tokenizer_path <path> \
-            --train_data_prefix <path> \
-            --val_data_prefix <path> \
-            --num_workers <num> \
-            --max_tokens <num> \
-            --warmup_steps <num> \
-            --learning_rate <num> \
-            --power <num> \
-            --gpus 1 \
-            --num_nodes 1 \
-            --distributed_backend ddp \
-            --max_steps 10000
-    ```
-"""
