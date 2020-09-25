@@ -54,6 +54,10 @@ class DatasetProcessingMixin:
 
 
 class DatasetConverter(ArgumentRegistrable):
+    @dataclass
+    class Params(DataclassBase):
+        ...
+
     @abstractmethod
     def convert(self, *args: Any, **kwargs: Any) -> None:
         raise NotImplementedError()
