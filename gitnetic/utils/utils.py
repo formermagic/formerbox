@@ -38,18 +38,15 @@ def safe_round(number: Any, ndigits: int) -> float:
 
 
 # pylint: disable=not-callable
-def perplexity(
-    loss: Optional[Any], ndigits: int = 2, base: int = 2
-) -> torch.FloatTensor:
+def perplexity(loss: Optional[Any], ndigits: int = 2, base: int = 2) -> torch.Tensor:
     ppl_tensor: torch.Tensor
     if loss is None:
-        ppl_tensor = torch.tensor(0.0)
+        return torch.tensor(0.0)
     try:
         ppl_tensor = torch.tensor(safe_round(base ** loss, ndigits))
     except OverflowError:
         ppl_tensor = torch.tensor(float("inf"))
-
-    return typing.cast(torch.FloatTensor, ppl_tensor.float())
+    return ppl_tensor
 
 
 def lines_in_file(filepath: Text) -> int:
