@@ -1,9 +1,9 @@
 import logging
+import os
 from argparse import Namespace, _SubParsersAction
 from dataclasses import dataclass, field
+from time import time
 from typing import Any, Dict, Optional, Text, Tuple, Union
-
-from typeguard import typechecked
 
 import gitnetic.cli.functional.preprocess as F
 from gitnetic.cli.subcommand import Subcommand
@@ -15,6 +15,7 @@ from gitnetic.common.dataclass_argparse import (
 from gitnetic.data.binarizer import Binarizer
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.tasks.base_transformers import TokenizerModule
+from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,9 @@ class Preprocess(Subcommand):
 
 @typechecked
 def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
-    args = vars(parser.parse_known_args()[0])
+    # make sure tokenizer parallelizm is disabled
+    # since it might cause deadlocks while preprocessing
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     cmd_params = get_params_item(params, params_type=Preprocess.Params)
 
@@ -121,13 +124,15 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
         params=binarizer_params,
     )
 
-    # run the preprocessing internal method
-    F.preprocess(
-        binarizer=binarizer,
-        train_prefix=cmd_params.train_prefix,
-        valid_prefix=cmd_params.valid_prefix,
-        test_prefix=cmd_params.test_prefix,
-        output_path=cmd_params.output_path,
-        num_workers=cmd_params.num_workers,
-        dataset_setup=dataset_setup,
+    # prepare the output dir for writing data files
+    os.makedirs(cmd_params.output_path, exist_ok=True)
+    output_prefix = F.temp_filepath(cmd_params.train_prefix, "", cmd_params.output_path)
+
+    # run dataset binarization
+    start_time = time()
+    binarizer.binarize_dataset(
+        filename=cmd_params.train_prefix,
+        output_prefix=output_prefix,
     )
+    time_delta = time() - start_time
+    logger.info("Wall time: %.3fs", time_delta)
