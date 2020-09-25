@@ -21,7 +21,7 @@ from typing import (
 import numpy as np
 import torch
 
-T = typing.TypeVar("T")
+T = typing.TypeVar("T")  # pylint: disable=invalid-name
 
 
 def safe_round(number: Any, ndigits: int) -> float:
