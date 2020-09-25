@@ -9,7 +9,6 @@ from transformers import (
     PreTrainedTokenizer,
     PreTrainedTokenizerFast,
 )
-from typeguard import check_type
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
@@ -73,7 +72,7 @@ def tokenizer_from_config(
         validate_tokenizer_config(config_kwargs)
         tokenizer_name = config_kwargs["tokenizer"]["name"]
         tokenizer_class = import_class_from_string(tokenizer_name)
-        assert check_type("tokenizer_class", tokenizer_class, Type[Tokenizer])
+        assert issubclass(tokenizer_class, Tokenizer.__args__)  # type: ignore
     except AttributeError as err:
         raise err
 
