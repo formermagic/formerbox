@@ -9,9 +9,9 @@ from typing import Any, Dict, List, Optional, Text, Type, Union
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
-
 from gitnetic.utils import all_subclasses, path_to_posix
+from torch.utils.data import Dataset
+from typing_extensions import Protocol
 
 element_codes = {
     1: np.uint8,
@@ -50,7 +50,11 @@ def make_data_filepath(prefix_path: Text) -> Text:
     return prefix_path + ".bin"
 
 
-class IndexedDatasetBase(Dataset, metaclass=ABCMeta):
+class MagicDecodable(Protocol):
+    magic_code: bytes
+
+
+class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
     """A base class for loading preprocessed binary datasets.
     Binary datasets are represented as 2 files (.bin, .idx),
     containing the data sequences (.bin) and indices (.idx).
@@ -92,7 +96,7 @@ class IndexedDatasetBase(Dataset, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def magic_code(self) -> bytes:
+    def supports_prefetch(self) -> bool:
         raise NotImplementedError()
 
     @property
