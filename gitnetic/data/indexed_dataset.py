@@ -99,13 +99,9 @@ class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
     def supports_prefetch(self) -> bool:
         raise NotImplementedError()
 
-    @property
     @abstractmethod
-    def supports_prefetch(self) -> bool:
-        raise NotImplementedError()
-
     def prefetch(self, indices: List[int]) -> None:
-        del indices  # an abstract method doesn't use args
+        raise NotImplementedError()
 
     def validate_index(self, index: int) -> None:
         if index < 0 or index >= self.length:
@@ -169,6 +165,9 @@ class IndexedDataset(IndexedDatasetBase):
     @property
     def supports_prefetch(self) -> bool:
         return False
+
+    def prefetch(self, indices: List[int]) -> None:
+        pass
 
     @lru_cache(maxsize=128)
     def __getitem__(self, index: int) -> torch.Tensor:

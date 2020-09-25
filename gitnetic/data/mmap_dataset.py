@@ -87,6 +87,9 @@ class MMapIndexedDataset(MMapIndexedDatasetBase):
     def supports_prefetch(self) -> bool:
         return False
 
+    def prefetch(self, indices: List[int]) -> None:
+        pass
+
     @lru_cache(maxsize=128)
     def __getitem__(self, index: int) -> Tensor:
         # make sure the index is within bounds
