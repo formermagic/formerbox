@@ -103,7 +103,7 @@ def path_to_posix(path: Union[Text, Path]) -> Text:
     return path
 
 
-def all_subclasses(cls: Type[Any]) -> Iterable[Type[Any]]:
+def all_subclasses(cls: Type[T]) -> Iterable[Type[T]]:
     return set(cls.__subclasses__()).union(
         [s for c in cls.__subclasses__() for s in all_subclasses(c)]
     )
