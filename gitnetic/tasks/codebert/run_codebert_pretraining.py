@@ -56,7 +56,7 @@ class ValidSaveCallback(Callback):
             metrics=dict(**trainer.callback_metrics, step=trainer.global_step),
         )
 
-        model_checkpoint.save_function = trainer.save_checkpoint
+        model_checkpoint.save_function = trainer.save_checkpoint  # type: ignore
         # pylint: disable=protected-access
         model_checkpoint._save_model(save_filepath, trainer, pl_module)
 
@@ -263,7 +263,7 @@ class CodeBertLMPretraining(LightningModule):
             num_gpus = list(num_gpus)
 
         batch_size = self.batch_size
-        per_gpu_samples = dataset_len // (batch_size * max(1, num_gpus))
+        per_gpu_samples = dataset_len // (batch_size * max(1, num_gpus))  # type: ignore
         per_gpu_samples //= self.trainer.accumulate_grad_batches
         return per_gpu_samples * self.trainer.max_epochs
 
