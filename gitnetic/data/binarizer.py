@@ -3,15 +3,15 @@ import os
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from io import TextIOWrapper
-from typing import Callable, List, Optional, Text, Tuple
+from typing import Any, Callable, Dict, List, Optional, Text, Tuple
 
 import torch
-from transformers import PreTrainedTokenizerFast
-from typing_extensions import Literal
-
+from datasets import load_dataset
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
 from gitnetic.common.registrable import ArgumentRegistrable
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
+from transformers import PreTrainedTokenizerFast
+from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)
 
@@ -67,18 +67,14 @@ class Binarizer(ArgumentRegistrable):
         ...
 
     def __init__(
-        self, dataset_setup: IndexedDatasetSetup, tokenizer: PreTrainedTokenizerFast
+        self,
+        dataset_setup: IndexedDatasetSetup,
+        tokenizer: PreTrainedTokenizerFast,
     ) -> None:
         self.dataset_setup = dataset_setup
         self.tokenizer = tokenizer
 
-    def binarize_dataset(
-        self,
-        filename: Text,
-        output_prefix: Text,
-        start_offset: int,
-        end_offset: int,
-    ) -> None:
+    def binarize_dataset(self, filename: Text, output_prefix: Text) -> None:
         # prepare indexed dataset builder
         data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
         index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
@@ -90,25 +86,15 @@ class Binarizer(ArgumentRegistrable):
         )
 
         # convert text to ids and write to the data file
-        self.binarize(
-            filename=filename,
-            tokenizer=self.tokenizer,
-            consumer=dataset_builder.add_tokenized_ids,
-            start_offset=start_offset,
-            end_offset=end_offset,
-        )
+        self.binarize(filename=filename, consumer=dataset_builder.add_tokenized_ids)
 
+        logger.info("Finilizing the results")
         # write meta data and type info
         dataset_builder.finalize()
 
     @abstractmethod
     def binarize(
-        self,
-        filename: Text,
-        tokenizer: PreTrainedTokenizerFast,
-        consumer: Callable[[torch.Tensor], None],
-        start_offset: int = 0,
-        end_offset: int = -1,
+        self, filename: Text, consumer: Callable[[torch.Tensor], None]
     ) -> None:
         """Binarize the given chunk of file and pass to a consumer."""
         raise NotImplementedError()
@@ -134,6 +120,18 @@ class FlatBinarizer(Binarizer):
             default=False,
             metadata={"help": ""},
         )
+        batched: bool = field(
+            default=True,
+            metadata={"help": ""},
+        )
+        batch_size: int = field(
+            default=512,
+            metadata={"help": ""},
+        )
+        num_proc: int = field(
+            default=32,
+            metadata={"help": ""},
+        )
 
     def __init__(
         self,
@@ -145,53 +143,58 @@ class FlatBinarizer(Binarizer):
         self.params = params
 
     def binarize(
-        self,
-        filename: Text,
-        tokenizer: PreTrainedTokenizerFast,
-        consumer: Callable[[torch.Tensor], None],
-        start_offset: int = 0,
-        end_offset: int = -1,
+        self, filename: Text, consumer: Callable[[torch.Tensor], None]
     ) -> None:
-        # pylint: disable=too-many-arguments
+        dataset = load_dataset(
+            path="text",
+            data_files=[filename],
+            split="train",
+        )
+
+        dataset = dataset.map(
+            self.encode,
+            batched=self.params.batched,
+            batch_size=self.params.batch_size,
+            num_proc=self.params.num_proc,
+            remove_columns=["text"],
+        )
+
+        for instance in dataset:
+            assert isinstance(instance, dict)
+            input_ids = instance["input_ids"]
+
+            if isinstance(input_ids[0], list):
+                for ids in input_ids:
+                    consumer(torch.tensor(ids))
+            else:
+                consumer(torch.tensor(input_ids))
+
+    def encode(self, instance: Dict[Text, Any]) -> Dict[Text, Any]:
+        result: List[List[int]] = []
+        lines = instance["text"]
+        assert isinstance(lines, list)
+
         # make sure we explicitly truncate if max_length is provided
         truncation = self.params.truncation
         if truncation == "do_not_truncate" and self.params.max_length is not None:
             truncation = "longest_first"
 
-        # TODO: use a dataset reader instead of reading the file directly
-        with open(filename, mode="r", encoding="utf-8") as stream:
-            stream.seek(start_offset)
-            line = read_line(stream)
-            while line:
-                # remove all special chars
-                line = line.rstrip()
+        try:
+            # tokenize input text and feed to consumer handler
+            encoding = self.tokenizer(
+                lines,
+                truncation=truncation,
+                max_length=self.params.max_length,
+                stride=self.params.stride,
+                return_overflowing_tokens=self.params.return_overflowing_tokens,
+            )
 
-                # check if end_offset is reached
-                if end_offset and stream.tell() > end_offset:
-                    break
+            result = encoding.input_ids
 
-                try:
-                    # tokenize input text and feed to consumer handler
-                    encoding = tokenizer(
-                        line,
-                        truncation=self.params.truncation,
-                        max_length=self.params.max_length,
-                        stride=self.params.stride,
-                        return_overflowing_tokens=self.params.return_overflowing_tokens,
-                    )
+        except TypeError as err:
+            logger.warning("Unable to tokenize a text, error: %s", err)
 
-                    if encoding.input_ids:
-                        if isinstance(encoding.input_ids[0], list):
-                            for input_ids in encoding.input_ids:
-                                consumer(torch.tensor(input_ids))
-                        else:
-                            consumer(torch.tensor(encoding.input_ids))
-
-                except TypeError as err:
-                    logger.warning("Unable to tokenize a text, error: %s", err)
-
-                # get the next line to process
-                line = stream.readline()
+        return {"input_ids": result}
 
     @classmethod
     def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
