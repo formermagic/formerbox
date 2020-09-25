@@ -104,6 +104,7 @@ class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
         raise NotImplementedError()
 
     def validate_index(self, index: int) -> None:
+        assert self.length is not None
         if index < 0 or index >= self.length:
             raise IndexError(f"Index({index}) is out of bounds")
 
