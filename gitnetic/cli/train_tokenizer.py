@@ -67,9 +67,8 @@ class TrainTokenizer(Subcommand):
 
 @typechecked
 def train_tokenizer(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
-    # add selected tokenizer's args
-    parser = tokenizer_cls.add_argparse_args(parser, stage="train")
-    args = vars(parser.parse_known_args()[0])
+    # make sure tokenizer parallelizm is disabled
+    # since it might cause deadlocks while preprocessing
     os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
     cmd_params = get_params_item(params, params_type=TrainTokenizer.Params)
