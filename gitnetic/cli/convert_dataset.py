@@ -1,23 +1,32 @@
 import logging
 from argparse import Namespace
+from dataclasses import dataclass, field
 from time import time
 from typing import Any, Dict, Text, Tuple, Union
-
-from typeguard import typechecked
 
 from gitnetic.cli.subcommand import Subcommand, _SubParsersAction
 from gitnetic.common.dataclass_argparse import (
     DataclassArgumentParser,
     DataclassBase,
-    get_parsed_attr,
+    get_params_item,
 )
 from gitnetic.data.dataset_converter import DatasetConverter
+from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
 
 @Subcommand.register("convert_dataset")
 class ConvertDataset(Subcommand):
+    @dataclass
+    class Params(DataclassBase):
+        converter: Text = field(
+            metadata={
+                "help": "",
+                "choices": sorted(DatasetConverter.list_available()),
+            }
+        )
+
     def add_subparser(
         self, parser: _SubParsersAction
     ) -> Tuple[DataclassArgumentParser, Dict[Text, Any]]:
@@ -32,20 +41,20 @@ class ConvertDataset(Subcommand):
         )
 
         # get the type of a converter to use
-        choices = sorted(DatasetConverter.list_available())
-        subparser.add_argument(
-            "--converter_type",
-            type=str,
-            choices=choices,
-            required=True,
-            help="",
-        )
+        subparser.add_arguments(self.Params)
 
         def add_dynamic_args(parser: DataclassArgumentParser) -> None:
+            # get the parsed command arguments
+            parsed_params = subparser.parse_args_into_dataclasses(
+                return_remaining_strings=True
+            )
+            params = parsed_params[0]
+            assert isinstance(params, self.Params)
+
             # add dybamic args to the subparser
-            args = subparser.parse_known_args()[0]
-            converter_cls, _ = DatasetConverter.from_registry(args.converter_type)
+            converter_cls, _ = DatasetConverter.from_registry(params.converter)
             converter_cls.add_argparse_args(subparser)
+
             # inject dataclass_types to the parent parser
             parser.dataclass_types = subparser.dataclass_types
 
@@ -59,12 +68,11 @@ class ConvertDataset(Subcommand):
 
 @typechecked
 def convert_dataset(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
-    parser = converter_cls.add_argparse_args(parser)
-    params = parser.parse_args_into_dataclasses()
-    converter_type = get_parsed_attr(params, "converter_type")
-    assert isinstance(converter_type, str)
-    converter_cls = DatasetConverter.from_name(converter_type)
-    converter = converter_cls(params=params[0])
+    cmd_params = get_params_item(params, params_type=ConvertDataset.Params)
+
+    converter_cls, converter_init = DatasetConverter.from_registry(cmd_params.converter)
+    converter_params = get_params_item(params, params_type=converter_cls.Params)
+    converter = converter_init(params=converter_params)
 
     start_time = time()
     converter.convert()
