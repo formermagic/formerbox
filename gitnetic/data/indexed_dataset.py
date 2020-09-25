@@ -110,12 +110,12 @@ class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
 
     @staticmethod
     def from_file(filepath_prefix: Union[Text, Path]) -> "IndexedDatasetBase":
-        filepath = path_to_posix(filepath_prefix)
-        filepath = make_index_filepath(filepath)
+        filepath_prefix = path_to_posix(filepath_prefix)
+        index_filepath = make_index_filepath(filepath_prefix)
         dataset: Optional[IndexedDatasetBase] = None
 
         candidates = all_subclasses(IndexedDatasetBase)
-        with open(filepath, mode="rb") as stream:
+        with open(index_filepath, mode="rb") as stream:
             for candidate in candidates:
                 assert issubclass(candidate, IndexedDatasetBase)
                 if inspect.isabstract(candidate):
@@ -124,7 +124,7 @@ class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
                 num_bytes = len(candidate.magic_code)
                 magic_code = stream.read(num_bytes)
                 if candidate.magic_code == magic_code:
-                    dataset = candidate(filepath_prefix=filepath_prefix)
+                    dataset = candidate(filepath_prefix=filepath_prefix)  # type: ignore
                     break
 
                 # return filedesc to the beginning
