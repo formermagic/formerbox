@@ -1,24 +1,32 @@
 import logging
 from argparse import Namespace
+from dataclasses import dataclass, field
 from typing import Any, Dict, Text, Tuple, Union
-
-from typeguard import typechecked
 
 from gitnetic.cli.subcommand import Subcommand, _SubParsersAction
 from gitnetic.common.dataclass_argparse import (
     DataclassArgumentParser,
     DataclassBase,
     get_params_item,
-    get_parsed_attr,
 )
 from gitnetic.tasks.base_transformers.base_task import TaskModule
 from gitnetic.tasks.base_transformers.base_trainer import TransformerTrainer
+from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
 
 @Subcommand.register("train")
 class Train(Subcommand):
+    @dataclass
+    class Params(DataclassBase):
+        task: Text = field(
+            metadata={
+                "help": "",
+                "choices": sorted(TaskModule.list_available()),
+            }
+        )
+
     def add_subparser(
         self, parser: _SubParsersAction
     ) -> Tuple[DataclassArgumentParser, Dict[Text, Any]]:
@@ -31,23 +39,23 @@ class Train(Subcommand):
         )
 
         # get the type of a converter to use
-        choices = sorted(TaskModule.list_available())
-        subparser.add_argument(
-            "--task",
-            type=str,
-            choices=choices,
-            required=True,
-            help="",
-        )
+        subparser.add_arguments(self.Params)
 
         # add transformer trainer args
         TransformerTrainer.add_argparse_args(subparser)
 
         def add_dynamic_args(parser: DataclassArgumentParser) -> None:
+            # get the parsed command arguments
+            parsed_params = subparser.parse_args_into_dataclasses(
+                return_remaining_strings=True
+            )
+            params = parsed_params[0]
+            assert isinstance(params, self.Params)
+
             # add dybamic args to the subparser
-            args = subparser.parse_known_args()[0]
-            task_cls, _ = TaskModule.from_registry(args.task)
+            task_cls, _ = TaskModule.from_registry(params.task)
             task_cls.add_argparse_args(subparser)
+
             # inject dataclass_types to the parent parser
             parser.dataclass_types = subparser.dataclass_types
 
@@ -61,8 +69,9 @@ class Train(Subcommand):
 
 @typechecked
 def train(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
-    task = get_parsed_attr(params, attribute_name="task")
-    task_cls, _ = TaskModule.from_registry(task)
+    cmd_params = get_params_item(params, params_type=Train.Params)
+
+    task_cls, _ = TaskModule.from_registry(cmd_params.task)
     task_module = task_cls.setup(params)
 
     trainer_params = get_params_item(params, params_type=TransformerTrainer.Params)
