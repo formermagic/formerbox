@@ -94,7 +94,7 @@ class SaveCheckpointAtStep(Callback):
             best_value = monitor_value
 
         # update best value metrics
-        if monitor_value.item() <= best_value.item():
+        if torch.le(monitor_value, best_value).item():
             metrics[self.best_monitor] = monitor_value
             self.update_best_monitor(monitor_value, pl_module)
             if hasattr(pl_module, self.best_monitor):
