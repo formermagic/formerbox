@@ -67,8 +67,8 @@ class TrainTokenizer(Subcommand):
 
 @typechecked
 def train_tokenizer(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
-    # make sure tokenizer parallelizm is disabled
-    # since it might cause deadlocks while preprocessing
+    # make sure tokenizer parallelizm is enabled
+    # this makes the training much faster due to lib optimizations
     os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
     cmd_params = get_params_item(params, params_type=TrainTokenizer.Params)
