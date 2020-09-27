@@ -132,7 +132,11 @@ class FlatBinarizer(Binarizer):
         )
         num_proc: int = field(
             default=32,
-            metadata={"help": ""},
+            metadata={"help": "A number of processes to perform actions in parallel."},
+        )
+        block_size: int = field(
+            default=65536,
+            metadata={"help": "The size of a block of data to load."},
         )
 
     def __init__(
@@ -151,6 +155,8 @@ class FlatBinarizer(Binarizer):
             path="text",
             data_files=[filename],
             split="train",
+            ignore_verifications=True,
+            block_size=self.params.block_size,
         )
 
         dataset = dataset.map(
