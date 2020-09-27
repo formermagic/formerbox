@@ -78,3 +78,4 @@ def train_tokenizer(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None
     tokenizer = tokenizer_init(params=tokenizer_params)
 
     tokenizer.train_tokenizer()
+    tokenizer.save_pretrained()
