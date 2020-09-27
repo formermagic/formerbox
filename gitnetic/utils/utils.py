@@ -27,14 +27,16 @@ def safe_round(number: Any, ndigits: int) -> float:
 
 
 # pylint: disable=not-callable
-def perplexity(loss: Optional[Any], ndigits: int = 2, base: int = 2) -> torch.Tensor:
-    ppl_tensor: torch.Tensor
+def perplexity(
+    loss: Optional[Any], ndigits: int = 2, base: int = 2
+) -> torch.FloatTensor:
+    ppl_tensor: torch.FloatTensor
     if loss is None:
-        return torch.tensor(0.0)
+        return torch.FloatTensor([0.0])
     try:
-        ppl_tensor = torch.tensor(safe_round(base ** loss, ndigits))
+        ppl_tensor = torch.FloatTensor([safe_round(base ** loss, ndigits)])
     except OverflowError:
-        ppl_tensor = torch.tensor(float("inf"))
+        ppl_tensor = torch.FloatTensor([float("inf")])
     return ppl_tensor
 
 
