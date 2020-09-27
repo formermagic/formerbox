@@ -84,18 +84,15 @@ def lookahead(iterable: Iterable) -> Iterable[Tuple[Any, bool]]:
     yield (last_item, False)
 
 
-def lazy_groups_of(iterable: Iterable[T], group_size: int) -> Iterator[List[T]]:
+def lazy_groups_of(
+    iterable: typing.Iterable[T], group_size: int
+) -> typing.Iterable[List[T]]:
     """
     Takes an iterable and batches the individual instances into lists of the
     specified size. The last list may be smaller if there are instances left over.
     """
-    iterator = iter(iterable)
-    while True:
-        _slice = list(islice(iterator, group_size))
-        if len(_slice) > 0:
-            yield _slice
-        else:
-            break
+    for window in windowed(iterable, n=group_size, step=group_size):
+        yield [x for x in window if x is not None]
 
 
 def path_to_posix(path: Union[Text, Path]) -> Text:
