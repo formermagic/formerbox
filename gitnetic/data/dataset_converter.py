@@ -83,6 +83,9 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         output_path: Text = field(metadata={"help": ""})
         data_files: List[Text] = field(metadata={"help": ""})
         train_test_split: bool = field(default=False, metadata={"help": ""})
+        train_size: float = field(default=0.8, metadata={"help": ""})
+        valid_size: float = field(default=0.1, metadata={"help": ""})
+        test_size: float = field(default=0.1, metadata={"help": ""})
         batched: bool = field(default=True, metadata={"help": ""})
         batch_size: int = field(default=128, metadata={"help": ""})
         num_proc: int = field(default=1, metadata={"help": ""})
@@ -117,17 +120,35 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
             num_proc=self.params.num_proc,
         )
 
-        def train_test_path(base_path: Text) -> Dict[Text, Text]:
+        def append_path_suffix(base_path: Text, suffix: Text) -> Text:
             base_path, ext = os.path.splitext(base_path)
-            train_path = f"{base_path}.train{ext}"
-            test_path = f"{base_path}.test{ext}"
-            return dict(train=train_path, test=test_path)
+            return f"{base_path}{suffix}{ext}"
 
+        train_dataset = dataset
         if self.params.train_test_split:
-            dataset_split = dataset.train_test_split(test_size=0.1)
-            dataset_path = train_test_path(self.params.output_path)
-            self.save_dataset(dataset_split["train"], dataset_path["train"])
-            self.save_dataset(dataset_split["test"], dataset_path["test"])
+            # sample and save the validation dataset
+            if self.params.valid_size > 0:
+                dataset_split = train_dataset.train_test_split(
+                    test_size=self.params.valid_size
+                )
+
+                train_dataset, valid_dataset = dataset_split.values()
+                valid_path = append_path_suffix(self.params.output_path, ".valid")
+                self.save_dataset(valid_dataset, valid_path)
+
+            # sample and save the test dataset
+            if self.params.test_size > 0:
+                dataset_split = train_dataset.train_test_split(
+                    test_size=self.params.test_size
+                )
+
+                train_dataset, test_dataset = dataset_split.values()
+                test_path = append_path_suffix(self.params.output_path, ".test")
+                self.save_dataset(test_dataset, test_path)
+
+            # sample all remaining instances to the training dataset
+            train_path = append_path_suffix(self.params.output_path, ".train")
+            self.save_dataset(train_dataset, train_path)
         else:
             self.save_dataset(dataset, self.params.output_path)
 
