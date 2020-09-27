@@ -38,6 +38,9 @@ class SaveCheckpointAtStep(Callback):
                 f" for your model to support the monitor."
             )
 
+        # prepare the checkpoint save dir
+        Path(self.filepath).mkdir(exist_ok=True)
+
     # pylint: disable=too-many-arguments
     def on_train_batch_end(
         self,
