@@ -20,6 +20,7 @@ from typing import (
 
 import numpy as np
 import torch
+from more_itertools import windowed
 
 T = typing.TypeVar("T")  # pylint: disable=invalid-name
 
@@ -133,3 +134,11 @@ def str2bool(string: Text) -> bool:
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
     return result
+
+
+def iter_stide(
+    iterable: typing.Iterable[T], chunk_size: int, stride: int
+) -> typing.Iterable[List[T]]:
+    assert chunk_size > stride, "stride must be less than chunk size"
+    for window in windowed(iterable, n=chunk_size, step=chunk_size - stride):
+        yield [x for x in window if x is not None]
