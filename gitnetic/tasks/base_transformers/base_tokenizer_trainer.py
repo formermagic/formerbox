@@ -151,8 +151,9 @@ class TransformerTokenizerModule(TokenizerModule):
         # prepare the pre-trained tokenizer
         tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
 
-        # save the pre-trained tokenizer
+        # workaround for saving tokenizer bugs in the transformers backend
         fix_tokenizer(tokenizer)
+        # save the pre-trained tokenizer
         tokenizer.save_pretrained(save_dir)
 
     @staticmethod
