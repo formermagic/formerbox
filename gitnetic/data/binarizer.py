@@ -3,13 +3,14 @@ import os
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from io import TextIOWrapper
-from typing import Any, Callable, Dict, List, Optional, Text, Tuple
+from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Union
 
 import torch
 from datasets import load_dataset
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
 from gitnetic.common.registrable import ArgumentRegistrable
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
+from gitnetic.utils import iter_stide
 from transformers import PreTrainedTokenizerFast
 from typing_extensions import Literal
 
@@ -86,10 +87,11 @@ class Binarizer(ArgumentRegistrable):
         )
 
         # convert text to ids and write to the data file
+        logger.info("Processing the data file: %s", filename)
         self.binarize(filename=filename, consumer=dataset_builder.add_tokenized_ids)
 
-        logger.info("Finilizing the results")
         # write meta data and type info
+        logger.info("Finilizing the results")
         dataset_builder.finalize()
 
     @abstractmethod
@@ -170,9 +172,8 @@ class FlatBinarizer(Binarizer):
                 consumer(torch.tensor(input_ids))
 
     def encode(self, instance: Dict[Text, Any]) -> Dict[Text, Any]:
-        result: List[List[int]] = []
+        result: List[Union[int, List[int]]] = []
         lines = instance["text"]
-        assert isinstance(lines, list)
 
         # make sure we explicitly truncate if max_length is provided
         truncation = self.params.truncation
@@ -180,9 +181,13 @@ class FlatBinarizer(Binarizer):
             truncation = "longest_first"
 
         try:
+            # split long documents into smaller overlaping chunks
+            # this is a workaround to fix tokenizers internal issues
+            # with processing long sequences with special tokens
+            batch = self.preprocess_batch(lines)
             # tokenize input text and feed to consumer handler
             encoding = self.tokenizer(
-                lines,
+                batch,
                 truncation=truncation,
                 max_length=self.params.max_length,
                 stride=self.params.stride,
@@ -199,3 +204,15 @@ class FlatBinarizer(Binarizer):
     @classmethod
     def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
         parser.add_arguments(cls.Params)
+
+    def preprocess_batch(self, batch: Union[Text, List[Text]]) -> List[Text]:
+        if not isinstance(batch, list):
+            batch = [batch]
+
+        result = []
+        for instance in batch:
+            sentences = iter_stide(instance.split(" "), chunk_size=512, stride=32)
+            for sentence in sentences:
+                result.append(" ".join(sentence))
+
+        return result
