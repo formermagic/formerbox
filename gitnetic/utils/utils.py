@@ -3,20 +3,8 @@ import inspect
 import os
 import typing
 from io import TextIOWrapper
-from itertools import islice
 from pathlib import Path
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Text,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
 import numpy as np
 import torch
@@ -63,7 +51,7 @@ def lines_in_file(filepath: Text) -> int:
 
 def text_file_blocks_iter(
     text_stream: TextIOWrapper, size: int = 65536
-) -> Iterable[Text]:
+) -> typing.Iterable[Text]:
     while True:
         block = text_stream.read(size)
         if not block:
@@ -71,7 +59,7 @@ def text_file_blocks_iter(
         yield block
 
 
-def lookahead(iterable: Iterable) -> Iterable[Tuple[Any, bool]]:
+def lookahead(iterable: typing.Iterable) -> typing.Iterable[Tuple[Any, bool]]:
     # get an iterator and pull the first value
     iterator = iter(iterable)
     last_item = next(iterator)  # pylint: disable=stop-iteration-return
@@ -101,7 +89,7 @@ def path_to_posix(path: Union[Text, Path]) -> Text:
     return path
 
 
-def all_subclasses(cls: Type[T]) -> Iterable[Type[T]]:
+def all_subclasses(cls: Type[T]) -> typing.Iterable[Type[T]]:
     return set(cls.__subclasses__()).union(
         [s for c in cls.__subclasses__() for s in all_subclasses(c)]
     )
