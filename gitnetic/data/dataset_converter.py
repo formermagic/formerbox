@@ -178,6 +178,8 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
 
     @typechecked
     def tokenize_text(self, text: Text) -> Instance:
+        # workaround to avoid disambiguation in parsing text datasets
+        text = text.replace("\b", "\r")
         tokens = tokenize_python(text, keep_comments=True)
         result = " ".join(tokens)
         if not result:
