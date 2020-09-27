@@ -82,6 +82,7 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         script_path: Text = field(metadata={"help": ""})
         output_path: Text = field(metadata={"help": ""})
         data_files: List[Text] = field(metadata={"help": ""})
+        train_test_split: bool = field(default=False, metadata={"help": ""})
         batched: bool = field(default=True, metadata={"help": ""})
         batch_size: int = field(default=128, metadata={"help": ""})
         num_proc: int = field(default=1, metadata={"help": ""})
@@ -116,7 +117,19 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
             num_proc=self.params.num_proc,
         )
 
-        self.save_dataset(dataset, self.params.output_path)
+        def train_test_path(base_path: Text) -> Dict[Text, Text]:
+            base_path, ext = os.path.splitext(base_path)
+            train_path = f"{base_path}.train{ext}"
+            test_path = f"{base_path}.test{ext}"
+            return dict(train=train_path, test=test_path)
+
+        if self.params.train_test_split:
+            dataset_split = dataset.train_test_split(test_size=0.1)
+            dataset_path = train_test_path(self.params.output_path)
+            self.save_dataset(dataset_split["train"], dataset_path["train"])
+            self.save_dataset(dataset_split["test"], dataset_path["test"])
+        else:
+            self.save_dataset(dataset, self.params.output_path)
 
     def encode(self, instance: Dict[Text, Any]) -> Dict[Text, Any]:
         result: Union[Instance, List[Instance]]
