@@ -134,7 +134,7 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
             continue
 
         logger.info("Start processing %s subset...", split)
-    start_time = time()
+        start_time = time()
 
         output_prefix = F.temp_filepath(
             filepath=datafile_prefix,
@@ -142,10 +142,10 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
             output_path=cmd_params.output_path,
         )
 
-    binarizer.binarize_dataset(
+        binarizer.binarize_dataset(
             filename=datafile_prefix,
-        output_prefix=output_prefix,
-    )
+            output_prefix=output_prefix,
+        )
 
-    time_delta = time() - start_time
-    logger.info("Wall time: %.3fs", time_delta)
+        time_delta = time() - start_time
+        logger.info("Wall time: %.3fs", time_delta)
