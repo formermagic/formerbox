@@ -50,10 +50,6 @@ class Preprocess(Subcommand):
             default=None,
             metadata={"help": "Test dataset text file prefix."},
         )
-        num_workers: int = field(
-            default=1,
-            metadata={"help": "A number of processes to perform actions in parallel."},
-        )
 
     def add_subparser(
         self, parser: _SubParsersAction
