@@ -96,6 +96,9 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         # search data_files if a user specified a pattern to use
         # otherwise the method will return the input values
         data_files = self.search_data_files(self.params.data_files)
+        # prepare the output dir for writing results
+        Path(self.params.output_path).parent.mkdir(exist_ok=True)
+
         dataset = load_dataset(
             self.params.script_path,
             data_files=data_files,
