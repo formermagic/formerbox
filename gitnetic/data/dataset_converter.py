@@ -1,15 +1,17 @@
 import logging
+import os
 from abc import abstractmethod
 from dataclasses import dataclass, field
+from glob import glob
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Union
 
 from datasets import Dataset, DatasetDict, load_dataset
-from typeguard import typechecked
-
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
 from gitnetic.common.registrable import ArgumentRegistrable
 from gitnetic.utils import lazy_groups_of
 from gitnetic.utils.code_tokenizer import tokenize_python
+from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +80,8 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     @dataclass
     class Params(DataclassBase):
         script_path: Text = field(metadata={"help": ""})
-        data_files: List[Text] = field(metadata={"help": ""})
         output_path: Text = field(metadata={"help": ""})
+        data_files: List[Text] = field(metadata={"help": ""})
         batched: bool = field(default=True, metadata={"help": ""})
         batch_size: int = field(default=128, metadata={"help": ""})
         num_proc: int = field(default=1, metadata={"help": ""})
@@ -91,9 +93,12 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     @typechecked
     def convert(self, *args: Any, **kwargs: Any) -> None:
         del args, kwargs  # use only designated args
+        # search data_files if a user specified a pattern to use
+        # otherwise the method will return the input values
+        data_files = self.search_data_files(self.params.data_files)
         dataset = load_dataset(
             self.params.script_path,
-            data_files=self.params.data_files,
+            data_files=data_files,
             split="train",
         )
         dataset = self.distinct_dataset(
@@ -141,3 +146,21 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         if not result:
             return None
         return result
+
+    def search_data_files(self, data_files: List[Text]) -> List[Text]:
+        assert data_files
+        if len(data_files) > 1:
+            return data_files
+
+        search_pattern = data_files[0]
+        search_results = glob(search_pattern)
+        if search_results:
+            logger.info(
+                "Found %d files using the pattern: %s",
+                len(search_results),
+                search_pattern,
+            )
+
+            data_files = search_results
+
+        return data_files
