@@ -122,13 +122,30 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
 
     # prepare the output dir for writing data files
     os.makedirs(cmd_params.output_path, exist_ok=True)
-    output_prefix = F.temp_filepath(cmd_params.train_prefix, "", cmd_params.output_path)
 
-    # run dataset binarization
+    # run dataset binarization for each split
+    for split, datafile_prefix in (
+        ("train", cmd_params.train_prefix),
+        ("valid", cmd_params.valid_prefix),
+        ("test", cmd_params.test_prefix),
+    ):
+        # skip empty dataset splits
+        if datafile_prefix is None:
+            continue
+
+        logger.info("Start processing %s subset...", split)
     start_time = time()
+
+        output_prefix = F.temp_filepath(
+            filepath=datafile_prefix,
+            suffix="",
+            output_path=cmd_params.output_path,
+        )
+
     binarizer.binarize_dataset(
-        filename=cmd_params.train_prefix,
+            filename=datafile_prefix,
         output_prefix=output_prefix,
     )
+
     time_delta = time() - start_time
     logger.info("Wall time: %.3fs", time_delta)
