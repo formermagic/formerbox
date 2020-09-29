@@ -29,7 +29,7 @@ def fix_tokenizer(tokenizer: TransformersTokenizer) -> None:
     tokenizer.init_kwargs = init_kwargs
 
 
-@TokenizerModule.register(name="transformer-tokenizer-fast", constructor="from_args")
+@TokenizerModule.register(name="transformer-tokenizer-fast", constructor="from_partial")
 class TransformerTokenizerModule(TokenizerModule):
     # pylint: disable=arguments-differ
     @dataclass
