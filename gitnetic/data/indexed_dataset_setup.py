@@ -1,12 +1,10 @@
 from argparse import Namespace
 from dataclasses import dataclass, field
-from typing import Any, Dict, Text, Type, Union
+from typing import Any, Dict, Optional, Text, Type, Union
 
 import numpy as np
-from typing_extensions import Literal
-
-from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
-from gitnetic.common.registrable import ArgumentRegistrable
+from gitnetic.common.dataclass_argparse import DataclassBase
+from gitnetic.common.has_params import HasParsableParams
 from gitnetic.data.indexed_dataset import (
     IndexedCachedDataset,
     IndexedDataset,
@@ -15,15 +13,18 @@ from gitnetic.data.indexed_dataset import (
     IndexedDatasetBuilderBase,
 )
 from gitnetic.data.mmap_dataset import MMapIndexedDataset, MMapIndexedDatasetBuilder
+from typing_extensions import Literal
 
 
-class IndexedDatasetSetup(ArgumentRegistrable):
-    # pylint: disable=arguments-differ
+class IndexedDatasetSetup(HasParsableParams):
     @dataclass
     class Params(DataclassBase):
         dataset_impl: Literal["lazy", "cached", "mmap"] = field(
             metadata={"help": "Determines the type of a dataset to build."},
         )
+
+    params: Optional[Params]
+    params_type = Params
 
     def __init__(
         self,
@@ -31,9 +32,11 @@ class IndexedDatasetSetup(ArgumentRegistrable):
         dataset_type: Type[IndexedDatasetBase],
         dataset_dtype: np.dtype,
     ) -> None:
+        super().__init__()
         self.dataset_builder_type = dataset_builder_type
         self.dataset_type = dataset_type
         self.dataset_dtype = dataset_dtype
+        self.params = None
 
     @classmethod
     def from_args(
@@ -73,7 +76,3 @@ class IndexedDatasetSetup(ArgumentRegistrable):
             raise ValueError("Unable to match the given dataset type.")
 
         return result
-
-    @classmethod
-    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
-        parser.add_arguments(cls.Params)
