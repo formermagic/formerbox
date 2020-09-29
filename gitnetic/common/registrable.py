@@ -15,12 +15,10 @@
 # limitations under the License.
 
 import importlib
-from abc import abstractmethod
 from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Text, Tuple, Type, TypeVar, Union
 
-from gitnetic.common.dataclass_argparse import DataclassArgumentParser
-from gitnetic.common.from_args import FromArgs
+from gitnetic.common.partial_initable import PartialInitable
 
 T = TypeVar("T", bound="Registrable")  # pylint: disable=invalid-name
 Entry = TypeVar("Entry", bound="Registrable")
@@ -30,7 +28,7 @@ RegistryRecord = Tuple[Type[T], Optional[Text]]
 RegistryMap = Dict[Text, RegistryRecord]
 
 
-class Registrable(FromArgs):
+class Registrable(PartialInitable):
     _registry: Dict[RegistryKey, RegistryMap] = defaultdict(dict)
     default_implementation: Optional[Text] = None
 
