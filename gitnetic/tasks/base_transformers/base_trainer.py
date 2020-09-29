@@ -3,19 +3,19 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Text
 
+from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
+from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.registrable import Registrable
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, EarlyStopping
 from pytorch_lightning.loggers.wandb import LightningLoggerBase, WandbLogger
 from typeguard import typechecked
 
-from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
-from gitnetic.common.registrable import ArgumentRegistrable
-
 from .base_task import TaskModule
 from .callbacks import SaveCheckpointAtStep
 
 
-class TransformerTrainer(ArgumentRegistrable):
+class TransformerTrainer(Registrable, HasParsableParams):
     @dataclass
     class Params(DataclassBase):
         wandb_project: Optional[Text] = field(
@@ -46,6 +46,9 @@ class TransformerTrainer(ArgumentRegistrable):
             default=17,
             metadata={"help": "A seed to make experiments reproducible."},
         )
+
+    params: Params
+    params_type = Params
 
     @typechecked
     def __init__(
@@ -129,7 +132,7 @@ class TransformerTrainer(ArgumentRegistrable):
         pl_trainer.fit(model=self.task.module, datamodule=self.task.datamodule)
 
     @classmethod
-    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
+    def add_argparse_params(cls, parser: DataclassArgumentParser) -> None:
         parser.add_arguments(cls.Params)
         cls.add_pl_argparse_args(parser)
 
