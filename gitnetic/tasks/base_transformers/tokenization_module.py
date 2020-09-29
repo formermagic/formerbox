@@ -1,7 +1,8 @@
-from abc import abstractmethod
-from dataclasses import dataclass
+from abc import ABCMeta, abstractmethod
 from typing import Any, List, Optional, Text, Union
 
+from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.registrable import Registrable
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 from transformers.tokenization_utils_base import (
     BatchEncoding,
@@ -9,18 +10,12 @@ from transformers.tokenization_utils_base import (
     TruncationStrategy,
 )
 
-from gitnetic.common.dataclass_argparse import DataclassBase
-from gitnetic.common.registrable import ArgumentRegistrable
-
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
-class TokenizerModule(ArgumentRegistrable):
-    @dataclass
-    class Params(DataclassBase):
-        ...
-
+class TokenizerModule(Registrable, HasParsableParams, metaclass=ABCMeta):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__()
         self.tokenizer: Optional[Tokenizer] = None
         self.args = args
         self.kwargs = kwargs
