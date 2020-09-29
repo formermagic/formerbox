@@ -4,9 +4,9 @@ from typing import Any, Type, TypeVar
 T = TypeVar("T")  # pylint: disable=invalid-name
 
 
-class FromArgs:
+class PartialInitable:
     @classmethod
-    def from_args(cls: Type[T], **kwargs: Any) -> T:
+    def from_partial(cls: Type[T], **kwargs: Any) -> T:
         # inspect the instance init method signature
         signature = inspect.signature(cls.__init__)
         # select only excplicit instance attributes
