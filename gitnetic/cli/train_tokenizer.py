@@ -4,8 +4,6 @@ from argparse import Namespace, _SubParsersAction
 from dataclasses import dataclass, field
 from typing import Any, Dict, Text, Tuple, Union
 
-from typeguard import typechecked
-
 from gitnetic.cli.subcommand import Subcommand
 from gitnetic.common.dataclass_argparse import (
     DataclassArgumentParser,
@@ -13,6 +11,7 @@ from gitnetic.common.dataclass_argparse import (
     get_params_item,
 )
 from gitnetic.tasks.base_transformers import TokenizerModule
+from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ class TrainTokenizer(Subcommand):
 
             # add dybamic args to the subparser
             tokenizer_cls, _ = TokenizerModule.from_registry(params.tokenizer)
-            tokenizer_cls.add_argparse_args(subparser)
+            tokenizer_cls.add_argparse_params(subparser)
 
             # inject dataclass_types to the parent parser
             parser.dataclass_types = subparser.dataclass_types
@@ -74,7 +73,7 @@ def train_tokenizer(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None
     cmd_params = get_params_item(params, params_type=TrainTokenizer.Params)
 
     tokenizer_cls, tokenizer_init = TokenizerModule.from_registry(cmd_params.tokenizer)
-    tokenizer_params = get_params_item(params, params_type=tokenizer_cls.Params)
+    tokenizer_params = get_params_item(params, params_type=tokenizer_cls.params_type)
     tokenizer = tokenizer_init(params=tokenizer_params)
 
     tokenizer.train_tokenizer()
