@@ -9,6 +9,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
+from gitnetic.utils import str2bool
 from typeguard import typechecked
 from typing_inspect import (
     get_args,
@@ -18,8 +19,6 @@ from typing_inspect import (
     is_tuple_type,
     is_union_type,
 )
-
-from gitnetic.utils import str2bool
 
 T = typing.TypeVar("T")  # pylint: disable=invalid-name
 DataclassBaseType = Type["DataclassBase"]
