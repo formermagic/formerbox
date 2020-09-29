@@ -1,9 +1,17 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Text, Tuple, Union
+from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
 import pytorch_lightning as pl
 import torch
+from gitnetic.common.dataclass_argparse import DataclassBase
+from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.registrable import Registrable
+from gitnetic.data.dataset_iterators import DatasetIterator
+from gitnetic.data.indexed_dataset import IndexedDatasetBase
+from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
+from gitnetic.utils import path_to_posix, perplexity
 from pytorch_lightning import LightningDataModule, LightningModule
+from pytorch_lightning.core.datamodule import _DataModuleWrapper
 from torch import Tensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
@@ -17,13 +25,7 @@ from transformers import (
     PreTrainedTokenizerFast,
 )
 from typeguard import check_argument_types, typechecked
-
-from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
-from gitnetic.common.registrable import ArgumentRegistrable
-from gitnetic.data.dataset_iterators import DatasetIterator
-from gitnetic.data.indexed_dataset import IndexedDatasetBase
-from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
-from gitnetic.utils import path_to_posix, perplexity
+from typing_extensions import _ProtocolMeta  # type: ignore
 
 from .base import BaseTrainingMixin
 
@@ -62,7 +64,17 @@ class DataLoadingMixin:
         return dataset_itr
 
 
-class TransformerDataModule(DataLoadingMixin, ArgumentRegistrable, LightningDataModule):
+class _MetaDataModule(_ProtocolMeta, _DataModuleWrapper):
+    """Implements both meta classes to avoid TypeError exceptions."""
+
+
+class TransformerDataModule(
+    DataLoadingMixin,
+    LightningDataModule,
+    Registrable,
+    HasParsableParams,
+    metaclass=_MetaDataModule,
+):
     @dataclass
     class Params(DataclassBase):
         train_data_prefix: Text = field(
@@ -83,6 +95,9 @@ class TransformerDataModule(DataLoadingMixin, ArgumentRegistrable, LightningData
             default=1,
             metadata={"help": "A number of workers for data loading."},
         )
+
+    params: Params
+    params_type: Type[Params] = Params
 
     @typechecked
     def __init__(self, tokenizer: Tokenizer, params: Params) -> None:
@@ -136,13 +151,14 @@ class TransformerDataModule(DataLoadingMixin, ArgumentRegistrable, LightningData
         del args, kwargs  # use initialized properties to make a dataloader
         raise NotImplementedError()
 
-    @classmethod
-    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
-        parser.add_arguments(cls.Params)
-
 
 # pylint: disable=arguments-differ
-class TransformerModule(BaseTrainingMixin, ArgumentRegistrable, LightningModule):
+class TransformerModule(
+    BaseTrainingMixin,
+    LightningModule,
+    Registrable,
+    HasParsableParams,
+):
     @dataclass
     class Params(DataclassBase):
         weight_decay: float = field(
@@ -166,6 +182,9 @@ class TransformerModule(BaseTrainingMixin, ArgumentRegistrable, LightningModule)
             metadata={"help": "A polynomial power for a learning rate scheduler."},
         )
 
+    params: Params
+    params_type: Type[Params] = Params
+
     def __init__(
         self,
         model: PreTrainedModel,
@@ -173,7 +192,9 @@ class TransformerModule(BaseTrainingMixin, ArgumentRegistrable, LightningModule)
         params: Params,
     ) -> None:
         super().__init__()
+        # check if arguments apply to their types
         assert check_argument_types()
+        # save the given frame parameters to the ckpt
         self.save_hyperparameters()
 
         self.model = model
@@ -307,7 +328,3 @@ class TransformerModule(BaseTrainingMixin, ArgumentRegistrable, LightningModule)
         }
 
         return [optimizer], [step_scheduler]
-
-    @classmethod
-    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
-        parser.add_arguments(cls.Params)
