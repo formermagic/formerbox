@@ -1,10 +1,15 @@
 from abc import ABCMeta, abstractmethod
 from argparse import Namespace
 from dataclasses import dataclass, field
-from typing import Optional, Text, Tuple, Type, TypeVar, Union
+from typing import Text, Tuple, Type, TypeVar, Union
 
-from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
-from gitnetic.common.registrable import ArgumentRegistrable
+from gitnetic.common.dataclass_argparse import (
+    DataclassArgumentParser,
+    DataclassBase,
+    get_params_item,
+)
+from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.registrable import Registrable
 from transformers import PreTrainedTokenizerBase
 from typing_extensions import Protocol
 
@@ -15,6 +20,7 @@ T = TypeVar("T", bound="TaskModule")  # pylint: disable=invalid-name
 Tokenizer = PreTrainedTokenizerBase
 ModuleType = TypeVar("ModuleType", bound="TransformerModule")
 DataModuleType = TypeVar("DataModuleType", bound="TransformerDataModule")
+ParamType = Union[DataclassBase, Namespace]
 
 
 class TaskModuleBase(Protocol[ModuleType, DataModuleType]):
@@ -23,7 +29,8 @@ class TaskModuleBase(Protocol[ModuleType, DataModuleType]):
 
 class TaskModule(
     TaskModuleBase[ModuleType, DataModuleType],
-    ArgumentRegistrable,
+    Registrable,
+    HasParsableParams,
     metaclass=ABCMeta,
 ):
     def __init__(
@@ -32,16 +39,14 @@ class TaskModule(
         module: ModuleType,
         datamodule: DataModuleType,
     ) -> None:
+        super().__init__()
         self.tokenizer = tokenizer
         self.module = module
         self.datamodule = datamodule
 
     @classmethod
     @abstractmethod
-    def setup(
-        cls: Type[T],
-        params: Tuple[Union[DataclassBase, Namespace], ...],
-    ) -> T:
+    def setup(cls: Type[T], params: Tuple[ParamType, ...]) -> T:
         raise NotImplementedError()
 
 
@@ -56,24 +61,46 @@ class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
             metadata={"help": "A path to the dir with saved pretrained tokenizer."},
         )
 
+    params: Params
+    params_type: Type[Params] = Params
+
+    ComponentParams = Tuple[
+        params_type,
+        TransformerModule.params_type,
+        TransformerDataModule.params_type,
+    ]
+
+    @classmethod
+    def get_params(cls, params: Tuple[ParamType, ...]) -> "ComponentParams":
+        # get the params for task components
+        task_params = get_params_item(
+            params=params,
+            params_type=cls.params_type,
+        )
+        module_params = get_params_item(
+            params=params,
+            params_type=TransformerModule.params_type,
+        )
+        datamodule_params = get_params_item(
+            params=params,
+            params_type=TransformerDataModule.params_type,
+        )
+
+        # make sure the params exist
+        assert isinstance(task_params, cls.params_type)
+        assert isinstance(module_params, TransformerModule.params_type)
+        assert isinstance(datamodule_params, TransformerDataModule.params_type)
+
+        return task_params, module_params, datamodule_params
+
     @classmethod
     def setup(
-        cls: Type["TransformerTask"],
-        params: Tuple[Union[DataclassBase, Namespace], ...],
+        cls: Type["TransformerTask"], params: Tuple[ParamType, ...]
     ) -> "TransformerTask":
-        task_params: Optional[cls.Params] = None
-        module_params: Optional[TransformerModule.Params] = None
-        datamodule_params: Optional[TransformerDataModule.Params] = None
+        # get the params for task components
+        task_params, module_params, datamodule_params = cls.get_params(params)
 
-        for param in params:
-            if isinstance(param, cls.Params):
-                task_params = param
-            elif isinstance(param, TransformerModule.Params):
-                module_params = param
-            elif isinstance(param, TransformerDataModule.Params):
-                datamodule_params = param
-
-        assert task_params is not None
+        # prepare the tokenizer from config
         tokenizer = tokenizer_from_config(
             task_params.config_path, task_params.tokenizer_path
         )
@@ -88,13 +115,11 @@ class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
         )
 
         # prepare a transformer module
-        assert module_params is not None
         module = TransformerModule(
             model=model, tokenizer=tokenizer, params=module_params
         )
 
         # prepare a transformer datamodule
-        assert datamodule_params is not None
         datamodule = TransformerDataModule(
             tokenizer=tokenizer, params=datamodule_params
         )
@@ -102,9 +127,9 @@ class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
         return cls(tokenizer, module, datamodule)
 
     @classmethod
-    def add_argparse_args(
+    def add_argparse_params(
         cls: Type["TransformerTask"], parser: DataclassArgumentParser
     ) -> None:
         parser.add_arguments(cls.Params)
-        TransformerModule.add_argparse_args(parser)
-        TransformerDataModule.add_argparse_args(parser)
+        TransformerModule.add_argparse_params(parser)
+        TransformerDataModule.add_argparse_params(parser)
