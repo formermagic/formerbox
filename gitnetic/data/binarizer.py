@@ -1,14 +1,15 @@
 import logging
 import os
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from io import TextIOWrapper
 from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Union
 
 import torch
 from datasets import load_dataset
-from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
-from gitnetic.common.registrable import ArgumentRegistrable
+from gitnetic.common.dataclass_argparse import DataclassBase
+from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.registrable import Registrable
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.utils import iter_stide
 from transformers import PreTrainedTokenizerFast
@@ -61,12 +62,7 @@ def find_offsets(filename: Text, num_chunks: int) -> Tuple[int, List[int]]:
     return size, offsets
 
 
-class Binarizer(ArgumentRegistrable):
-    # pylint: disable=too-many-arguments
-    @dataclass
-    class Params(DataclassBase):
-        ...
-
+class Binarizer(Registrable, HasParsableParams, metaclass=ABCMeta):
     def __init__(
         self,
         dataset_setup: IndexedDatasetSetup,
@@ -139,6 +135,9 @@ class FlatBinarizer(Binarizer):
             metadata={"help": "The size of a block of data to load."},
         )
 
+    params: Params
+    params_type = Params
+
     def __init__(
         self,
         dataset_setup: IndexedDatasetSetup,
@@ -206,10 +205,6 @@ class FlatBinarizer(Binarizer):
             logger.warning("Unable to tokenize a text, error: %s", err)
 
         return {"input_ids": result}
-
-    @classmethod
-    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
-        parser.add_arguments(cls.Params)
 
     def preprocess_batch(self, batch: Union[Text, List[Text]]) -> List[Text]:
         if not isinstance(batch, list):
