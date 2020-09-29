@@ -3,13 +3,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, List, Optional, Text, Union
 
+from gitnetic.common.dataclass_argparse import DataclassBase
+from gitnetic.utils.code_tokenizer import SpecialToken
+from gitnetic.utils.utils import path_to_posix
 from tokenizers import AddedToken
 from tokenizers.implementations import ByteLevelBPETokenizer
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
-
-from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
-from gitnetic.utils.code_tokenizer import SpecialToken
-from gitnetic.utils.utils import path_to_posix
 
 from .base_tokenization import TransformerTokenizerFast
 from .tokenization_module import TokenizerModule
@@ -85,6 +84,9 @@ class TransformerTokenizerModule(TokenizerModule):
             default=None,
             metadata={"help": ""},
         )
+
+    params: Params
+    params_type = Params
 
     def __init__(self, params: Params, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -170,7 +172,3 @@ class TransformerTokenizerModule(TokenizerModule):
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
         return tokenizer
-
-    @classmethod
-    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
-        parser.add_arguments(cls.Params)
