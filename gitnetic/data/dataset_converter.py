@@ -75,7 +75,7 @@ class DatasetConverter(ArgumentRegistrable):
         raise NotImplementedError()
 
 
-@DatasetConverter.register("code-lm-converter", constructor="from_args")
+@DatasetConverter.register("code-lm-converter", constructor="from_partial")
 class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     @dataclass
     class Params(DataclassBase):
