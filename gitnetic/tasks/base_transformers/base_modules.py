@@ -8,7 +8,7 @@ from gitnetic.common.has_params import HasParsableParams
 from gitnetic.common.registrable import Registrable
 from gitnetic.data.dataset_iterators import DatasetIterator
 from gitnetic.data.indexed_dataset import IndexedDatasetBase
-from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
+from gitnetic.optim import AdamW, get_polynomial_decay_with_warmup, weight_decay_params
 from gitnetic.utils import path_to_posix, perplexity
 from pytorch_lightning import LightningDataModule, LightningModule
 from pytorch_lightning.core.datamodule import _DataModuleWrapper
@@ -17,7 +17,6 @@ from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader, Dataset
 from transformers import (
-    AdamW,
     DataCollator,
     DataCollatorForLanguageModeling,
     PreTrainedModel,
@@ -308,7 +307,7 @@ class TransformerModule(
         )
 
         optimizer = AdamW(
-            parameters,  # type: ignore
+            parameters,
             betas=(0.9, 0.98),
             eps=1e-6,
             lr=self.params.learning_rate,
