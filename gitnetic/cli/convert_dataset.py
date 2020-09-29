@@ -53,7 +53,7 @@ class ConvertDataset(Subcommand):
 
             # add dybamic args to the subparser
             converter_cls, _ = DatasetConverter.from_registry(params.converter)
-            converter_cls.add_argparse_args(subparser)
+            converter_cls.add_argparse_params(subparser)
 
             # inject dataclass_types to the parent parser
             parser.dataclass_types = subparser.dataclass_types
@@ -71,7 +71,7 @@ def convert_dataset(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None
     cmd_params = get_params_item(params, params_type=ConvertDataset.Params)
 
     converter_cls, converter_init = DatasetConverter.from_registry(cmd_params.converter)
-    converter_params = get_params_item(params, params_type=converter_cls.Params)
+    converter_params = get_params_item(params, params_type=converter_cls.params_type)
     converter = converter_init(params=converter_params)
 
     start_time = time()

@@ -65,7 +65,7 @@ class Preprocess(Subcommand):
         # add command arguments
         subparser.add_arguments(self.Params)
         # add index setup arguments
-        IndexedDatasetSetup.add_argparse_args(subparser)
+        IndexedDatasetSetup.add_argparse_params(subparser)
 
         def add_dynamic_args(parser: DataclassArgumentParser) -> None:
             # get the parsed command arguments
@@ -77,9 +77,9 @@ class Preprocess(Subcommand):
 
             # add dybamic args to the subparser
             tokenizer_cls, _ = TokenizerModule.from_registry(params.tokenizer)
-            tokenizer_cls.add_argparse_args(subparser)
+            tokenizer_cls.add_argparse_params(subparser)
             binarizer_cls, _ = Binarizer.from_registry(params.binarizer)
-            binarizer_cls.add_argparse_args(subparser)
+            binarizer_cls.add_argparse_params(subparser)
 
             # inject dataclass_types to the parent parser
             parser.dataclass_types = subparser.dataclass_types
@@ -102,7 +102,7 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
 
     # prepare the pretrained tokenizer
     tokenizer_cls, _ = TokenizerModule.from_registry(cmd_params.tokenizer)
-    tokenizer_params = get_params_item(params, params_type=tokenizer_cls.Params)
+    tokenizer_params = get_params_item(params, params_type=tokenizer_cls.params_type)
     tokenizer = tokenizer_cls.from_pretrained(params=tokenizer_params)
 
     # prepare the dataset setup
@@ -113,7 +113,7 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
 
     # prepare the dataset binarizer
     binarizer_cls, binarizer_init = Binarizer.from_registry(cmd_params.binarizer)
-    binarizer_params = get_params_item(params, params_type=binarizer_cls.Params)
+    binarizer_params = get_params_item(params, params_type=binarizer_cls.params_type)
     binarizer = binarizer_init(
         dataset_setup=dataset_setup,
         tokenizer=tokenizer,
