@@ -1,14 +1,15 @@
 import logging
 import os
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from glob import glob
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Union
 
 from datasets import Dataset, DatasetDict, load_dataset
-from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
-from gitnetic.common.registrable import ArgumentRegistrable
+from gitnetic.common.dataclass_argparse import DataclassBase
+from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.registrable import Registrable
 from gitnetic.utils import lazy_groups_of
 from gitnetic.utils.code_tokenizer import tokenize_python
 from typeguard import typechecked
@@ -55,11 +56,7 @@ class DatasetProcessingMixin:
         return result
 
 
-class DatasetConverter(ArgumentRegistrable):
-    @dataclass
-    class Params(DataclassBase):
-        ...
-
+class DatasetConverter(Registrable, HasParsableParams, metaclass=ABCMeta):
     @abstractmethod
     def convert(self, *args: Any, **kwargs: Any) -> None:
         raise NotImplementedError()
@@ -89,6 +86,9 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         batched: bool = field(default=True, metadata={"help": ""})
         batch_size: int = field(default=128, metadata={"help": ""})
         num_proc: int = field(default=1, metadata={"help": ""})
+
+    params: Params
+    params_type = Params
 
     @typechecked
     def __init__(self, params: Params) -> None:
@@ -170,11 +170,6 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
             for group in lazy_groups_of(data, group_size=1000):
                 instances = [instance for instance in group if instance]
                 stream.write("\n".join(instances))
-
-    @classmethod
-    @typechecked
-    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
-        parser.add_arguments(cls.Params)
 
     @typechecked
     def tokenize_text(self, text: Text) -> Instance:
