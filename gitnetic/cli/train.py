@@ -42,7 +42,7 @@ class Train(Subcommand):
         subparser.add_arguments(self.Params)
 
         # add transformer trainer args
-        TransformerTrainer.add_argparse_args(subparser)
+        TransformerTrainer.add_argparse_params(subparser)
 
         def add_dynamic_args(parser: DataclassArgumentParser) -> None:
             # get the parsed command arguments
@@ -54,7 +54,7 @@ class Train(Subcommand):
 
             # add dybamic args to the subparser
             task_cls, _ = TaskModule.from_registry(params.task)
-            task_cls.add_argparse_args(subparser)
+            task_cls.add_argparse_params(subparser)
 
             # inject dataclass_types to the parent parser
             parser.dataclass_types = subparser.dataclass_types
@@ -72,7 +72,7 @@ def train(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     cmd_params = get_params_item(params, params_type=Train.Params)
 
     task_cls, _ = TaskModule.from_registry(cmd_params.task)
-    task_module = task_cls.setup(params)
+    task_module = task_cls.setup(params=params)
 
     trainer_params = get_params_item(params, params_type=TransformerTrainer.Params)
     trainer_args = vars(get_params_item(params, params_type=Namespace))
