@@ -102,7 +102,7 @@ class Binarizer(ArgumentRegistrable):
         raise NotImplementedError()
 
 
-@Binarizer.register(name="flat-binarizer", constructor="from_args")
+@Binarizer.register(name="flat-binarizer", constructor="from_partial")
 class FlatBinarizer(Binarizer):
     @dataclass
     class Params(DataclassBase):
