@@ -126,10 +126,3 @@ class Registrable(PartialInitable):
         else:
             result = [default] + [k for k in keys if k != default]
         return result
-
-
-class ArgumentRegistrable(Registrable):
-    @classmethod
-    @abstractmethod
-    def add_argparse_args(cls, parser: DataclassArgumentParser) -> None:
-        raise NotImplementedError()
