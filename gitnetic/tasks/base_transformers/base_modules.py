@@ -176,6 +176,10 @@ class TransformerModule(
             default=5e-4,
             metadata={"help": "A starting learning weight value after warmup."},
         )
+        learning_rate_end: float = field(
+            default=1e-5,
+            metadata={"help": "The learning rate value after last training step."},
+        )
         power: float = field(
             default=1.0,
             metadata={"help": "A polynomial power for a learning rate scheduler."},
@@ -317,6 +321,7 @@ class TransformerModule(
             optimizer,
             num_warmup_steps=self.params.warmup_steps,
             num_training_steps=self.total_train_steps,
+            learning_rate_end=self.params.learning_rate_end,
             power=self.params.power,
         )
 
