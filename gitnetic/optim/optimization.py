@@ -13,15 +13,25 @@ def get_polynomial_decay_with_warmup(
     optimizer: Optimizer,
     num_warmup_steps: int,
     num_training_steps: int,
+    learning_rate_end: float = 1e-7,
     power: float = 1.0,
     last_epoch: int = -1,
 ) -> LambdaLR:
+    learning_rate_start = optimizer.defaults["lr"]
+
     def lr_lambda(current_step: int) -> float:
+        decay_value: float
         if current_step < num_warmup_steps:
-            return float(current_step) / float(max(1, num_warmup_steps))
-        steps_passed = float(current_step - num_warmup_steps)
-        steps_remaining = float(num_training_steps - num_warmup_steps)
-        return max(0, (1 - steps_passed / steps_remaining) ** power)
+            decay_value = float(current_step) / float(max(1, num_warmup_steps))
+        elif current_step > num_training_steps:
+            decay_value = learning_rate_end / learning_rate_start
+        else:
+            decay_steps = num_training_steps - num_warmup_steps
+            pct_remaining = 1 - (current_step - num_warmup_steps) / decay_steps
+            learning_rate_range = learning_rate_start - learning_rate_end
+            decay = learning_rate_range * pct_remaining ** power + learning_rate_end
+            decay_value = decay / learning_rate_start
+        return decay_value
 
     return LambdaLR(optimizer, lr_lambda, last_epoch)
 
