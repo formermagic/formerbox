@@ -23,7 +23,6 @@ Subcommand required parameters
 .. autoclass:: gitnetic.cli.Preprocess.Params
     :members:
 
-
 Built-in tokenizer modules in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
