@@ -90,7 +90,7 @@ Making your own binarizer
 
 
     @Binarizer.register(name="my-binarizer", constructor="from_partial")
-    class FlatBinarizer(Binarizer):
+    class MyBinarizer(Binarizer):
         @dataclass
         class Params(DataclassBase):
             ### Your fields here
