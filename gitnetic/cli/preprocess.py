@@ -95,31 +95,6 @@ class Preprocess(Subcommand):
 @typechecked
 def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     # pylint: disable=too-many-locals
-    """
-    python -m gitnetic preprocess \
-            --train_prefix /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.pre/2020-08-python-pretrain-26m-bigquery.train.src \
-            --valid_prefix /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.pre/2020-08-python-pretrain-26m-bigquery.valid.src \
-            --test_prefix /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.pre/2020-08-python-pretrain-26m-bigquery.test.src \
-            --tokenizer transformer-tokenizer-fast \
-            --tokenizer_path /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.pre \
-            --binarizer flat-binarizer \
-            --max_length 512 --return_overflowing_tokens true \
-            --output_path /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.bin \
-            --num_proc 16 --batch_size 512 --batched true --block_size 1073741824 \
-            --dataset_impl mmap
-
-    python -m gitnetic preprocess \
-            --train_prefix /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.pre2/2020-08-python-pretrain-26m-bigquery.train.src \
-            --valid_prefix /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.pre2/2020-08-python-pretrain-26m-bigquery.valid.src \
-            --test_prefix /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.pre2/2020-08-python-pretrain-26m-bigquery.test.src \
-            --tokenizer transformer-tokenizer-fast \
-            --tokenizer_path /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.pre \
-            --binarizer flat-binarizer \
-            --max_length 512 --return_overflowing_tokens true \
-            --output_path /Users/mozharovsky/Desktop/gitnetic-datasets/2020-08-python-pretrain-26m-bigquery.bin2 \
-            --num_proc 16 --batch_size 512 --batched true --block_size 1073741824 \
-            --dataset_impl mmap
-    """
     # make sure tokenizer parallelizm is disabled
     # since it might cause deadlocks while preprocessing
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
