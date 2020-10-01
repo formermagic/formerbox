@@ -1,10 +1,9 @@
 Train a transformer-based model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can train a transformer-based model with a `train` cli subcommand. All you have to do is to make or use a built-in 
-:class:`~gitnetic.TaskModule` class and prepare the :class:`~gitnetic.TransformerTrainer` instance. Each of these 
-components specify the required parameters in the params dataclasses (see `params_type` property for the type), 
-so you will not miss one.
+You can train a transformer-based model with a `train` cli subcommand. All you have to do is to make or use a built-in  :class:`~gitnetic.TaskModule` 
+class and prepare the :class:`~gitnetic.TransformerTrainer` instance. Each of these components specify 
+the required parameters in the params dataclasses (see `params_type` property for the type), so you will not miss one.
 
 Built-in tasks in the library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
