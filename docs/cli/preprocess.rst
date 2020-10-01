@@ -13,7 +13,8 @@ pair of files as many columns you want to get.
 At its core preprocessing requires 2 components – :class:`~gitnetic.TokenizerModule` and :class:`~gitnetic.Binarizer`.
 
 * The :class:`~gitnetic.TokenizerModule` uses the pre-trained tokenizer to convert text samples into input ids 
-(i.e. token ids).
+  (i.e. token ids).
+
 * The :class:`~gitnetic.Binarizer` prepares the dataset for mapping and then maps the samples into binarized data.
 
 Subcommand required parameters
