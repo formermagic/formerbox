@@ -5,13 +5,13 @@ You can train a new tokenizer (:class:`~tokenizers.Tokenizer`) and convert it to
 :class:`~transformers.PreTrainedTokenizer` or :class:`~transformers.PreTrainedTokenizerFast` instance with the
 `train_tokenizer` cli subcommand.
 
-All you have to do is to make or use a built-in tokenizer module (:class:`~gitnetic.TransformerTokenizerModule`) class,
+All you have to do is to make or use a built-in tokenizer module (:class:`~gitnetic.TokenizerModule`) class,
 and prepare an instance with its defined dataclass params (i.e. pass arguments through a cli command).
 
 Built-in tokenizer modules in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These are the built-in :class:`~gitnetic.TransformerTokenizerModule` components you can use to train a model.
+These are the built-in :class:`~gitnetic.TokenizerModule` components you can use to train a tokenizer.
 
 transformer-tokenizer-fast
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
