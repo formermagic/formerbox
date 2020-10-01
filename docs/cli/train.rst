@@ -75,19 +75,13 @@ Example of a new task
 
     from argparse import Namespace
     from dataclasses import dataclass, field
-    from typing import Text, Tuple, Type, Union
+    from typing import Tuple, Type, Union
 
+    from gitnetic import TaskModule, TransformerDataModule, TransformerModule
     from gitnetic.common.dataclass_argparse import (
         DataclassArgumentParser,
-        DataclassBase,
-        get_params_item,
-    )
-    from gitnetic.tasks.base_transformers.base_task import (
-        TaskModule,
-        TransformerDataModule,
-        TransformerModule,
-        model_from_config,
-        tokenizer_from_config,
+        DataclassBase, 
+        get_params_item
     )
 
     ParamType = Union[DataclassBase, Namespace]
@@ -97,8 +91,7 @@ Example of a new task
     class MyCustomTask(TaskModule[TransformerModule, TransformerDataModule]):
         @dataclass
         class Params(DataclassBase):
-            config_path: Text = field()
-            tokenizer_path: Text = field()
+            ### Your fields here
 
         params: Params
         params_type: Type[Params] = Params
@@ -138,20 +131,8 @@ Example of a new task
         ) -> "MyCustomTask":
             # get the params for task components
             task_params, module_params, datamodule_params = cls.get_params(params)
-
-            # prepare the tokenizer from config
-            tokenizer = tokenizer_from_config(
-                task_params.config_path, task_params.tokenizer_path
-            )
-
-            # prepare a model to train
-            model = model_from_config(
-                task_params.config_path,
-                vocab_size=tokenizer.vocab_size,
-                pad_token_id=tokenizer.pad_token_id,
-                bos_token_id=tokenizer.bos_token_id,
-                eos_token_id=tokenizer.eos_token_id,
-            )
+            tokenizer = ### Create a tokenizer instance
+            model = ### Prepare the model to train
 
             # prepare a transformer module
             module = TransformerModule(
