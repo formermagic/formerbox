@@ -73,6 +73,26 @@ Example of a new task
 
 .. code-block:: python
 
+    from argparse import Namespace
+    from dataclasses import dataclass, field
+    from typing import Text, Tuple, Type, Union
+
+    from gitnetic.common.dataclass_argparse import (
+        DataclassArgumentParser,
+        DataclassBase,
+        get_params_item,
+    )
+    from gitnetic.tasks.base_transformers.base_task import (
+        TaskModule,
+        TransformerDataModule,
+        TransformerModule,
+        model_from_config,
+        tokenizer_from_config,
+    )
+
+    ParamType = Union[DataclassBase, Namespace]
+
+
     @TaskModule.register("my-custom-task")
     class MyCustomTask(TaskModule[TransformerModule, TransformerDataModule]):
         @dataclass
@@ -114,8 +134,8 @@ Example of a new task
 
         @classmethod
         def setup(
-            cls: Type["TransformerTask"], params: Tuple[ParamType, ...]
-        ) -> "TransformerTask":
+            cls: Type["MyCustomTask"], params: Tuple[ParamType, ...]
+        ) -> "MyCustomTask":
             # get the params for task components
             task_params, module_params, datamodule_params = cls.get_params(params)
 
@@ -147,7 +167,7 @@ Example of a new task
 
         @classmethod
         def add_argparse_params(
-            cls: Type["TransformerTask"], parser: DataclassArgumentParser
+            cls: Type["MyCustomTask"], parser: DataclassArgumentParser
         ) -> None:
             parser.add_arguments(cls.Params)
             TransformerModule.add_argparse_params(parser)
