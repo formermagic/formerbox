@@ -23,6 +23,7 @@ from transformers import (
     PreTrainedTokenizer,
     PreTrainedTokenizerFast,
 )
+from transformers.modeling_outputs import MaskedLMOutput
 from typeguard import check_argument_types, typechecked
 from typing_extensions import _ProtocolMeta  # type: ignore
 
@@ -238,10 +239,17 @@ class TransformerModule(
         self, input_ids: Tensor, labels: Tensor, **kwargs: Any
     ) -> Tuple[Tensor, Tensor]:
         del kwargs  # we implement this method with our parameters
+
+        # put the module into train mode
         self.model.train()
-        outputs = self.model(input_ids=input_ids, labels=labels)
-        loss, prediction_scores = outputs[:2]
-        return loss, prediction_scores
+        # make a forward pass with our transformer language model
+        outputs = self.model(input_ids=input_ids, labels=labels, return_dict=True)
+        # the language model should return a `MaskedLMOutput` instance
+        assert isinstance(outputs, MaskedLMOutput)
+        # the loss output should not be none
+        assert outputs.loss is not None
+
+        return outputs.loss, outputs.logits
 
     def prepare_batch(self, batch: Dict[Text, Tensor], batch_idx: int) -> None:
         del batch_idx  # nouse
