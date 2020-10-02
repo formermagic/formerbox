@@ -5,7 +5,7 @@ If you want to train a transformer-based model on your arbitrary dataset, first 
 text file. This is done with :class:`~gitnetic.cli.ConvertDataset` subcommand which uses the 
 :class:`~gitnetic.DatasetConverter` to map any dataset into the text file for further processing.
 
-We use recommend using `🤗/datasets <https://github.com/huggingface/datasets>`__ for any mapping and processing.
+We recommend using `🤗/datasets <https://github.com/huggingface/datasets>`__ for any mapping and processing.
 
 Subcommand required parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
