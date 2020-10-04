@@ -5,7 +5,7 @@ description = ""
 authors = ["mozharovsky <mozharovsky@live.com>"]
 
 [tools.poetry.scripts]
-gitnetic-cli = "gitnetic.__main__:run"
+gitnetic-cli = 'gitnetic.__main__:run_main'
 
 [tool.poetry.dependencies]
 python = "^3.7"
