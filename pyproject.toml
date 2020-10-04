@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gitnetic-ml"
+name = "gitnetic"
 version = "0.1.0"
 description = ""
 authors = ["mozharovsky <mozharovsky@live.com>"]
