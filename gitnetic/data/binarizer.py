@@ -154,8 +154,7 @@ class FlatBinarizer(Binarizer):
             path="text",
             data_files=[filename],
             split="train",
-            ignore_verifications=True,
-            block_size=self.params.block_size,
+            script_version="master",
         )
 
         dataset = dataset.map(
