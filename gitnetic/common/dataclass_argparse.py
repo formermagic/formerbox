@@ -5,10 +5,12 @@ import typing
 from argparse import ArgumentParser, Namespace
 from dataclasses import Field, dataclass
 from enum import Enum
+from inspect import isclass
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
+from gitnetic.common.registrable import Registrable
 from gitnetic.utils import str2bool
 from typeguard import typechecked
 from typing_inspect import (
@@ -147,10 +149,26 @@ class DataclassArgumentParser(ArgumentParser):
 
             field_obj = dataclass_type.get_field(attribute)
             field_type = dataclass_type.get_type(attribute)
-            kwargs = dataclass_type.get_metadata(attribute)
-            if isinstance(kwargs, MappingProxyType):
-                kwargs = dict(kwargs)
+            metadata = dataclass_type.get_metadata(attribute)
 
+            # prepare a dict from the metadata attribute
+            kwargs: Dict[Text, Any] = {}
+            if isinstance(metadata, MappingProxyType):
+                kwargs = dict(metadata)
+            elif isinstance(metadata, dict):
+                kwargs = metadata
+            else:
+                assert False, f"Unsupported metadata property type {type(metadata)}."
+
+            # list available choices via registrable objects
+            try:
+                choices = kwargs["choices"]
+                if isclass(choices) and issubclass(choices, Registrable):
+                    kwargs["choices"] = sorted(choices.list_available())
+            except KeyError:
+                pass
+
+            # parse field primitive types if possible
             for primitive_type in (int, float, str):
                 if not is_optional_type(field_type):
                     continue
