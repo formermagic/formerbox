@@ -19,6 +19,7 @@ import os
 import pkgutil
 import sys
 from contextlib import contextmanager
+from importlib.machinery import FileFinder
 from pathlib import Path
 from typing import Generator, Text, TypeVar, Union
 
@@ -68,8 +69,10 @@ def import_module_and_submodules(package_name: Text) -> None:
         for module_finder, name, _ in pkgutil.walk_packages(path):
             # Sometimes when you import third-party libraries that are on your path,
             # `pkgutil.walk_packages` returns those too, so we need to skip them.
-            if path_string and module_finder.path != path_string:
-                continue
+            if isinstance(module_finder, FileFinder):
+                if path_string and module_finder.path != path_string:
+                    continue
+
             subpackage = f"{package_name}.{name}"
             import_module_and_submodules(subpackage)
 
