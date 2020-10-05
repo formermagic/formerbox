@@ -20,7 +20,7 @@ def register_additional_classes(args: Namespace) -> None:
 
 
 def make_parser(prog: Optional[Text] = None) -> DataclassArgumentParser:
-    # crete an argument parser with plugin-resolving args
+    # create an argument parser with plugin-resolving args
     parser = DataclassArgumentParser(prog=prog)
     parser.add_argument(
         "--include-package",
