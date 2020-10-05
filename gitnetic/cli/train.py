@@ -23,7 +23,7 @@ class Train(Subcommand):
         task: Text = field(
             metadata={
                 "help": "",
-                "choices": sorted(TaskModule.list_available()),
+                "choices": TaskModule,
             }
         )
 

@@ -22,7 +22,7 @@ class TrainTokenizer(Subcommand):
     class Params(DataclassBase):
         tokenizer: Text = field(
             metadata={
-                "choices": sorted(TokenizerModule.list_available()),
+                "choices": TokenizerModule,
                 "help": "",
             },
         )

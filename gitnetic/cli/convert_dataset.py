@@ -23,7 +23,7 @@ class ConvertDataset(Subcommand):
         converter: Text = field(
             metadata={
                 "help": "",
-                "choices": sorted(DatasetConverter.list_available()),
+                "choices": DatasetConverter,
             }
         )
 

@@ -26,13 +26,13 @@ class Preprocess(Subcommand):
     class Params(DataclassBase):
         tokenizer: Text = field(
             metadata={
-                "choices": sorted(TokenizerModule.list_available()),
+                "choices": TokenizerModule,
                 "help": "",
             },
         )
         binarizer: Text = field(
             metadata={
-                "choices": sorted(Binarizer.list_available()),
+                "choices": Binarizer,
                 "help": "",
             },
         )
