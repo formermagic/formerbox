@@ -68,6 +68,7 @@ class Binarizer(Registrable, HasParsableParams, metaclass=ABCMeta):
         dataset_setup: IndexedDatasetSetup,
         tokenizer: PreTrainedTokenizerFast,
     ) -> None:
+        super().__init__()
         self.dataset_setup = dataset_setup
         self.tokenizer = tokenizer
 
@@ -129,10 +130,6 @@ class FlatBinarizer(Binarizer):
         num_proc: int = field(
             default=32,
             metadata={"help": "A number of processes to perform actions in parallel."},
-        )
-        block_size: int = field(
-            default=65536,
-            metadata={"help": "The size of a block of data to load."},
         )
 
     params: Params
