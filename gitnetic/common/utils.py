@@ -72,3 +72,33 @@ def import_module_and_submodules(package_name: Text) -> None:
                 continue
             subpackage = f"{package_name}.{name}"
             import_module_and_submodules(subpackage)
+
+
+def import_user_module(user_dir: Text) -> Text:
+    # prepare the module path
+    module_path = os.path.abspath(user_dir)
+    if not os.path.exists(module_path):
+        rel_path = os.path.join(os.path.dirname(__file__), "..", user_dir)
+        if os.path.exists(rel_path):
+            module_path = rel_path
+
+    # get the module_path components
+    module_parent, module_name = os.path.split(module_path)
+
+    # check if module is imported and cached
+    if module_name in sys.modules:
+        module_obj = sys.modules[module_name]
+        del sys.modules[module_name]
+    else:
+        module_obj = None
+
+    # import the module
+    sys.path.insert(0, module_parent)
+    importlib.import_module(module_name)
+
+    # cache the imported module
+    sys.modules["plugin_user_dir"] = sys.modules[module_name]
+    if module_obj is not None and module_name != "plugin_user_dir":
+        sys.modules[module_name] = module_obj
+
+    return module_name
