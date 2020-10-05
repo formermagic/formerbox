@@ -32,7 +32,7 @@ traitlets = "^4.3.3"
 overrides = "^3.1.0"
 typeguard = "^2.9.1"
 typing_inspect = "^0.6.0"
-datasets = "^1.0.2"
+datasets = "^1.1.0"
 more-itertools = "^8.5.0"
 
 [tool.poetry.dev-dependencies]
