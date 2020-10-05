@@ -19,9 +19,7 @@ def register_additional_classes(args: Namespace) -> None:
         import_module_and_submodules(module_name)
 
 
-def make_parser(prog: Optional[Text] = None) -> DataclassArgumentParser:
-    # create an argument parser with plugin-resolving args
-    parser = DataclassArgumentParser(prog=prog)
+def add_plugin_resolve_args(parser: DataclassArgumentParser) -> None:
     parser.add_argument(
         "--include-package",
         type=str,
@@ -35,6 +33,12 @@ def make_parser(prog: Optional[Text] = None) -> DataclassArgumentParser:
         default=None,
         help="A directory with user custom plugins to include.",
     )
+
+
+def make_parser(prog: Optional[Text] = None) -> DataclassArgumentParser:
+    # create an argument parser with plugin-resolving args
+    parser = DataclassArgumentParser(prog=prog)
+    add_plugin_resolve_args(parser)
 
     # register additional classes with specified packages or user-dir
     args = parser.parse_known_args()[0]
@@ -52,6 +56,7 @@ def make_parser(prog: Optional[Text] = None) -> DataclassArgumentParser:
 
         subparser, defaults = subcommand.add_subparser(subparsers)
         subparser.set_defaults(**defaults)
+        add_plugin_resolve_args(subparser)  # duplicate args to avoid errors
 
     return parser
 
