@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Text
 from commitizen import defaults
 from commitizen.cz import BaseCommitizen
 from commitizen.cz.utils import multiple_line_breaker, required_validator
-from git import Commit
+from git.objects import Commit
 
 
 def parse_scope(text: Text) -> Text:
