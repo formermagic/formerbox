@@ -15,7 +15,10 @@ from gitnetic.common.dataclass_argparse import (
 from gitnetic.data.binarizer import Binarizer
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.tasks.base_transformers import TokenizerModule
+from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 from typeguard import typechecked
+
+Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +95,11 @@ class Preprocess(Subcommand):
         return subparser, defaults
 
 
+def save_tokenizer(tokenizer: Tokenizer, output_path: Text) -> None:
+    output_path = os.path.join(output_path, "tokenizer")
+    tokenizer.save_pretrained(save_directory=output_path)
+
+
 @typechecked
 def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     # pylint: disable=too-many-locals
@@ -123,6 +131,8 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
 
     # prepare the output dir for writing data files
     os.makedirs(cmd_params.output_path, exist_ok=True)
+    # save the pretrained tokenizer to the output directory
+    save_tokenizer(tokenizer, cmd_params.output_path)
 
     # run dataset binarization for each split
     for split, datafile_prefix in (
