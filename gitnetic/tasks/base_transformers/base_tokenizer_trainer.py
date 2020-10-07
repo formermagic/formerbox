@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, List, Optional, Text, Union
@@ -135,20 +134,25 @@ class TransformerTokenizerModule(TokenizerModule):
             special_tokens=self.special_tokens,
         )
 
-    def save_pretrained(self, *args: Any, **kwargs: Any) -> None:
-        del args  # use designated args
+    def save_pretrained(
+        self, save_directory: Optional[Text] = None, **kwargs: Any
+    ) -> None:
+        # take the directory from params if not specified
+        if save_directory is None:
+            assert self.params.tokenizer_path is not None
+            save_directory = self.params.tokenizer_path
+
         # make sure the `tokenizer_output_path` is a pathlike object
-        assert self.params.tokenizer_path is not None
-        if isinstance(self.params.tokenizer_path, str):
-            tokenizer_path = Path(self.params.tokenizer_path)
+        if isinstance(save_directory, str):
+            tokenizer_path = Path(save_directory)
         else:
-            tokenizer_path = self.params.tokenizer_path
+            tokenizer_path = save_directory
+
+        # make the output dir if it doesn't exist
+        tokenizer_path.mkdir(exist_ok=True)
 
         # save the trained tokenizer to `tokenizer_output_path`
-        save_dir = path_to_posix(self.params.tokenizer_path)
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir, exist_ok=True)
-        self.backend_tokenizer.save_model(save_dir)
+        self.backend_tokenizer.save_model(save_directory)
 
         # prepare the pre-trained tokenizer
         tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
@@ -156,7 +160,7 @@ class TransformerTokenizerModule(TokenizerModule):
         # workaround for saving tokenizer bugs in the transformers backend
         fix_tokenizer(tokenizer)
         # save the pre-trained tokenizer
-        tokenizer.save_pretrained(save_dir)
+        tokenizer.save_pretrained(save_directory)
 
     @staticmethod
     def from_pretrained(params: Params, **kwargs: Any) -> PreTrainedTokenizerFast:
