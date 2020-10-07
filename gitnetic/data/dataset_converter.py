@@ -12,7 +12,7 @@ from gitnetic.common.has_params import HasParsableParams
 from gitnetic.common.registrable import Registrable
 from gitnetic.utils import lazy_groups_of
 from gitnetic.utils.code_tokenizer import tokenize_python
-from typeguard import typechecked  # pylint: disable=wrong-import-order
+from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
