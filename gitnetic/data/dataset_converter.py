@@ -12,7 +12,7 @@ from gitnetic.common.has_params import HasParsableParams
 from gitnetic.common.registrable import Registrable
 from gitnetic.utils import lazy_groups_of
 from gitnetic.utils.code_tokenizer import tokenize_python
-from typeguard import typechecked
+from typeguard import typechecked  # pylint: disable=wrong-import-order
 
 logger = logging.getLogger(__name__)
 
@@ -108,11 +108,15 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
             data_files=data_files,
             split="train",
         )
+
+        assert isinstance(dataset, Dataset)
         dataset = self.distinct_dataset(
             dataset,
             column="content",
             num_proc=self.params.num_proc,
         )
+
+        assert isinstance(dataset, Dataset)
         dataset = dataset.map(
             self.encode,
             batched=self.params.batched,
@@ -120,11 +124,17 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
             num_proc=self.params.num_proc,
         )
 
+        # make sure we preserve the columns
+        # this is required to avoid issues
+        # with splitting dataset using the
+        # `train_test_split` method
+        dataset.set_format(columns=None)
+
         def append_path_suffix(base_path: Text, suffix: Text) -> Text:
             base_path, ext = os.path.splitext(base_path)
             return f"{base_path}{suffix}{ext}"
 
-        train_dataset = dataset
+        train_dataset: Dataset = dataset
         if self.params.train_test_split:
             # sample and save the validation dataset
             if self.params.valid_size > 0:
