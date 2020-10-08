@@ -165,7 +165,7 @@ def test_cli_train(
             --save_step_frequency 10                    \
             --save_dir {save_dir}                       \
             --progress_bar_refresh_rate 0               \
-            --row_log_interval 1
+            --log_every_n_steps 1
         """
     )
 
