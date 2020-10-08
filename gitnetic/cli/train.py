@@ -21,8 +21,8 @@ class Train(Subcommand):
     class Params(DataclassBase):
         task: Text = field(
             metadata={
-                "help": "",
                 "choices": TaskModule,
+                "help": "The name of a registered task to perform training for.",
             }
         )
 

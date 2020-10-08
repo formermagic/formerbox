@@ -22,7 +22,7 @@ class TrainTokenizer(Subcommand):
         tokenizer: Text = field(
             metadata={
                 "choices": TokenizerModule,
-                "help": "",
+                "help": "The name of a registered tokenizer module to use.",
             },
         )
 

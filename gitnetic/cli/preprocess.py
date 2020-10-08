@@ -29,13 +29,13 @@ class Preprocess(Subcommand):
         tokenizer: Text = field(
             metadata={
                 "choices": TokenizerModule,
-                "help": "",
+                "help": "The name of a registered tokenizer module to use.",
             },
         )
         binarizer: Text = field(
             metadata={
                 "choices": Binarizer,
-                "help": "",
+                "help": "The name of a registered binarizer to use.",
             },
         )
         output_path: Text = field(

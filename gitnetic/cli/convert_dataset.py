@@ -21,8 +21,8 @@ class ConvertDataset(Subcommand):
     class Params(DataclassBase):
         converter: Text = field(
             metadata={
-                "help": "",
                 "choices": DatasetConverter,
+                "help": "The name of a registered dataset converter to use.",
             }
         )
 
