@@ -116,6 +116,8 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     dataset_setup_params = get_params_item(
         params, params_type=IndexedDatasetSetup.Params
     )
+
+    assert dataset_setup_params is not None
     dataset_setup = IndexedDatasetSetup.from_args(dataset_setup_params)
 
     # prepare the dataset binarizer
