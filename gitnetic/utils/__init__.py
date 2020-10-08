@@ -1,5 +1,6 @@
 from .utils import (
     all_subclasses,
+    append_path_suffix,
     init_from_args,
     iter_stide,
     lazy_groups_of,
