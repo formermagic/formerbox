@@ -67,6 +67,12 @@ name = "cz_gitnetic"
 version = "0.1.0"
 tag_format = "$version"
 
+[tool.pytest.ini_options]
+log_cli = 1
+log_cli_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
