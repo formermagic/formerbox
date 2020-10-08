@@ -193,8 +193,6 @@ class TransformerModule(
         params: Params,
     ) -> None:
         super().__init__()
-        # save the given frame parameters to the ckpt
-        self.save_hyperparameters()
 
         self.model = model
         self.tokenizer = tokenizer
