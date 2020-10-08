@@ -11,7 +11,6 @@ from gitnetic.common.dataclass_argparse import (
 )
 from gitnetic.tasks.base_transformers.base_task import TaskModule
 from gitnetic.tasks.base_transformers.base_trainer import TransformerTrainer
-from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +66,6 @@ class Train(Subcommand):
         return subparser, defaults
 
 
-@typechecked
 def train(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     cmd_params = get_params_item(params, params_type=Train.Params)
 

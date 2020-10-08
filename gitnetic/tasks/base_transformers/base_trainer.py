@@ -9,7 +9,6 @@ from gitnetic.common.registrable import Registrable
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, EarlyStopping
 from pytorch_lightning.loggers.wandb import LightningLoggerBase, WandbLogger
-from typeguard import typechecked
 
 from .base_task import TaskModule
 from .callbacks import SaveCheckpointAtStep
@@ -50,7 +49,6 @@ class TransformerTrainer(Registrable, HasParsableParams):
     params: Params
     params_type = Params
 
-    @typechecked
     def __init__(
         self,
         task: TaskModule,

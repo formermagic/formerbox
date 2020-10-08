@@ -11,7 +11,6 @@ from gitnetic.common.dataclass_argparse import (
     get_params_item,
 )
 from gitnetic.tasks.base_transformers import TokenizerModule
-from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +63,6 @@ class TrainTokenizer(Subcommand):
         return subparser, defaults
 
 
-@typechecked
 def train_tokenizer(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     # make sure tokenizer parallelizm is enabled
     # this makes the training much faster due to lib optimizations

@@ -24,7 +24,6 @@ from transformers import (
     PreTrainedTokenizerFast,
 )
 from transformers.modeling_outputs import MaskedLMOutput
-from typeguard import check_argument_types, typechecked
 from typing_extensions import _ProtocolMeta  # type: ignore
 
 from .base import BaseTrainingMixin
@@ -33,7 +32,6 @@ Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
 class DataLoadingMixin:
-    @typechecked
     def __init__(
         self,
         max_tokens: Optional[int],
@@ -99,7 +97,6 @@ class TransformerDataModule(
     params: Params
     params_type: Type[Params] = Params
 
-    @typechecked
     def __init__(self, tokenizer: Tokenizer, params: Params) -> None:
         super().__init__(params.max_tokens, params.batch_size, params.num_workers)
 
@@ -196,8 +193,6 @@ class TransformerModule(
         params: Params,
     ) -> None:
         super().__init__()
-        # check if arguments apply to their types
-        assert check_argument_types()
         # save the given frame parameters to the ckpt
         self.save_hyperparameters()
 

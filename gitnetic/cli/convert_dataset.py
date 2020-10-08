@@ -11,7 +11,6 @@ from gitnetic.common.dataclass_argparse import (
     get_params_item,
 )
 from gitnetic.data.dataset_converter import DatasetConverter
-from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +65,6 @@ class ConvertDataset(Subcommand):
         return subparser, defaults
 
 
-@typechecked
 def convert_dataset(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     cmd_params = get_params_item(params, params_type=ConvertDataset.Params)
 

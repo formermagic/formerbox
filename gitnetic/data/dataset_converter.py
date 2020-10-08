@@ -12,7 +12,6 @@ from gitnetic.common.has_params import HasParsableParams
 from gitnetic.common.registrable import Registrable
 from gitnetic.utils import append_path_suffix, lazy_groups_of
 from gitnetic.utils.code_tokenizer import tokenize_python
-from typeguard import typechecked
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,6 @@ class DatasetProcessingMixin:
         df = dataset.data.column(column).to_pandas()
         return df.drop_duplicates().index.to_list()
 
-    @typechecked
     def distinct_dataset(
         self,
         dataset: Union[Dataset, DatasetDict],
@@ -167,7 +165,6 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
             result = self.tokenize_text(content)
         return {"output_data": result}
 
-    @typechecked
     def save_dataset(
         self, dataset: Union[Dataset, DatasetDict], output_path: Text
     ) -> None:
@@ -177,7 +174,6 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
                 instances = [instance for instance in group if instance]
                 stream.write("\n".join(instances))
 
-    @typechecked
     def tokenize_text(self, text: Text) -> Instance:
         # workaround to avoid disambiguation in parsing text datasets
         text = text.replace("\b", "\r")

@@ -12,7 +12,6 @@ from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
 from gitnetic.common.registrable import Registrable
 from gitnetic.utils import str2bool
-from typeguard import typechecked
 from typing_inspect import (
     get_args,
     get_origin,
@@ -27,7 +26,6 @@ DataclassBaseType = Type["DataclassBase"]
 DataclassTypes = Union[DataclassBaseType, typing.Iterable[DataclassBaseType]]
 
 
-@typechecked
 def get_parsed_attr(
     params: Tuple[Union["DataclassBase", Namespace], ...],
     attribute_name: Text,
@@ -40,7 +38,6 @@ def get_parsed_attr(
     return attribute
 
 
-@typechecked
 def get_params_item(
     params: Tuple[Union["DataclassBase", Namespace], ...],
     params_type: Type[T],

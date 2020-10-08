@@ -16,7 +16,6 @@ from gitnetic.data.binarizer import Binarizer
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.tasks.base_transformers import TokenizerModule
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
-from typeguard import typechecked
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
@@ -100,7 +99,6 @@ def save_tokenizer(tokenizer: Tokenizer, output_path: Text) -> None:
     tokenizer.save_pretrained(save_directory=output_path)
 
 
-@typechecked
 def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     # pylint: disable=too-many-locals
     # make sure tokenizer parallelizm is disabled
