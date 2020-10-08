@@ -60,6 +60,7 @@ jupyterlab = "^2.1.4"
 commitizen = "^2.4.0"
 cookiecutter = "^1.7.2"
 pytest = "^6.1.1"
+pytest-ordering = "^0.6"
 
 [tool.commitizen]
 name = "cz_gitnetic"
