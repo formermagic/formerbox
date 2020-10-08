@@ -76,16 +76,73 @@ class DatasetConverter(Registrable, HasParsableParams[ParamsType], metaclass=ABC
 class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     @dataclass
     class Params(DataclassBase):
-        script_path: Text = field(metadata={"help": ""})
-        output_path: Text = field(metadata={"help": ""})
-        data_files: List[Text] = field(metadata={"help": ""})
-        train_test_split: bool = field(default=False, metadata={"help": ""})
-        train_size: float = field(default=0.8, metadata={"help": ""})
-        valid_size: float = field(default=0.1, metadata={"help": ""})
-        test_size: float = field(default=0.1, metadata={"help": ""})
-        batched: bool = field(default=True, metadata={"help": ""})
-        batch_size: int = field(default=128, metadata={"help": ""})
-        num_proc: int = field(default=1, metadata={"help": ""})
+        script_path: Text = field(
+            metadata={
+                "help": "The path to the dataset processing script with the dataset builder."
+                " Can be either: \n"
+                " * a local path to processing script or the directory containing the script"
+                " (if the script has the same name as the directory)\n"
+                " * a dataset identifier on HuggingFace AWS bucket (list all available"
+                " datasets and ids with datasets.list_datasets())."
+            }
+        )
+        output_path: Text = field(
+            metadata={"help": "The output directory to save converted text datasets."}
+        )
+        data_files: List[Text] = field(
+            metadata={"help": "Defining the data_files of the dataset configuration"}
+        )
+        train_test_split: bool = field(
+            default=False,
+            metadata={
+                "help": "Whether the converted dataset should be splitted into"
+                " train/valid/test subsets."
+            },
+        )
+        train_size: float = field(
+            default=0.8,
+            metadata={
+                "help": "The proportion for a training subset of the original dataset."
+                " Default is set to `0.8`."
+            },
+        )
+        valid_size: float = field(
+            default=0.1,
+            metadata={
+                "help": "The proportion for a validation subset of the original dataset."
+                " Default is set to `0.1`."
+            },
+        )
+        test_size: float = field(
+            default=0.1,
+            metadata={
+                "help": "The proportion for a test subset of the original dataset."
+                " Default is set to `0.1`."
+            },
+        )
+        batched: bool = field(
+            default=True,
+            metadata={
+                "help": "Whether or not to provide batches of examples to the function."
+                " Default is set to `True`."
+            },
+        )
+        batch_size: int = field(
+            default=128,
+            metadata={
+                "help": "The number of examples per batch provided to function"
+                " if batched=True batch_size <= 0 or batch_size == None:"
+                " Provide the full dataset as a single batch to function."
+                " Default is set to `128`."
+            },
+        )
+        num_proc: int = field(
+            default=1,
+            metadata={
+                "help": "The number of processes for multiprocessing."
+                " Default is set to `1`."
+            },
+        )
 
     params: Params
     params_type: Type[Params] = Params
