@@ -1,14 +1,13 @@
 import logging
-import os
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from glob import glob
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Text, Union
+from typing import Any, Dict, List, Optional, Text, Type, Union
 
 from datasets import Dataset, DatasetDict, load_dataset
 from gitnetic.common.dataclass_argparse import DataclassBase
-from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.has_params import HasParsableParams, ParamsType
 from gitnetic.common.registrable import Registrable
 from gitnetic.utils import append_path_suffix, lazy_groups_of
 from gitnetic.utils.code_tokenizer import tokenize_python
@@ -54,7 +53,10 @@ class DatasetProcessingMixin:
         return result
 
 
-class DatasetConverter(Registrable, HasParsableParams, metaclass=ABCMeta):
+class DatasetConverter(Registrable, HasParsableParams[ParamsType], metaclass=ABCMeta):
+    params: ParamsType
+    params_type: Type[ParamsType]
+
     @abstractmethod
     def convert(self, *args: Any, **kwargs: Any) -> None:
         raise NotImplementedError()
@@ -86,7 +88,7 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         num_proc: int = field(default=1, metadata={"help": ""})
 
     params: Params
-    params_type = Params
+    params_type: Type[Params] = Params
 
     def __init__(self, params: Params) -> None:
         self.params = params
