@@ -88,11 +88,9 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     params: Params
     params_type = Params
 
-    @typechecked
     def __init__(self, params: Params) -> None:
         self.params = params
 
-    @typechecked
     def convert(self, *args: Any, **kwargs: Any) -> None:
         del args, kwargs  # use only designated args
         # search data_files if a user specified a pattern to use
