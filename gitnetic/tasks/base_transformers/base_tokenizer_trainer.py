@@ -34,15 +34,15 @@ class TransformerTokenizerModule(TokenizerModule):
     class Params(DataclassBase):
         files: Optional[List[Text]] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={"help": "The input text files to train a tokenizer on."},
         )
         vocab_size: Optional[int] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={"help": "The size of a trained tokenizer's vocabulary."},
         )
         min_frequency: int = field(
             default=2,
-            metadata={"help": ""},
+            metadata={"help": "The min frequency for calculating subwords merges."},
         )
         tokenizer_path: Optional[Text] = field(
             default=None,
@@ -65,23 +65,29 @@ class TransformerTokenizerModule(TokenizerModule):
         )
         lowercase: bool = field(
             default=False,
-            metadata={"help": "Whether to preprocess text as lowercase."},
+            metadata={"help": "Whether or not to preprocess text in lowercase."},
         )
         dropout: Optional[float] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={
+                "help": "The likelihood of dropping a subword during calculating the frequency."
+            },
         )
         unicode_normalizer: Optional[Text] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={"help": "The unicode text normalizer. Default is set to `None`."},
         )
         continuing_subword_prefix: Optional[Text] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={
+                "help": "The subword prefix used for decoding the words. Default is set to `None`."
+            },
         )
         end_of_word_suffix: Optional[Text] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={
+                "help": "The suffix that comes after each word. Default is set to `None`."
+            },
         )
 
     params: Params
