@@ -3,12 +3,12 @@ import os
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from io import TextIOWrapper
-from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Type, Union
 
 import torch
 from datasets import load_dataset
 from gitnetic.common.dataclass_argparse import DataclassBase
-from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.has_params import HasParsableParams, ParamsType
 from gitnetic.common.registrable import Registrable
 from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
 from gitnetic.utils import iter_stide
@@ -62,7 +62,10 @@ def find_offsets(filename: Text, num_chunks: int) -> Tuple[int, List[int]]:
     return size, offsets
 
 
-class Binarizer(Registrable, HasParsableParams, metaclass=ABCMeta):
+class Binarizer(Registrable, HasParsableParams[ParamsType], metaclass=ABCMeta):
+    params: ParamsType
+    params_type: Type[ParamsType]
+
     def __init__(
         self,
         dataset_setup: IndexedDatasetSetup,
@@ -133,7 +136,7 @@ class FlatBinarizer(Binarizer):
         )
 
     params: Params
-    params_type = Params
+    params_type: Type[Params] = Params
 
     def __init__(
         self,
