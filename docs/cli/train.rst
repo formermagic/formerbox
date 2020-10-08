@@ -59,7 +59,7 @@ Example cli command
         --save_step_frequency <save_step_frequency>             \
         --save_dir <save_dir>                                   \
         --progress_bar_refresh_rate <progress_bar_refresh_rate> \
-        --row_log_interval <row_log_intervala
+        --log_every_n_steps <log_every_n_steps>
 
 Making your own task
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
