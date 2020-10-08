@@ -68,12 +68,16 @@ class Train(Subcommand):
 
 def train(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     cmd_params = get_params_item(params, params_type=Train.Params)
+    assert cmd_params is not None
 
     task_cls, _ = TaskModule.from_registry(cmd_params.task)
     task_module = task_cls.setup(params=params)
 
     trainer_params = get_params_item(params, params_type=TransformerTrainer.Params)
     trainer_args = vars(get_params_item(params, params_type=Namespace))
+    assert trainer_params is not None
+    assert trainer_args is not None
+
     trainer = TransformerTrainer(
         task=task_module,
         params=trainer_params,
