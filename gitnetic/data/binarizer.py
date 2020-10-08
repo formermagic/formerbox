@@ -108,31 +108,52 @@ class FlatBinarizer(Binarizer):
     class Params(DataclassBase):
         truncation: Truncation = field(
             default="do_not_truncate",
-            metadata={"help": ""},
+            metadata={"help": "Activates and controls the truncation."},
         )
         max_length: Optional[int] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={
+                "help": "Pad to a maximum length specified with the argument"
+                " max_length or to the maximum acceptable input length for"
+                " the model if that argument is not provided."
+            },
         )
         stride: int = field(
             default=0,
-            metadata={"help": ""},
+            metadata={
+                "help": "If set to a number along with max_length, "
+                " the overflowing tokens returned when return_overflowing_tokens=True"
+                " will contain some tokens from the end of the truncated sequence"
+                " returned to provide some overlap between truncated and overflowing sequences."
+                " The value of this argument defines the number of overlapping tokens."
+            },
         )
         return_overflowing_tokens: bool = field(
             default=False,
-            metadata={"help": ""},
+            metadata={"help": "Whether or not to return overflowing token sequences."},
         )
         batched: bool = field(
             default=True,
-            metadata={"help": ""},
+            metadata={
+                "help": "Whether or not to provide batches of examples to the function."
+                " Default is set to `True`."
+            },
         )
         batch_size: int = field(
             default=512,
-            metadata={"help": ""},
+            metadata={
+                "help": "The number of examples per batch provided to function"
+                " if batched=True batch_size <= 0 or batch_size == None:"
+                " Provide the full dataset as a single batch to function."
+                " Default is set to `512`."
+            },
         )
         num_proc: int = field(
-            default=32,
-            metadata={"help": "A number of processes to perform actions in parallel."},
+            default=8,
+            metadata={
+                "help": "The number of processes for multiprocessing."
+                " Default is set to `8`."
+            },
         )
 
     params: Params
