@@ -27,6 +27,13 @@ class SaveCheckpointAtStep(Callback):
         self.best_monitor = f"best_{self.monitor}"
         self.monitor_start_value = torch.tensor(0.0)
 
+    def get_metrics(self, trainer: Trainer) -> Dict[Text, Tensor]:
+        result = {}
+        for metric, value in trainer.logged_metrics.items():
+            if isinstance(value, (int, float, bool)):
+                result[metric] = torch.tensor([value])
+        return result
+
     def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         del trainer  # nouse
 
@@ -50,7 +57,7 @@ class SaveCheckpointAtStep(Callback):
         batch_idx: int,
         dataloader_idx: int,
     ) -> None:
-        del batch, batch_idx, dataloader_idx
+        del batch, dataloader_idx
         epoch = trainer.current_epoch
         global_step = trainer.global_step
 
@@ -68,7 +75,7 @@ class SaveCheckpointAtStep(Callback):
 
             # save the best checkpoint with the selected monitor
             filename = f"{self.prefix}_{self.best_monitor}.ckpt"
-            self.save_best_checkpoint(filename, trainer, pl_module)
+            self.save_best_checkpoint(filename, trainer, pl_module, batch_idx)
 
             # keep only latest `num` checkpoints + best + last
             self._keep_last_files(self.num_last_checkpoints, dirname=self.filepath)
@@ -80,16 +87,22 @@ class SaveCheckpointAtStep(Callback):
             setattr(pl_module, self.best_monitor, monitor_value)
 
     def save_best_checkpoint(
-        self, filename: Text, trainer: Trainer, pl_module: LightningModule
+        self,
+        filename: Text,
+        trainer: Trainer,
+        pl_module: LightningModule,
+        batch_idx: int,
     ) -> None:
-        metrics = trainer.callback_metrics
+        metrics = self.get_metrics(trainer)
         monitor_value: Optional[Tensor] = metrics.get(self.monitor)
         best_value: Optional[Tensor] = metrics.get(self.best_monitor)
 
         if monitor_value is None:
             return
         if best_value is None:
+            # update and sync logged metrics with the best_monitor value
             metrics[self.best_monitor] = self.monitor_start_value
+            trainer.logger_connector.log_metrics(metrics, {}, step=batch_idx)
             return
 
         # replace the initial value
@@ -98,18 +111,23 @@ class SaveCheckpointAtStep(Callback):
 
         # update best value metrics
         if torch.le(monitor_value, best_value).item():
+            # update and sync logged metrics with the best_monitor value
             metrics[self.best_monitor] = monitor_value
+            trainer.logger_connector.log_metrics(metrics, {}, step=batch_idx)
+
+            # update the best_monitor buffer
             self.update_best_monitor(monitor_value, pl_module)
             if hasattr(pl_module, self.best_monitor):
                 setattr(pl_module, self.best_monitor, monitor_value)
 
+            # save the checkpoint
             ckpt_path = os.path.join(self.filepath, filename)
             trainer.save_checkpoint(ckpt_path)
 
     def save_last_checkpoint(
         self, filename: Text, trainer: Trainer, pl_module: LightningModule
     ) -> None:
-        metrics = trainer.callback_metrics
+        metrics = self.get_metrics(trainer)
         monitor_value: Optional[Tensor] = metrics.get(self.monitor)
         if monitor_value is None:
             return
