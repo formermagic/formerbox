@@ -129,3 +129,10 @@ def iter_stide(
     assert chunk_size > stride, "stride must be less than chunk size"
     for window in windowed(iterable, n=chunk_size, step=chunk_size - stride):
         yield [x for x in window if x is not None]
+
+
+def append_path_suffix(base_path: Union[Text, Path], suffix: Text) -> Text:
+    if isinstance(base_path, Path):
+        base_path = str(base_path)
+    base_path, ext = os.path.splitext(base_path)
+    return f"{base_path}{suffix}{ext}"

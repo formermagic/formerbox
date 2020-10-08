@@ -10,7 +10,7 @@ from datasets import Dataset, DatasetDict, load_dataset
 from gitnetic.common.dataclass_argparse import DataclassBase
 from gitnetic.common.has_params import HasParsableParams
 from gitnetic.common.registrable import Registrable
-from gitnetic.utils import lazy_groups_of
+from gitnetic.utils import append_path_suffix, lazy_groups_of
 from gitnetic.utils.code_tokenizer import tokenize_python
 from typeguard import typechecked
 
@@ -129,10 +129,6 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         # with splitting dataset using the
         # `train_test_split` method
         dataset.set_format(columns=None)
-
-        def append_path_suffix(base_path: Text, suffix: Text) -> Text:
-            base_path, ext = os.path.splitext(base_path)
-            return f"{base_path}{suffix}{ext}"
 
         train_dataset: Dataset = dataset
         if self.params.train_test_split:
