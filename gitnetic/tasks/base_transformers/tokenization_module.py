@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, List, Optional, Text, Union
+from typing import Any, List, Optional, Text, Union, Type
 
-from gitnetic.common.has_params import HasParsableParams
+from gitnetic.common.has_params import HasParsableParams, ParamsType
 from gitnetic.common.registrable import Registrable
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 from transformers.tokenization_utils_base import (
@@ -13,7 +13,10 @@ from transformers.tokenization_utils_base import (
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
-class TokenizerModule(Registrable, HasParsableParams, metaclass=ABCMeta):
+class TokenizerModule(Registrable, HasParsableParams[ParamsType], metaclass=ABCMeta):
+    params: ParamsType
+    params_type: Type[ParamsType]
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__()
         self.tokenizer: Optional[Tokenizer] = None
