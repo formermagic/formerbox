@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
-import pytorch_lightning as pl
 import torch
 from gitnetic.common.dataclass_argparse import DataclassBase
 from gitnetic.common.has_params import HasParsableParams
@@ -255,9 +254,16 @@ class TransformerModule(
             batch["input_ids"] = input_ids.squeeze(0)
 
     def training_step(
-        self, batch: Dict[Text, Tensor], batch_idx: int
-    ) -> pl.TrainResult:
+        self,
+        batch: Dict[Text, Tensor],
+        batch_idx: int,
+        optimizer_idx: Optional[int] = None,
+        hiddens: Optional[Tensor] = None,
+    ) -> Dict[Text, Any]:
+        del optimizer_idx, hiddens  # nouse
         self.prepare_batch(batch, batch_idx)
+
+        # model forward pass & prepare metrics
         loss, _ = self.forward(**batch)
         train_perplexity = perplexity(loss)
         batch_size = torch.tensor(len(batch["input_ids"]))
@@ -272,37 +278,30 @@ class TransformerModule(
             except IndexError:
                 learning_rate = torch.tensor(float("nan"))
 
-        result = pl.TrainResult(loss)
-        result.log("train_loss", value=loss)
-        result.log("train_ppl", value=train_perplexity)
-        result.log("train_lr", value=learning_rate)
-        result.log("train_bz", value=batch_size)
+        # log training metrics
+        self.log("train_loss", loss, prog_bar=True)
+        self.log("train_ppl", train_perplexity, prog_bar=True)
+        self.log("train_lr", learning_rate, prog_bar=True)
+        self.log("train_bsz", batch_size, prog_bar=True)
 
-        # write training logs to the progress bar
-        result.log_dict(
-            {
-                "ppl": train_perplexity,
-                "lr": learning_rate,
-                "bz": batch_size,
-            },
-            prog_bar=True,
-            logger=False,
-            on_step=True,
-            on_epoch=False,
-        )
-
-        return result
+        return {
+            "loss": loss,
+            "ppl": train_perplexity,
+            "lr": learning_rate,
+            "bsz": batch_size,
+        }
 
     def validation_step(
-        self, batch: Dict[Text, Tensor], batch_idx: int
-    ) -> pl.EvalResult:
+        self, batch: Dict[Text, Tensor], batch_idx: int, **kwargs: Any
+    ) -> None:
+        del kwargs  # nouse
         self.prepare_batch(batch, batch_idx)
+        # model forward pass & prepare metrics
         loss, _ = self.forward(**batch)
         val_perplexity = perplexity(loss)
-        result = pl.EvalResult()
-        result.log("val_loss", value=loss, prog_bar=True)
-        result.log("val_ppl", value=val_perplexity, prog_bar=True)
-        return result
+        # log validation metrics
+        self.log("val_loss", loss, prog_bar=True)
+        self.log("val_ppl", val_perplexity, prog_bar=True)
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
         parameters = weight_decay_params(
