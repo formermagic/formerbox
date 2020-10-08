@@ -19,6 +19,19 @@ except (ModuleNotFoundError, ImportError):
     pass
 
 
+ACCUMULATE_GRAD_BATCHES_ERROR = """
+    `accumulate_grad_batches` property must be of type `int`. Other types are not supported now.
+    You might want to override the `training_steps(...)` method to provide support for other
+    types to properly parse `accumulate_grad_batches` values.
+"""
+
+TPU_CORES_ERROR = """
+    `tpu_cores` property must be of type `int`. Other types are not supported now.
+    You might want to override the `training_steps(...)` method to provide support for other
+    types to properly parse `tpu_cores` values.
+"""
+
+
 # pylint: disable=too-many-ancestors
 class BaseTrainingMixin:
     def __init__(self) -> None:
@@ -123,15 +136,21 @@ class BaseTrainingMixin:
 
         return batch_sampler
 
-    def training_steps(self, batch_nums: int, max_epochs: int) -> int:
+    def training_steps(self, batch_nums: int, max_epochs: int, **kwargs: Any) -> int:
+        del kwargs  # nouse
         assert self.trainer is not None, "Trainer must be not empty"
 
         if self.trainer.use_tpu:
-            num_devices = self.trainer.tpu_cores
+            assert isinstance(self.trainer.tpu_cores, int), TPU_CORES_ERROR
+            num_devices: int = self.trainer.tpu_cores
         elif self.trainer.num_gpus > 0:
             num_devices = self.trainer.num_gpus
         else:
             num_devices = 1
+
+        assert isinstance(
+            self.trainer.accumulate_grad_batches, int
+        ), ACCUMULATE_GRAD_BATCHES_ERROR
 
         per_device_samples = batch_nums // max(1, num_devices)
         per_device_samples //= self.trainer.accumulate_grad_batches
