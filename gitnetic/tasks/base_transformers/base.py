@@ -1,8 +1,4 @@
-from typing import Optional
-
-from pytorch_lightning import Trainer
-from torch.utils.data import DataLoader
-from transformers import DataCollator
+from typing import Any, Optional
 
 from gitnetic.data.indexed_dataset import IndexedDatasetBase
 from gitnetic.data.samplers import (
@@ -11,10 +7,14 @@ from gitnetic.data.samplers import (
     UniformBatchSampler,
     UniformMaxTokensBatchSampler,
 )
+from torch.utils.data import DataLoader
+from transformers import DataCollator
+
+from .lightning_trainer import LightningTrainer
 
 try:
-    import torch_xla.core.xla_model as xm  # type: ignore
     import horovod.torch as hvd  # type: ignore
+    import torch_xla.core.xla_model as xm  # type: ignore
 except (ModuleNotFoundError, ImportError):
     pass
 
@@ -24,7 +24,7 @@ class BaseTrainingMixin:
     def __init__(self) -> None:
         # this ensures that all parents get __init__ called
         super().__init__()
-        self.trainer: Optional[Trainer] = None
+        self.trainer: Optional[LightningTrainer] = None
 
     def get_dataloader(
         self,
