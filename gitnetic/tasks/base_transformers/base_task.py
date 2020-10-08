@@ -87,9 +87,9 @@ class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
         )
 
         # make sure the params exist
-        assert isinstance(task_params, cls.params_type)
-        assert isinstance(module_params, TransformerModule.params_type)
-        assert isinstance(datamodule_params, TransformerDataModule.params_type)
+        assert task_params is not None
+        assert module_params is not None
+        assert datamodule_params is not None
 
         return task_params, module_params, datamodule_params
 
