@@ -188,7 +188,7 @@ class DataclassArgumentParser(ArgumentParser):
 
             # parse supported fields
             if is_enum_type(field_type):
-                kwargs["choices"] = list(field_type)
+                kwargs["choices"] = list(field_type)  # type: ignore
                 kwargs["type"] = field_type
                 if field_obj.default is not dataclasses.MISSING:
                     kwargs["default"] = field_obj.default
