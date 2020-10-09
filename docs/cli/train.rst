@@ -59,7 +59,9 @@ Example cli command
         --save_step_frequency <save_step_frequency>             \
         --save_dir <save_dir>                                   \
         --progress_bar_refresh_rate <progress_bar_refresh_rate> \
-        --log_every_n_steps <log_every_n_steps>
+        --log_every_n_steps <log_every_n_steps>                 \
+        --wandb_project <wandb_projec>                          \
+        --wandb_name <wandb_name>    
 
 Making your own task
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
