@@ -193,6 +193,10 @@ class TransformerModule(
     ) -> None:
         super().__init__()
 
+        # save the arguments to easily restore
+        # from the saved pytorch checkpoint
+        self.save_hyperparameters()
+
         self.model = model
         self.tokenizer = tokenizer
         self.params = params
