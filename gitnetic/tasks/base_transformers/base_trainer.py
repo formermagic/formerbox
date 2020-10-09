@@ -55,6 +55,7 @@ class TransformerTrainer(Registrable, HasParsableParams):
         params: Params,
         trainer_args: Dict[Text, Any],
     ) -> None:
+        super().__init__()
         self.task = task
         self.params = params
         self.trainer_args = trainer_args
