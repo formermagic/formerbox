@@ -13,7 +13,6 @@ ParamsType = typing.TypeVar("ParamsType", bound=DataclassBase)
 class HasParams(Protocol[ParamsType]):
     params: ParamsType
 
-    @property
     @classmethod
     def params_type(cls) -> Type[ParamsType]:
         raise NotImplementedError()
