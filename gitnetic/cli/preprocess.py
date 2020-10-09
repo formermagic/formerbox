@@ -96,6 +96,18 @@ class Preprocess(Subcommand):
 
 def save_tokenizer(tokenizer: Tokenizer, output_path: Text) -> None:
     output_path = os.path.join(output_path, "tokenizer")
+
+    # keep only token-related items in the config
+    token_config_kwargs = {}
+    for arg_name, arg_value in tokenizer.init_kwargs.items():
+        if "file" in arg_name:
+            continue
+        if arg_value is None:
+            continue
+
+        token_config_kwargs[arg_name] = arg_value
+
+    tokenizer.init_kwargs = token_config_kwargs
     tokenizer.save_pretrained(save_directory=output_path)
 
 
