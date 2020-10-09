@@ -12,6 +12,8 @@ from gitnetic.utils import append_path_suffix
 
 logger = logging.getLogger(__name__)
 
+FIXTURES_DIR_ERROR = "Fixtures dir doesn't exist"
+
 
 @pytest.mark.parametrize("converter", ["code-lm-converter"])
 def test_cli_convert_dataset(
@@ -19,6 +21,7 @@ def test_cli_convert_dataset(
     fixtures_directory: Path,
     converter: Text,
 ) -> None:
+    assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
     data_files = fixtures_directory / "tiny_dataset" / "tiny_raw_dataset.jsonl"
     output_path = tmp_path / "tiny_dataset" / "tiny_dataset.src"
 
@@ -53,6 +56,7 @@ def test_cli_train_tokenizer(
     fixtures_directory: Path,
     tokenizer: Text,
 ) -> None:
+    assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
     files = fixtures_directory / "tiny_dataset" / "tiny_dataset.train.src"
     tokenizer_path = tmp_path / "tiny_dataset" / "tokenizer"
     assert not os.path.exists(tokenizer_path)
@@ -88,6 +92,7 @@ def test_cli_preprocess(
     tokenizer: Text,
     binarizer: Text,
 ) -> None:
+    assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
     tiny_dataset = fixtures_directory / "tiny_dataset" / "tiny_dataset.src"
     train_prefix = append_path_suffix(tiny_dataset, ".train")
     valid_prefix = append_path_suffix(tiny_dataset, ".valid")
@@ -134,6 +139,7 @@ def test_cli_train(
     fixtures_directory: Path,
     task: Text,
 ) -> None:
+    assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
     config_path = fixtures_directory / "model-config.yml"
     tiny_dataset = fixtures_directory / "tiny_dataset.bin"
 
