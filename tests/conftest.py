@@ -6,4 +6,4 @@ import pytest
 
 @pytest.fixture(scope="session")
 def fixtures_directory() -> Path:
-    return Path(os.path.dirname(__file__)) / "fixures"
+    return Path(os.path.dirname(__file__)) / "fixtures"
