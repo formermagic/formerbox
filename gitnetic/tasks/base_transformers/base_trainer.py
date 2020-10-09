@@ -88,16 +88,19 @@ class TransformerTrainer(Registrable, HasParsableParams):
         wandb_name = self.params.wandb_name
         wandb_id = self.params.wandb_id
 
-        required_values = [wandb_project, wandb_name]
-        if all(v for v in required_values):
+        wandb_required_values = [wandb_project, wandb_name]
+        if all(v for v in wandb_required_values):
             wandb_logger = WandbLogger(
                 project=wandb_project,
                 name=wandb_name,
                 id=wandb_id,
             )
 
-            transformer_model = self.task.module.model
-            wandb_logger.watch(transformer_model, log_freq=1)
+            # we cannot watch the model gradients,
+            # because wandb uses lambdas in backward hooks
+            # which cannot be pickled by lightning
+            # TODO: return watching once either of them fixes the issue
+            # wandb_logger.watch(transformer_model, log_freq=1)
 
             loggers.append(wandb_logger)
 
