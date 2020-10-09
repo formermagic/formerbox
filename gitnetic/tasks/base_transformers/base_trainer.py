@@ -131,6 +131,7 @@ class TransformerTrainer(Registrable, HasParsableParams):
         pl_trainer = Trainer.from_argparse_args(trainer_args)
 
         # run the train loop
+        # pylint: disable=no-member
         pl_trainer.fit(model=self.task.module, datamodule=self.task.datamodule)
 
     @classmethod
