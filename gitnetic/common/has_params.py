@@ -7,7 +7,7 @@ from gitnetic.common.partial_initable import PartialInitable
 from typing_extensions import Protocol
 
 Self = typing.TypeVar("Self", bound="PartialInitable")
-ParamsType = typing.TypeVar("ParamsType", covariant=True, bound=DataclassBase)
+ParamsType = typing.TypeVar("ParamsType", bound=DataclassBase)
 
 
 class HasParams(Protocol[ParamsType]):
