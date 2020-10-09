@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Optional, Text, Tuple, Type, TypeVar
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser
 from gitnetic.common.registrable import Entry, Registrable
 
-T = TypeVar("T", bound="Subcommand")
+T = TypeVar("T", bound="Subcommand")  # pylint: disable=invalid-name
 
 
 class Subcommand(Registrable):
