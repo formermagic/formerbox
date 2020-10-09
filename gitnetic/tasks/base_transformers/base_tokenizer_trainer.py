@@ -171,9 +171,16 @@ class TransformerTokenizerModule(TokenizerModule):
     @staticmethod
     def from_pretrained(params: Params, **kwargs: Any) -> PreTrainedTokenizerFast:
         assert params.tokenizer_path is not None
+
+        # prepare static typed args
         non_positional_params = vars(params).copy()
-        non_positional_params.pop("tokenizer_path")
+        non_positional_params.pop("tokenizer_path", None)
         kwargs.update(non_positional_params)
+
+        # remove training args
+        kwargs.pop("files", None)
+        kwargs.pop("vocab_size", None)
+        kwargs.pop("min_frequency", None)
 
         tokenizer = TransformerTokenizerFast.from_pretrained(
             params.tokenizer_path, **kwargs
