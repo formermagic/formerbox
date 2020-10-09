@@ -8,7 +8,7 @@ from gitnetic.common.registrable import Registrable
 from gitnetic.data.dataset_iterators import DatasetIterator
 from gitnetic.data.indexed_dataset import IndexedDatasetBase
 from gitnetic.optim import AdamW, get_polynomial_decay_with_warmup, weight_decay_params
-from gitnetic.utils import path_to_posix, perplexity
+from gitnetic.utils import path_to_posix
 from pytorch_lightning import LightningDataModule, LightningModule
 from pytorch_lightning.core.datamodule import _DataModuleWrapper
 from torch import Tensor
@@ -25,6 +25,7 @@ from transformers import (
 from typing_extensions import Protocol, _ProtocolMeta  # type: ignore
 
 from .base import BaseTrainingMixin
+from .perplexity_metric import Perplexity
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
@@ -207,6 +208,8 @@ class TransformerModule(
         self.tokenizer = tokenizer
         self.params = params
 
+        self.perplexity = Perplexity(tokenizer.vocab_size)
+
         # lazy initialized properties
         self.total_train_steps = 0
         self.lr_scheduler: Optional[LambdaLR] = None
@@ -283,6 +286,7 @@ class TransformerModule(
         # model forward pass & prepare metrics values
         outputs = self.forward(**batch)
         assert outputs.loss is not None
+        perplexity = self.perplexity(outputs.logits, batch["labels"])
         batch_size = torch.tensor(len(batch["input_ids"]))
 
         # get the latest scheduled learning rate
@@ -297,11 +301,13 @@ class TransformerModule(
 
         # log training metrics
         self.log("train_loss", outputs.loss, prog_bar=True)
+        self.log("train_ppl", perplexity, prog_bar=True)
         self.log("train_lr", learning_rate, prog_bar=True)
         self.log("train_bsz", batch_size, prog_bar=True)
 
         return {
             "loss": outputs.loss,
+            "ppl": perplexity,
             "lr": learning_rate,
             "bsz": batch_size,
         }
@@ -314,8 +320,10 @@ class TransformerModule(
         # model forward pass & prepare metrics
         outputs = self.forward(**batch)
         assert outputs.loss is not None
+        perplexity = self.perplexity(outputs.logits, batch["labels"])
         # log validation metrics
         self.log("val_loss", outputs.loss, prog_bar=True)
+        self.log("val_ppl", perplexity, prog_bar=True)
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
         parameters = weight_decay_params(
