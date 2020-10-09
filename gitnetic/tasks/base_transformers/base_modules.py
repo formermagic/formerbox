@@ -22,8 +22,7 @@ from transformers import (
     PreTrainedTokenizer,
     PreTrainedTokenizerFast,
 )
-from transformers.modeling_outputs import MaskedLMOutput
-from typing_extensions import _ProtocolMeta  # type: ignore
+from typing_extensions import Protocol, _ProtocolMeta  # type: ignore
 
 from .base import BaseTrainingMixin
 
@@ -148,6 +147,13 @@ class TransformerDataModule(
         raise NotImplementedError()
 
 
+class TransformerModuleOutput(Protocol):
+    loss: Optional[torch.FloatTensor]
+    logits: torch.FloatTensor
+    hidden_states: Optional[Tuple[torch.FloatTensor]]
+    attentions: Optional[Tuple[torch.FloatTensor]]
+
+
 # pylint: disable=arguments-differ
 class TransformerModule(
     BaseTrainingMixin,
@@ -232,20 +238,27 @@ class TransformerModule(
                 )
 
     def forward(
-        self, input_ids: Tensor, labels: Tensor, **kwargs: Any
-    ) -> Tuple[Tensor, Tensor]:
-        del kwargs  # we implement this method with our parameters
-
+        self,
+        input_ids: Tensor,
+        labels: Tensor,
+        return_dict: bool = True,
+        **kwargs: Any,
+    ) -> TransformerModuleOutput:
         # put the module into train mode
         self.model.train()
-        # make a forward pass with our transformer language model
-        outputs = self.model(input_ids=input_ids, labels=labels, return_dict=True)
-        # the language model should return a `MaskedLMOutput` instance
-        assert isinstance(outputs, MaskedLMOutput)
-        # the loss output should not be none
-        assert outputs.loss is not None
 
-        return outputs.loss, outputs.logits
+        # prepare model forward pass arguments
+        kwargs.setdefault("input_ids", input_ids)
+        kwargs.setdefault("labels", labels)
+        kwargs.setdefault("return_dict", return_dict)
+
+        # make a forward pass with our transformer model
+        outputs = self.model(**kwargs)
+        # the language model should return a `TransformerModuleOutput` instance
+        assert isinstance(outputs, TransformerModuleOutput)
+
+        # return the model outputs
+        return outputs
 
     def prepare_batch(self, batch: Dict[Text, Tensor], batch_idx: int) -> None:
         del batch_idx  # nouse
@@ -267,9 +280,9 @@ class TransformerModule(
         del optimizer_idx, hiddens  # nouse
         self.prepare_batch(batch, batch_idx)
 
-        # model forward pass & prepare metrics
-        loss, _ = self.forward(**batch)
-        train_perplexity = perplexity(loss)
+        # model forward pass & prepare metrics values
+        outputs = self.forward(**batch)
+        assert outputs.loss is not None
         batch_size = torch.tensor(len(batch["input_ids"]))
 
         # get the latest scheduled learning rate
@@ -283,14 +296,12 @@ class TransformerModule(
                 learning_rate = torch.tensor(float("nan"))
 
         # log training metrics
-        self.log("train_loss", loss, prog_bar=True)
-        self.log("train_ppl", train_perplexity, prog_bar=True)
+        self.log("train_loss", outputs.loss, prog_bar=True)
         self.log("train_lr", learning_rate, prog_bar=True)
         self.log("train_bsz", batch_size, prog_bar=True)
 
         return {
-            "loss": loss,
-            "ppl": train_perplexity,
+            "loss": outputs.loss,
             "lr": learning_rate,
             "bsz": batch_size,
         }
@@ -301,11 +312,10 @@ class TransformerModule(
         del kwargs  # nouse
         self.prepare_batch(batch, batch_idx)
         # model forward pass & prepare metrics
-        loss, _ = self.forward(**batch)
-        val_perplexity = perplexity(loss)
+        outputs = self.forward(**batch)
+        assert outputs.loss is not None
         # log validation metrics
-        self.log("val_loss", loss, prog_bar=True)
-        self.log("val_ppl", val_perplexity, prog_bar=True)
+        self.log("val_loss", outputs.loss, prog_bar=True)
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
         parameters = weight_decay_params(
