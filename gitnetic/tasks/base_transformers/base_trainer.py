@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Text
+from typing import Any, Dict, List, Optional, Text, Type
 
 from gitnetic.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
 from gitnetic.common.has_params import HasParsableParams
@@ -47,7 +47,7 @@ class TransformerTrainer(Registrable, HasParsableParams):
         )
 
     params: Params
-    params_type = Params
+    params_type: Type[Params] = Params
 
     def __init__(
         self,
