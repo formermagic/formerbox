@@ -21,7 +21,7 @@ from typing import Callable, Dict, List, Optional, Text, Tuple, Type, TypeVar, U
 from gitnetic.common.partial_initable import PartialInitable
 
 T = TypeVar("T", bound="Registrable")  # pylint: disable=invalid-name
-Entry = TypeVar("Entry", bound="Registrable")
+Entry = TypeVar("Entry")
 
 RegistryKey = Union[Text, Type[T]]
 RegistryRecord = Tuple[Type[T], Optional[Text]]
@@ -58,7 +58,7 @@ class Registrable(PartialInitable):
 
     @classmethod
     def resolve_class_name(cls: Type[T], name: Text) -> RegistryRecord:
-        subclass: Type[T]
+        subclass: Type["Registrable"]
         constructor: Optional[Text]
 
         if name in Registrable._registry[cls]:
