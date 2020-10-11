@@ -9,9 +9,9 @@ from typing import Any, Dict, List, Optional, Text, Type, Union
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
-
 from gitnetic.utils import all_subclasses, path_to_posix
+from torch.utils.data import Dataset
+from typing_extensions import Protocol
 
 element_codes = {
     1: np.uint8,
@@ -50,7 +50,11 @@ def make_data_filepath(prefix_path: Text) -> Text:
     return prefix_path + ".bin"
 
 
-class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
+class MagicDecodable(Protocol):
+    magic_code: bytes
+
+
+class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
     """A base class for loading preprocessed binary datasets.
     Binary datasets are represented as 2 files (.bin, .idx),
     containing the data sequences (.bin) and indices (.idx).
@@ -92,38 +96,35 @@ class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def magic_code(self) -> bytes:
-        raise NotImplementedError()
-
-    @property
-    @abstractmethod
     def supports_prefetch(self) -> bool:
         raise NotImplementedError()
 
+    @abstractmethod
     def prefetch(self, indices: List[int]) -> None:
-        del indices  # an abstract method doesn't use args
+        raise NotImplementedError()
 
     def validate_index(self, index: int) -> None:
+        assert self.length is not None
         if index < 0 or index >= self.length:
             raise IndexError(f"Index({index}) is out of bounds")
 
     @staticmethod
-    def from_file(filepath_prefix: Union[Text, Path]) -> "IndexedDatasetMixin":
-        filepath = path_to_posix(filepath_prefix)
-        filepath = make_index_filepath(filepath)
-        dataset: Optional[IndexedDatasetMixin] = None
+    def from_file(filepath_prefix: Union[Text, Path]) -> "IndexedDatasetBase":
+        filepath_prefix = path_to_posix(filepath_prefix)
+        index_filepath = make_index_filepath(filepath_prefix)
+        dataset: Optional[IndexedDatasetBase] = None
 
-        candidates = all_subclasses(IndexedDatasetMixin)
-        with open(filepath, mode="rb") as stream:
+        candidates = all_subclasses(IndexedDatasetBase)
+        with open(index_filepath, mode="rb") as stream:
             for candidate in candidates:
-                assert issubclass(candidate, IndexedDatasetMixin)
+                assert issubclass(candidate, IndexedDatasetBase)
                 if inspect.isabstract(candidate):
                     continue
 
                 num_bytes = len(candidate.magic_code)
                 magic_code = stream.read(num_bytes)
                 if candidate.magic_code == magic_code:
-                    dataset = candidate(filepath_prefix=filepath_prefix)
+                    dataset = candidate(filepath_prefix=filepath_prefix)  # type: ignore
                     break
 
                 # return filedesc to the beginning
@@ -139,7 +140,7 @@ class IndexedDatasetMixin(Dataset, metaclass=ABCMeta):
         return dataset
 
 
-class IndexedDataset(IndexedDatasetMixin):
+class IndexedDataset(IndexedDatasetBase):
     magic_code = b"ID\x00\x00"
 
     def __init__(self, filepath_prefix: Text) -> None:
@@ -165,6 +166,9 @@ class IndexedDataset(IndexedDatasetMixin):
     @property
     def supports_prefetch(self) -> bool:
         return False
+
+    def prefetch(self, indices: List[int]) -> None:
+        pass
 
     @lru_cache(maxsize=128)
     def __getitem__(self, index: int) -> torch.Tensor:
@@ -279,7 +283,7 @@ class IndexedCachedDataset(IndexedDataset):
         return item
 
 
-class IndexedDatasetBuilderMixin:
+class IndexedDatasetBuilderBase:
     stream: Union[FileIO, BufferedWriter]
 
     def __init__(
@@ -287,7 +291,7 @@ class IndexedDatasetBuilderMixin:
         data_filepath: Text,
         index_filepath: Text,
         dtype: np.dtype,
-        dataset_type: Type[IndexedDatasetMixin],
+        dataset_type: Type[IndexedDatasetBase],
     ) -> None:
         self.data_filepath = data_filepath
         self.index_filepath = index_filepath
@@ -315,13 +319,13 @@ class IndexedDatasetBuilderMixin:
             self.stream.close()
 
 
-class IndexedDatasetBuilder(IndexedDatasetBuilderMixin):
+class IndexedDatasetBuilder(IndexedDatasetBuilderBase):
     def __init__(
         self,
         data_filepath: Text,
         index_filepath: Text,
         dtype: np.dtype = np.dtype(np.int32),
-        dataset_type: Type[IndexedDatasetMixin] = IndexedDataset,
+        dataset_type: Type[IndexedDatasetBase] = IndexedDataset,
     ) -> None:
         super().__init__(data_filepath, index_filepath, dtype, dataset_type)
         self.data_offsets = [0]

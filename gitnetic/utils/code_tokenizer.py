@@ -1,4 +1,4 @@
-# Copyright (c) 2019-present, Facebook, Inc.
+# Copyright (c) 2019-present, Facebook, Inc. and The FormerMagic Inc. team.
 # All rights reserved.
 #
 # This source code is licensed under the license found in the
@@ -30,15 +30,15 @@ tokenize_v14_international = TokenizerV14International()
 
 
 class SpecialToken(Enum):
-    DEDENT = "DEDENT"
-    ENCDOM = "ENDCOM"
-    ENDMARKER = "ENDMARKER"
-    INDENT = "INDENT"
-    NEW_LINE = "NEW_LINE"
-    SPACE = "▁"
-    SPACETOKEN = "SPACETOKEN"
-    STRNEWLINE = "STRNEWLINE"
-    TABSYMBOL = "TABSYMBOL"
+    dedent_token = "<dedent>"
+    encdom_token = "<encdom>"
+    endmarker_token = "<endmarker>"
+    indent_token = "<indent>"
+    newline_token = "<newline>"
+    space_token = "▁"
+    spacetoken_token = "<spacetoken>"
+    strnewline_token = "<strnewline>"
+    tabsymbol_token = "<tabsymbol>"
 
 
 def process_string(
@@ -46,6 +46,7 @@ def process_string(
     char2token: Dict[Text, Text],
     token2char: Dict[Text, Text],
     is_comment: bool,
+    use_bleu_tokenization: bool = False,
 ) -> Text:
     if is_comment:
         token = re.sub(" +", " ", token)
@@ -53,19 +54,20 @@ def process_string(
         if len(re.sub(r"\W", "", token)) < 2:
             return ""
 
-    token = token.replace(" ", f" {SpecialToken.SPACE.value} ")
+    token = token.replace(" ", f" {SpecialToken.space_token.value} ")
     for char, special_token in char2token.items():
         token = token.replace(char, special_token)
 
     if token.startswith(" STOKEN0"):
         if token.endswith("\n"):
             token = token[:-1]
-        token += f" {SpecialToken.ENCDOM.value}"
+        token += f" {SpecialToken.encdom_token.value}"
 
-    token = token.replace("\n", f" {SpecialToken.STRNEWLINE.value} ")
-    token = token.replace("\t", f" {SpecialToken.TABSYMBOL.value} ")
+    token = token.replace("\n", f" {SpecialToken.strnewline_token.value} ")
+    token = token.replace("\t", f" {SpecialToken.tabsymbol_token.value} ")
     token = re.sub(" +", " ", token)
-    token = tokenize_v14_international(token)
+    if use_bleu_tokenization:
+        token = tokenize_v14_international(token)
     token = re.sub(" +", " ", token)
 
     # split string prefix if one stands at the beginning
@@ -116,7 +118,7 @@ def tokenize_python(text: Text, keep_comments: bool = False) -> List[Text]:
                 if removed_docstr == 1:
                     removed_docstr = 0
                     continue
-                tokens.append(SpecialToken.NEW_LINE.value)
+                tokens.append(SpecialToken.newline_token.value)
 
             elif token_info.type == tokenize.COMMENT:
                 if keep_comments:
@@ -158,23 +160,23 @@ def tokenize_python(text: Text, keep_comments: bool = False) -> List[Text]:
                     )
 
             elif token_info.type == tokenize.INDENT:
-                tokens.append(SpecialToken.INDENT.value)
+                tokens.append(SpecialToken.indent_token.value)
 
             elif token_info.type == tokenize.DEDENT:
                 # empty block
-                if tokens[-1] == SpecialToken.INDENT.value:
+                if tokens[-1] == SpecialToken.indent_token.value:
                     tokens = tokens[:-1]
                 else:
-                    tokens.append(SpecialToken.DEDENT.value)
+                    tokens.append(SpecialToken.dedent_token.value)
 
             elif token_info.type == tokenize.ENDMARKER:
-                tokens.append(SpecialToken.ENDMARKER.value)
+                tokens.append(SpecialToken.endmarker_token.value)
                 break
 
             else:
                 tokens.append(token_info.string)
 
-        assert tokens[-1] == SpecialToken.ENDMARKER.value, "Error, no end marker"
+        assert tokens[-1] == SpecialToken.endmarker_token.value, "Error, no end marker"
         return tokens[:-1]
     except KeyboardInterrupt as err:
         raise err
@@ -188,23 +190,29 @@ def detokenize_python(tokens: Union[List[Text], Text]) -> Text:
         assert isinstance(tokens, (str, list))
         if isinstance(tokens, list):
             tokens = " ".join(tokens)
-        tokens = tokens.replace(SpecialToken.ENCDOM.value, SpecialToken.NEW_LINE.value)
-        tokens = tokens.replace(SpecialToken.SPACE.value, SpecialToken.SPACETOKEN.value)
+        tokens = tokens.replace(
+            SpecialToken.encdom_token.value,
+            SpecialToken.newline_token.value,
+        )
+        tokens = tokens.replace(
+            SpecialToken.space_token.value,
+            SpecialToken.spacetoken_token.value,
+        )
 
-        lines = tokens.split(SpecialToken.NEW_LINE.value)
+        lines = tokens.split(SpecialToken.newline_token.value)
         tabs = ""
         for i, line in enumerate(lines):
             line = line.strip()
-            if line.startswith(f"{SpecialToken.INDENT.value} "):
+            if line.startswith(f"{SpecialToken.indent_token.value} "):
                 tabs += "    "
-                line = line.replace(f"{SpecialToken.INDENT.value} ", tabs)
-            elif line.startswith(SpecialToken.DEDENT.value):
-                number_dedent = line.count(SpecialToken.DEDENT.value)
+                line = line.replace(f"{SpecialToken.indent_token.value} ", tabs)
+            elif line.startswith(SpecialToken.dedent_token.value):
+                number_dedent = line.count(SpecialToken.dedent_token.value)
                 tabs = tabs[4 * number_dedent :]
-                line = line.replace(SpecialToken.DEDENT.value, "")
+                line = line.replace(SpecialToken.dedent_token.value, "")
                 line = line.strip()
                 line = tabs + line
-            elif line == SpecialToken.DEDENT.value:
+            elif line == SpecialToken.dedent_token.value:
                 line = ""
             else:
                 line = tabs + line
@@ -219,10 +227,12 @@ def detokenize_python(tokens: Union[List[Text], Text]) -> Text:
             ):
                 if token_info.type in [tokenize.STRING, tokenize.COMMENT]:
                     token = (
-                        token_info.string.replace(SpecialToken.STRNEWLINE.value, "\n")
-                        .replace(SpecialToken.TABSYMBOL.value, "\t")
+                        token_info.string.replace(
+                            SpecialToken.strnewline_token.value, "\n"
+                        )
+                        .replace(SpecialToken.tabsymbol_token.value, "\t")
                         .replace(" ", "")
-                        .replace(SpecialToken.SPACETOKEN.value, " ")
+                        .replace(SpecialToken.spacetoken_token.value, " ")
                     )
                     untokenized = untokenized.replace(token_info.string, token)
         except KeyboardInterrupt as err:

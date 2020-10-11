@@ -1,26 +1,16 @@
+import argparse
 import inspect
 import os
 import typing
 from io import TextIOWrapper
-from itertools import islice
 from pathlib import Path
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Text,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
 import numpy as np
 import torch
+from more_itertools import windowed
 
-T = typing.TypeVar("T")
+T = typing.TypeVar("T")  # pylint: disable=invalid-name
 
 
 def safe_round(number: Any, ndigits: int) -> float:
@@ -40,15 +30,14 @@ def safe_round(number: Any, ndigits: int) -> float:
 def perplexity(
     loss: Optional[Any], ndigits: int = 2, base: int = 2
 ) -> torch.FloatTensor:
-    ppl_tensor: torch.Tensor
+    ppl_tensor: torch.FloatTensor
     if loss is None:
-        ppl_tensor = torch.tensor(0.0)
+        return torch.FloatTensor([0.0])
     try:
-        ppl_tensor = torch.tensor(safe_round(base ** loss, ndigits))
+        ppl_tensor = torch.FloatTensor([safe_round(base ** loss, ndigits)])
     except OverflowError:
-        ppl_tensor = torch.tensor(float("inf"))
-
-    return typing.cast(torch.FloatTensor, ppl_tensor.float())
+        ppl_tensor = torch.FloatTensor([float("inf")])
+    return ppl_tensor
 
 
 def lines_in_file(filepath: Text) -> int:
@@ -64,7 +53,7 @@ def lines_in_file(filepath: Text) -> int:
 
 def text_file_blocks_iter(
     text_stream: TextIOWrapper, size: int = 65536
-) -> Iterable[Text]:
+) -> typing.Iterable[Text]:
     while True:
         block = text_stream.read(size)
         if not block:
@@ -72,7 +61,7 @@ def text_file_blocks_iter(
         yield block
 
 
-def lookahead(iterable: Iterable) -> Iterable[Tuple[Any, bool]]:
+def lookahead(iterable: typing.Iterable) -> typing.Iterable[Tuple[Any, bool]]:
     # get an iterator and pull the first value
     iterator = iter(iterable)
     last_item = next(iterator)  # pylint: disable=stop-iteration-return
@@ -85,18 +74,15 @@ def lookahead(iterable: Iterable) -> Iterable[Tuple[Any, bool]]:
     yield (last_item, False)
 
 
-def lazy_groups_of(iterable: Iterable[T], group_size: int) -> Iterator[List[T]]:
+def lazy_groups_of(
+    iterable: typing.Iterable[T], group_size: int
+) -> typing.Iterable[List[T]]:
     """
     Takes an iterable and batches the individual instances into lists of the
     specified size. The last list may be smaller if there are instances left over.
     """
-    iterator = iter(iterable)
-    while True:
-        _slice = list(islice(iterator, group_size))
-        if len(_slice) > 0:
-            yield _slice
-        else:
-            break
+    for window in windowed(iterable, n=group_size, step=group_size):
+        yield [x for x in window if x is not None]
 
 
 def path_to_posix(path: Union[Text, Path]) -> Text:
@@ -105,7 +91,7 @@ def path_to_posix(path: Union[Text, Path]) -> Text:
     return path
 
 
-def all_subclasses(cls: Type[Any]) -> Iterable[Type[Any]]:
+def all_subclasses(cls: Type[T]) -> typing.Iterable[Type[T]]:
     return set(cls.__subclasses__()).union(
         [s for c in cls.__subclasses__() for s in all_subclasses(c)]
     )
@@ -120,3 +106,33 @@ def init_from_args(cls: Type[T]) -> Type[T]:
 
     setattr(cls, "from_args", from_args)
     return cls
+
+
+def str2bool(string: Text) -> bool:
+    if isinstance(string, bool):
+        return string
+
+    result: bool
+    if string.lower() in ("yes", "true", "t", "y", "1"):
+        result = True
+    elif string.lower() in ("no", "false", "f", "n", "0"):
+        result = False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+
+    return result
+
+
+def iter_stide(
+    iterable: typing.Iterable[T], chunk_size: int, stride: int
+) -> typing.Iterable[List[T]]:
+    assert chunk_size > stride, "stride must be less than chunk size"
+    for window in windowed(iterable, n=chunk_size, step=chunk_size - stride):
+        yield [x for x in window if x is not None]
+
+
+def append_path_suffix(base_path: Union[Text, Path], suffix: Text) -> Text:
+    if isinstance(base_path, Path):
+        base_path = str(base_path)
+    base_path, ext = os.path.splitext(base_path)
+    return f"{base_path}{suffix}{ext}"

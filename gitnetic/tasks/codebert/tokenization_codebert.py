@@ -70,7 +70,7 @@ class CodeBertTokenizerFast(RobertaTokenizerFast):
         init_kwargs = {}
         for key, value in self.init_kwargs.items():
             if isinstance(value, AddedToken):
-                init_kwargs[key] = str(value)
+                init_kwargs[key] = value.__getstate__()  # type: ignore
             else:
                 init_kwargs[key] = value
 

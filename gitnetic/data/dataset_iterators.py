@@ -4,7 +4,7 @@ from torch import Tensor
 from torch.utils.data import Dataset
 from transformers import DataCollator
 
-from gitnetic.data.indexed_dataset import IndexedDatasetMixin
+from gitnetic.data.indexed_dataset import IndexedDatasetBase
 from gitnetic.data.samplers import (
     BatchSampler,
     UniformBatchSampler,
@@ -16,7 +16,7 @@ class DatasetIterator(Dataset):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        dataset: IndexedDatasetMixin,
+        dataset: IndexedDatasetBase,
         collator: DataCollator,
         max_tokens: Optional[int] = None,
         batch_size: Optional[int] = None,
@@ -42,7 +42,7 @@ class DatasetIterator(Dataset):
 
     @staticmethod
     def make_batch_sampler(
-        dataset: IndexedDatasetMixin,
+        dataset: IndexedDatasetBase,
         max_tokens: Optional[int],
         batch_size: Optional[int],
         shuffle: bool,

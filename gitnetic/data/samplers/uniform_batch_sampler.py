@@ -4,17 +4,17 @@ from typing import Iterator, List, Optional
 
 import numpy as np
 
-from gitnetic.data.indexed_dataset import IndexedDatasetMixin
+from gitnetic.data.indexed_dataset import IndexedDatasetBase
 from gitnetic.data.samplers import BatchSampler
 from gitnetic.utils import lazy_groups_of
 
 
 class UniformBatchSampler(BatchSampler):
-    data_source: IndexedDatasetMixin
+    data_source: IndexedDatasetBase
 
     def __init__(
         self,
-        data_source: IndexedDatasetMixin,
+        data_source: IndexedDatasetBase,
         batch_size: int,
         shuffle: bool = True,
         drop_last: bool = False,
@@ -42,11 +42,11 @@ class UniformBatchSampler(BatchSampler):
 
 
 class UniformMaxTokensBatchSampler(UniformBatchSampler):
-    data_source: IndexedDatasetMixin
+    data_source: IndexedDatasetBase
 
     def __init__(
         self,
-        data_source: IndexedDatasetMixin,
+        data_source: IndexedDatasetBase,
         max_tokens: int,
         shuffle: bool = True,
         drop_last: bool = False,

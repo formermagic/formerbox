@@ -1,10 +1,19 @@
 import os
+import warnings
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Tuple, Union
 
 import torch
 import torch.cuda as cuda
+from gitnetic.data import IndexedDataset
+from gitnetic.data.samplers import (
+    BatchSampler,
+    DistributedBatchSampler,
+    UniformBatchSampler,
+)
+from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
+from gitnetic.utils import perplexity
 from pytorch_lightning import LightningModule, Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
@@ -19,15 +28,6 @@ from transformers import (
     RobertaForMaskedLM,
 )
 from transformers.data.data_collator import DataCollatorForLanguageModeling
-
-from gitnetic.data import IndexedDataset
-from gitnetic.data.samplers import (
-    BatchSampler,
-    DistributedBatchSampler,
-    UniformBatchSampler,
-)
-from gitnetic.optim import get_polynomial_decay_with_warmup, weight_decay_params
-from gitnetic.utils import perplexity
 
 from .tokenization_codebert import CodeBertTokenizerFast
 
@@ -56,7 +56,7 @@ class ValidSaveCallback(Callback):
             metrics=dict(**trainer.callback_metrics, step=trainer.global_step),
         )
 
-        model_checkpoint.save_function = trainer.save_checkpoint
+        model_checkpoint.save_function = trainer.save_checkpoint  # type: ignore
         # pylint: disable=protected-access
         model_checkpoint._save_model(save_filepath, trainer, pl_module)
 
@@ -237,7 +237,7 @@ class CodeBertLMPretraining(LightningModule):
         if getattr(self.trainer, "max_steps") is None:
             t_total = self._training_steps(len(self.trainer.train_dataloader))
         else:
-            t_total = self.trainer.max_steps
+            t_total = self.trainer.max_steps  # type: ignore
 
         scheduler = get_polynomial_decay_with_warmup(
             optimizer,
@@ -258,14 +258,14 @@ class CodeBertLMPretraining(LightningModule):
         return [optimizer], [step_scheduler]
 
     def _training_steps(self, dataset_len: int) -> int:
-        num_gpus = self.trainer.gpus
+        num_gpus = self.trainer.gpus  # type: ignore
         if isinstance(num_gpus, list):
             num_gpus = list(num_gpus)
 
         batch_size = self.batch_size
-        per_gpu_samples = dataset_len // (batch_size * max(1, num_gpus))
-        per_gpu_samples //= self.trainer.accumulate_grad_batches
-        return per_gpu_samples * self.trainer.max_epochs
+        per_gpu_samples = dataset_len // (batch_size * max(1, num_gpus))  # type: ignore
+        per_gpu_samples //= self.trainer.accumulate_grad_batches  # type: ignore
+        return per_gpu_samples * self.trainer.max_epochs  # type: ignore
 
     def train_dataloader(self) -> DataLoader:
         dataset = IndexedDataset(filepath_prefix=self.train_data_path)
@@ -372,6 +372,12 @@ class CodeBertLMPretraining(LightningModule):
 
 
 def main() -> None:
+    warnings.warn(
+        "You're trying to run a deprecated task. We cannot guarantee"
+        " that all dependencies still work properly."
+        " Thus we encourage you to use transformer-based tasks instead."
+    )
+
     parser = ArgumentParser()
     # fmt: off
     parser.add_argument("--wandb_project", type=str, default=None,
@@ -413,8 +419,9 @@ def main() -> None:
             num_nodes=args.num_nodes,
             accumulate_grad_batches=args.accumulate_grad_batches,
         )
+        # pylint: disable=no-member
         # find fitting batch_size with binsearch
-        batch_size = dummy_trainer.scale_batch_size(
+        batch_size = dummy_trainer.scale_batch_size(  # type: ignore
             code_bert_model,
             mode="binsearch",
             steps_per_trial=args.steps_per_trial,
@@ -445,7 +452,7 @@ def main() -> None:
         auto_scale_batch_size=args.auto_scale_batch_size,
         resume_from_checkpoint=args.resume_from_checkpoint,
         deterministic=determenistic,
-        row_log_interval=10,
+        log_every_n_steps=10,
         # train_percent_check=0.1,
         # val_percent_check=0.01,
     )

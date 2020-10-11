@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Text
 from commitizen import defaults
 from commitizen.cz import BaseCommitizen
 from commitizen.cz.utils import multiple_line_breaker, required_validator
-from git import Commit
+from git.objects import Commit
 
 
 def parse_scope(text: Text) -> Text:
@@ -35,7 +35,7 @@ class GitneticCz(BaseCommitizen):
     )
     changelog_pattern = r"^(BREAKING[\-\ ]CHANGE|feat|fix|refactor|perf)(\(.+\))?(!)?"
     change_type_map = {
-        "feat": "Features 222",
+        "feat": "Features",
         "fix": "Fix",
         "refactor": "Refactor",
         "perf": "Performance",
@@ -145,7 +145,6 @@ class GitneticCz(BaseCommitizen):
         return questions
 
     def message(self, answers: Dict[Text, Any]) -> Text:
-        print(answers)
         prefix = answers["prefix"]
         scope = answers["scope"]
         subject = answers["subject"]

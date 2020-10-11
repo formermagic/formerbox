@@ -13,7 +13,7 @@ from transformers import (
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
-def import_class_from_string(path: Text) -> Type:
+def import_class_from_string(path: Text) -> Type[Any]:
     module_path, _, class_name = path.rpartition(".")
     mod = import_module(module_path)
     klass = getattr(mod, class_name)
@@ -72,16 +72,15 @@ def tokenizer_from_config(
         validate_tokenizer_config(config_kwargs)
         tokenizer_name = config_kwargs["tokenizer"]["name"]
         tokenizer_class = import_class_from_string(tokenizer_name)
+        assert issubclass(tokenizer_class, Tokenizer.__args__)  # type: ignore
     except AttributeError as err:
         raise err
-
-    assert issubclass(tokenizer_class, Tokenizer.__args__)  # type: ignore
 
     if isinstance(tokenizer_path, Path):
         tokenizer_path = tokenizer_path.as_posix()
 
     params = config_kwargs["tokenizer"].get("params", {})
     params.update(kwargs)
-    tokenizer = tokenizer_class.from_pretrained(tokenizer_path, **params)
+    tokenizer = tokenizer_class.from_pretrained(tokenizer_path, **params)  # type: ignore
 
     return tokenizer

@@ -1,66 +1,78 @@
-from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
-from typing import Any, Dict, Text, Type, Union
+from argparse import Namespace
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, Text, Type, Union
 
 import numpy as np
-
+from gitnetic.common.dataclass_argparse import DataclassBase
+from gitnetic.common.has_params import HasParsableParams
 from gitnetic.data.indexed_dataset import (
     IndexedCachedDataset,
     IndexedDataset,
+    IndexedDatasetBase,
     IndexedDatasetBuilder,
-    IndexedDatasetBuilderMixin,
-    IndexedDatasetMixin,
+    IndexedDatasetBuilderBase,
 )
 from gitnetic.data.mmap_dataset import MMapIndexedDataset, MMapIndexedDatasetBuilder
+from typing_extensions import Literal
 
 
-@dataclass
-class IndexedDatasetSetup:
-    dataset_builder_type: Type[IndexedDatasetBuilderMixin]
-    dataset_type: Type[IndexedDatasetMixin]
-    dataset_dtype: np.dtype
-
-    @staticmethod
-    def add_arguments(parser: ArgumentParser) -> None:
-        parser.add_argument(
-            "--dataset_impl",
-            type=str,
-            default=None,
-            required=True,
-            choices=["lazy", "cached", "mmap"],
-            help="",
+class IndexedDatasetSetup(HasParsableParams):
+    @dataclass
+    class Params(DataclassBase):
+        dataset_impl: Literal["lazy", "cached", "mmap"] = field(
+            metadata={"help": "Determines the type of a dataset to build."},
         )
 
-    # pylint: disable=no-else-return
-    @staticmethod
+    params: Optional[Params]
+    params_type = Params
+
+    def __init__(
+        self,
+        dataset_builder_type: Type[IndexedDatasetBuilderBase],
+        dataset_type: Type[IndexedDatasetBase],
+        dataset_dtype: np.dtype,
+    ) -> None:
+        super().__init__()
+        self.dataset_builder_type = dataset_builder_type
+        self.dataset_type = dataset_type
+        self.dataset_dtype = dataset_dtype
+        self.params = None
+
+    @classmethod
     def from_args(
-        args: Union[Namespace, Dict[Text, Any], Text]
+        cls, args: Union[Namespace, Dict[Text, Any], Text, Params], **kwargs: Any
     ) -> "IndexedDatasetSetup":
+        del kwargs  # use only designated args
         if isinstance(args, Namespace):
             args = vars(args)
         elif isinstance(args, str):
             args = {"dataset_impl": args}
+        elif isinstance(args, cls.Params):
+            args = {"dataset_impl": args.dataset_impl}
 
         assert "dataset_impl" in args, "Unable to find the `dataset_impl` argument."
 
+        result: IndexedDatasetSetup
         dataset_impl = args["dataset_impl"]
         if dataset_impl == "lazy":
-            return IndexedDatasetSetup(
+            result = IndexedDatasetSetup(
                 dataset_builder_type=IndexedDatasetBuilder,
                 dataset_type=IndexedDataset,
                 dataset_dtype=np.dtype(np.int32),
             )
         elif dataset_impl == "cached":
-            return IndexedDatasetSetup(
+            result = IndexedDatasetSetup(
                 dataset_builder_type=IndexedDatasetBuilder,
                 dataset_type=IndexedCachedDataset,
                 dataset_dtype=np.dtype(np.int32),
             )
         elif dataset_impl == "mmap":
-            return IndexedDatasetSetup(
+            result = IndexedDatasetSetup(
                 dataset_builder_type=MMapIndexedDatasetBuilder,
                 dataset_type=MMapIndexedDataset,
                 dataset_dtype=np.dtype(np.int64),
             )
+        else:
+            raise ValueError("Unable to match the given dataset type.")
 
-        raise ValueError("Unable to match the given dataset type.")
+        return result
