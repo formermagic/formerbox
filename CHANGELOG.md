@@ -1,0 +1,415 @@
+# 0.1.0
+
+## Fix
+
+- **cli**: keep only token-related items in the tokenizer config
+- **base_transformers**: remove training args from token config
+- **common**: remove property decorator for class attribute
+- **common**: make ParamsType non covariant type
+- **common**: make entry geenric less strict
+- **base_transformers**: skip watching models as it causes pickle errors
+- **base_transformers**: update & sync metrics with logging connector
+- **data**: avoid splitting errors due to formats diff
+- **data**: use master branch script for loading text datasets
+- **cli**: duplicate args to avoid errors in subparsers
+- **optim**: align polynomial decay scheduler with original bert paper impl
+- **base_transformers**: make dir for checkpoints on fit begin
+- **data**: workaround to avoid disambiguation in parsing text datasets
+- **cli**: save pretrained tokenizer
+- **data**: add a workaround for super slow long docs tokenization
+- **data**: prepare the output dir for results
+- **base_transformers**: check imported tokenizer class correctly
+- **utils**: unwrap optional loss value properly
+- **data**: ensure the filepath is a string path
+- **base_transformers**: compare torch tensors with torch comparator
+- **base_transformers**: check if imported type is expected
+- **codebert**: write special token state dict instead of a string value
+- **common**: set default non-missing value for list fields
+- **data**: skip saving empty instances after pretokenization
+- **common**: iterate over all params items
+- **cli**: parse and inject dynamic args in a callback
+- **common**: return entry type from registrable decorator
+- **common**: remove unconstrained generics assert check
+- **base_transformers**: check union types properly
+- **base_transformers**: use updated filename to import correctly
+- **codebert**: pass required positional arguments
+- **base_transformers**: use num_gpus numeric value instead of a function
+- **base_transformers**: clear extra files after saving the new ones
+- **base_transformers**: do not remove reserved checkpoints
+- **base_transformers**: add missing module import
+- **base_transformers**: return input batch on transfer_batch_to_device
+- **data**: return a copy of writable data to prevent unsafe behavior
+- **data**: close numpy memmap with an underlying instance
+- **data**: use the correct length from dim_offsets
+- **utils**: tokenize string literals with a prefix without an extra space between
+- **utils**: move replacement below as in the original impl
+- **data**: return the original file offset after reading a buffer
+- **data**: use prod operation to get the total size of buffer across all dims
+- **codebert**: import batch samplers from samplers module
+- **data**: export samplers from samplers module
+- **changelog**: use correct relative import from commitizen module
+- **codebert**: use relative import for class within the same module
+- **codebert**: add a workaround that prevents from saving pretrained tokenizer
+
+## Refactor
+
+- **base_transformers**: calc perplexity with a new metric class
+- **base_transformers**: use a dataclass dict output for transformer models
+- **base_transformers**: call super init method
+- **base_transformers**: specify params type explicitly
+- **codebert**: add deprecation warning & fix type checking
+- **base_transformers**: check if parameters fit into integer type
+- **base_transformers**: use lightning trainer with typed params
+- **base_transformers**: return arbitrary dicts in step methods
+- **base_transformers**: remove hparams save as we save the params instance
+- **cli**: check if setup params exist
+- **cli**: check if parsed params exist
+- **data**: make base binarizer class generic
+- **data**: make dataset converter generic
+- **data**: remove typechecked decorator
+- **base_transformers**: check if params exist
+- **base_transformers**: make tokenizer module generic
+- get rid of typeguard typechecked decorator
+- **data**: move append_path_suffix method to utils
+- **base_transformers**: use specified save directory or take one from params
+- **tests**: rename resources -> fixures
+- **data**: remove unused params field
+- **changelog**: import Commit type from objects module
+- **common**: check if module_finder is FileFinder
+- pass registrable classes for listing available choices in params
+- **base_transformers**: use a model output dataclass instead of a plain dict
+- **cli**: use renamed methos for tokenizer module setup
+- **base_transformers**: use updated AdamW optimizer
+- **cli**: use updated methods to setup datasets processors
+- **cli**: use updated methods for settung up the task
+- **common**: remove redundant ArgumentRegistrable class
+- **common**: inherit from renamed PartialInitable class
+- **data**: conform binarizer to HasParsableParams protocol
+- **data**: rename constuctor name from_args -> from_partial
+- **data**: conform dataset converter to HasParsableParams protocol
+- **data**: rename constructor name from_args -> from_partial
+- **data**: conform dataset setup to HasParsableParams protocol
+- **base_transformers**: adjust base task module to HasParableParams protocol
+- **base_transformers**: conform to HasParsableParams protocol
+- **base_transformers**: rename constructor name from_args -> from_partial
+- **base_transformers**: adjust base class for HasParsableParams protocol
+- **base_transformers**: impl HasParsableParams protocol
+- **base_transformers**: use a composition of protocols to impl static dataclass params
+- **common**: rename FromArgs -> PartialInitable
+- **utils**: return float tensor for perplexity
+- **cli**: remove extra arg for number of processes
+- **utils**: optimize typing imports
+- **utils**: use more_itertools to impl lazy_groups_of method
+- **cli**: use static params for train subcommand
+- **cli**: use static params for convert_dataset subcommand
+- **data**: define static params in daraset converter base class
+- **base_transformers**: use generics through protocol
+- **cli**: use an updated binarizer api
+- **data**: use 🤗datasets for loading and binarizing text datasets
+- **codebert**: dismiss type checker warnings as the module is deprecated
+- **utils**: return generic subclasses
+- **data**: ensure the length value exists
+- **data**: make prefetch method abstract
+- **data**: move magic code to a protocol type
+- **changelog**: use a correct title for features
+- **cli**: impl subcommand for dataset preprocessing
+- **cli**: impl subcommand for training a tokenizer
+- **data**: use static typed dataclass args for binarizers
+- **data**: use static typed dataclass args in dataset setup
+- **base_transformers**: use static typed dataclasses for tokenizer module args
+- **base_transformers**: impl argument registrable for tokenizer modules
+- **base_transformers**: remove outdated training setup actions
+- **base_transformers**: use static typed dataclass params in transformer trainer
+- **base_transformers**: use static typed dataclass params for task setup
+- **base_transformers**: use static typed params with dataclasses in modules
+- **base_transformers**: get rid of training params in base class
+- listen to filelock warnings only
+- **data**: print raised errors with logger warnings
+- **cli**: use module logger for printing infos
+- **cli**: pass a description help for convert_dataset command
+- **cli**: remove main cli method invoke in a subcommand
+- **cli**: make convert_dataset a cli subcommand
+- **data**: add static typed argparse args without creating a new parser
+- **common**: avoid creation of a new parser in adding parsing args
+- **common**: make dataclass_types an instance property
+- **common**: fix typing hints in parse method
+- **common**: use internal attributes property for keys
+- **data**: add typeguard runtime checks
+- **cli**: add explicit tqdm callback function
+- **cli**: remove pretokenize command replaced by convert dataset
+- **cli**: use the latest parsed params
+- **base_transformers**: use generic type bound on the task type
+- **samplers**: use renamed indexed dataset base class
+- **data**: use renamed indexed dataset base class
+- **base_transformers**: use renamed dataset base class
+- **data**: use renamed base class
+- **data**: rename MMapIndexedDatasetMixin -> MMapIndexedDatasetBase
+- **data**: rename IndexedDatasetBuilderMixin -> IndexedDatasetBuilderBase
+- **data**: rename IndexedDatasetMixin -> IndexedDatasetBase
+- **utils**: rename special token items to use in tokenizer
+- **utils**: tokenize with bleu rules if user sets a flag
+- **base_transformers**: rename data_iterators -> dataset_iterators
+- **data**: rename data_iterators -> dataset_iterators
+- **base_transformers**: reuse modular task components
+- **base_transformers**: add a modular base class for tasks
+- **base_transformers**: return result objects on train/valid steps
+- **cli**: use a modular binarizer for preprocessing text inputs
+- **data**: make binarizer class modular, move all impl to flat-binarizer
+- **cli**: use modular tokenizer module for training a new tokenizer
+- **cli**: use modular tokenizer module for preprocessing
+- **base_transformers**: impl updated API for transformer tokenizer module
+- **base_transformers**: remove dynamic setup from transformer fast tokenizer
+- **base_transformers**: merge trainer and tokenizer module together
+- **cli**: use modular tokenizer and tokenizer trainer for training
+- **cli**: use modular tokenizer class for dataset preprocessing
+- **base_transformers**: import base classes for tokenizer and trainer
+- **base_transformers**: wrap all named args to correctly handle inputs
+- **base_transformers**: inherit from base tokenizer trainer
+- **data**: catch and log tokenization errors
+- **data**: rename tokenizer_max_length -> max_length
+- **base_transformers**: make add_argparse_args abstract in base class
+- **base_transformers**: make save_pretrained abstract in base class
+- **cli**: update import path
+- **base_transformers**: move tokenizer trainer to own file
+- **base_transformers**: use transformer tokenizer instead of roberta
+- **base_transformers**: rename SpecialToken -> Token
+- **cli**: use argparse named args to build a trainer
+- **base_transformers**: use kwargs for building objects
+- **common**: build instances from named args
+- **common**: return a tuple of class and init method
+- **common**: remove unused imports
+- **common**: make sure cls objects are callable and return inferred T instances
+- **base_transformers**: import FromArgs from a common module
+- **base_transformers**: move FromArgs to common module
+- **base_transformers**: rename InitFromArgsMixin -> FromArgs
+- **base_transformers**: make default values to args in initializer
+- **base_transformers**: rename params -> config_params
+- **base_transformers**: make trainer setup much easier with tasks
+- **base_transformers**: inherit init from args behavior for module classes
+- **base_transformers**: add init from args extension to TrainingParams
+- **base_transformers**: use a more specific tokenizer type for hints
+- **base_transformers**: use injected data collator other than hardcoded
+- apply black20 formatting
+- **base_transformers**: rename base_lm -> base_modules
+- **base_transformers**: inherit directly from LightningModule
+- **base_transformers**: make BaseTrainingMixin lightning agnostic
+- **base_transformers**: remove max_steps force override
+- **base_transformers**: load dataset iterators in module setup
+- **base_transformers**: rename per_gpu_samples -> per_device_samples
+- **base_transformers**: use batch_nums from dataset iters for total steps calc
+- **samplers**: inherit from UniformMaxTokensBatchSampler
+- **base_transformers**: remove redundant file deletion
+- **base_transformers**: parametrize the num of checkpoints to keep
+- **base_transformers**: rework training script with functional components
+- **base_transformers**: rename BaseLMDataModule -> TransformerDataModule
+- **base_transformers**: rename BaseDataModuleMixin -> DataLoadingMixin
+- **base_transformers**: rename BaseLMTransformer -> TransformerModule
+- **base_components**: use flatten tensors
+- **utils**: return flatten tensors
+- **base_transformers**: make trainer buildable from functional components
+- **base_transformers**: remove data setup from a transformer module
+- **base_transformers**: remove unused properties
+- **base_transformers**: add back-support for dataloaders with batch samplers
+- **base_transformers**: remove deprecated properties and classes
+- **data**: make underlying sampled index batches property clear
+- **base_transformers**: remove reduntand dataset_impl arg
+- **base_transformers**: use an inference method for reading datasets
+- **base_transformers**: use a simplified method to get a dataloader
+- **base_transformers**: dataset iterator implements making a batch sampler, so remove it
+- remove annotations module for python3.6 compatibility
+- **base_transformers**: pass a datamodule with prepared datasets
+- **data**: fix cycling imports
+- **samplers**: cache the number of batches
+- **cli**: use dataset setup class instead of custom methods to init a dataset
+- **data**: use dataset setup class for binarization init
+- **base_transformers**: use max_steps instead of epochs
+- **base_transformers**: pass dataset_impl arg to build a dataset
+- **base_transformers**: use max_tokens and batch_size from args
+- **base_transformers**: build dataset from the setup type
+- **base_transformers**: use a base indexed dataset class for arg types
+- **codebert**: use updated UniformBatchSampler sampler type
+- **base_transformers**: use updated UniformBatchSampler sampler
+- **samplers**: rename file with uniform samplers to uniform_batch_sampler
+- **samplers**: rename MaxTokensBatchSampler -> UniformBatchSampler
+- **data**: make dataset builder dynamically on binarization
+- **data**: remove unused imports
+- **data**: build a dataset instance from the given class
+- **data**: close the dataset builder open stream on delete
+- **data**: move stream to the base class and open on init
+- **data**: prepare data and index filepaths in the base class
+- **data**: rename pointers -> data_offsets to match a naming convention
+- **data**: make magic_code a class instance
+- **data**: move dataset builder api to a base mixin class
+- **data**: make mmap dataset inheritance through its mixin
+- **data**: move len impl to the base class
+- **data**: remove context state management
+- **data**: close the data stream if one is open
+- **data**: remove debug printing
+- **data**: make start/end indexing simpler
+- **data**: inherit from IndexedDatasetMixin class
+- **data**: add a mmap dataset mixin base class with attributes decl
+- **data**: remove unused decorator import
+- **data**: make indexing simpler
+- **data**: use dtype itemsize property instead of element_size
+- **data**: add domain specific property to the derived class
+- **data**: remove too specific properties and methods from base class
+- **data**: use a correct dtype type hint
+- **utils**: tokenize spaces with a special token value
+- **codebert**: import sampler classes from samplers module
+- **base_transformers**: import IndexedDataset from data module
+- **base_transformers**: impot sampler classes from samplers module
+- **samplers**: pass base class args to super initializer
+- **samplers**: init parent base sampler with current batch sampler obj
+- **samplers**: add batch sampler standard attributes to the base class
+- **samplers**: use a base mixin class for data_source
+- **data**: make prefetch a method of a base class for indexed datasets
+- **data**: move index validation to its own method
+- **base_transformers**: move config parsing to a separate method
+- **base_transformers**: add type hint for dataloaders
+- **base_transformers**: move trainer to instance attributes scope
+- **base_transformers**: calm down unused-argument warning
+- **base_transformers**: move class attributes to instance
+- **data**: move IndexedDataset class attributes and common methods to a mixin base class
+- **data**: move finalize() method above
+- **data**: return known type ensured by future annotations
+- **data**: add **exit** method argument type hints
+- **data**: pass index_filepath to init method
+- **cli**: pass index_filepath to builder init
+- **data**: make sure the stream is always open on write
+- **data**: pass index_filepath to init to make finalize() more clear
+- **data**: close stream on deinit
+- **data**: use numpy fromfile method to read a chunk of bytes
+- **codebert**: use existing method for assigning weight decays
+- **codebert**: use renamed perplexity method
+- **utils**: rename get_perplexity -> perplexity
+- **codebert**: call empty_cache from module alias
+- **utils**: use inner clone_repo method from the library
+- **utils**: return a path to the cloned repository
+- **env**: move env variables to .envrc handled by direnv
+- rename src -> gitnetic to match the project name
+- **data**: move max_token_batch_sampler to samplers dir
+- **data**: move distributed_batch_sampler to samplers dir
+- **data**: organize imports
+- **utils**: use functions instead of classes for commit parsing
+- **data**: rename unclear file name f to readable index_file
+- **codebert**: fix tensor typing without using a cast method
+- **data**: fix dataset builder stream typing
+- **data**: ignore numpy binary io
+- **data**: remove unnecessary ignore markers
+- **data**: wrap int32 type to dtype object
+- **data**: fix typing for binary file io
+- **codebert**: rename model to roberta_lm
+- **codebert**: make helper methods private
+- **codebert**: move making params with weight decay to weight_decay_params method
+- **cli**: remove unnecessary step that adds special tokens
+
+## Features
+
+- **base_transformers**: save hyperparameters to restore args from checkpoints
+- **base_transformers**: add perplexity metric basic impl
+- **base_transformers**: add protocols with properties decl for type hints
+- **cli**: save the pretrained tokenizer to the output directory
+- **common**: list choices from available comps if a registrable passed
+- **cli**: import user module from user dir path
+- **common**: add a method to import the user module from dir path
+- **base_transformers**: add learning_rate_end param
+- **optim**: add AdamW optimizer with correct type hints
+- **common**: add classes for handling static dataclass params
+- **data**: add block_size static arg
+- **data**: split dataset into train/valid/test subsets
+- **cli**: preprocess all dataset splits
+- **data**: add an option for train/test split while converting a dataset
+- **data**: search data_files if a path pattern is used
+- **utils**: add iter_stide method to make overlaping groups from iterable obj
+- **cli**: add functional methods for preprocessing
+- **cli**: export train subcommand
+- **cli**: add a train cli subcommand
+- **common**: add a method to get params of a certain type
+- setup main app logging
+- add a main file for app setup
+- **cli**: import convert_dataset subcommand
+- **cli**: invoke a callback for adding dynamic args
+- **cli**: provide choices for dataset converters
+- **cli**: prepare and exec parsers on subcommands
+- **common**: add utils for package importing
+- **cli**: add a base class for cli subcommands
+- **common**: add a method to list all registered components
+- **common**: add a method to get an init callback from name
+- **common**: add a method to find attr in parsed params
+- **common**: register dataclass type for new arguments set if not yet
+- **cli**: add convert dataset cli command
+- **data**: add code dataset converter impl
+- **data**: add dataset converter base class
+- **common**: add a class for parsing dataclass arguments
+- **common**: add dataclass argparse support with static typed fields
+- **base_transformers**: inject code special tokens while training a tokenizer
+- **base_transformers**: make output dirs if not exists
+- **base_transformer**: inject code tokenizer special tokens
+- **base_transformers**: add tokenizer required args
+- **base_transformers**: define APIs for tokenization module and trainer
+- **base_transformers**: add a transformer robertafast-like tokenizer
+- **cli**: add a pipeline for training tokenizers
+- **base_transformers**: add a base modular transformer tokenizer trainer
+- **common**: add constructor parameter for registry records
+- **common**: add a registry container for subclasses
+- **cli**: add a script to pretokenize python source files
+- **utils**: add a method to parse string inputs into boolean values
+- **base_transformers**: accept user-defined args in code
+- **base_transformers**: add a task class that builds modules and tokenizer
+- **base_transformers**: add a mixin to init objects with args dicts
+- **utils**: add a decorator for initializing with dict args for fixed params
+- **base_transformers**: calculate total training steps for epoch setting
+- **base_transformers**: add an early stopping callback
+- **base_transformers**: add wandb logger to track training logs
+- **base_transformers**: add deterministic mode with random seed
+- **base_transformers**: add an arg for num of checkpoints to keep
+- **base_transformers**: register a persistent buffer for best metrics monitor
+- **base_transformers**: define arg parser arguments in components
+- **base_transformers**: add a callback that saves checkpoints every n steps
+- **data**: add a method that inferes the dataset type on reading
+- **utils**: add a method to find all subclasses of a given one
+- **base_transformers**: use dataset iterator instead of batch samplers
+- **data**: add a dataset iterator with uniform batch sampling
+- **base_transformers**: add a data module for preparing the datasets
+- **base_transformers**: make indexed dataset impl a required arg
+- **base_transformers**: add an option to utilize max tokens batch sampler
+- **data**: add a class to prepare indexed dataset setup from an impl choice
+- **samplers**: add a uniform max tokens batch sampler class
+- **cli**: add a select option to build datasets of different types
+- **data**: add magic_code to indexed datasets for sanity checks on decoding
+- **data**: add memmap indexed dataset implementation
+- **data**: add a cached version of indexed dataset
+- **base_transformers**: add a draft for base trainer that loads comps from configs and cmd
+- **base_transformers**: add a method to parse tokenizer from config
+- **data**: add supports_prefetch property for indexed datasets
+- **utils**: add a method to convert Path instance to posix path string
+- **optim**: add a method to configure params with weight decay
+- **base_transformers**: make a model from yaml config file
+- **base_transformers**: add a module for training language models
+- **base_transformers**: add base mixin and params classes for transformer modules
+- **utils**: add transcoder python code tokenizer
+- **utils**: add a python code2ast parser for getting statements with ast from code
+- **codebert**: build batch sampler with tpu support
+- **coderbert**: import torch_xla module if possible for tpu support
+- **samplers**: add base class BatchSampler for batch sampling subclasses
+- **data**: declare data_source attribute
+- **data**: return iterator with next method in batch sampler
+- **data**: add a special batch sampler for distributed data loaders
+- **data**: export BatchSampler base class explicitly
+- **changelog**: add custom cz component for changelog generation
+- **utils**: add git repo extractor for cloning repos
+- **utils**: add git commit parser class
+- **codebert**: use PreTrainedTokenizerFast abstractions for tokenizer
+- **codebert**: add newline token to special tokens
+- **codebert**: add lang model pretraining script
+- **codebert**: add custom codebert tokenizer subclass
+- **codebert**: add text dataset class that reads lines and converts to token ids
+- **tasks**: initialize module
+- **cli**: add data preprocess cli script to convert text datasets to indexed datasets
+- **data**: add MaxTokensBatchSampler that samples batches of the same length
+- **data**: add binarizer class for mapping text to token ids
+- **data**: add indexed dataset base class and builder helper class
+- **data**: init module
+- **optim**: add custom get_polynomial_decay_with_warmup lr scheduler
+- **utils**: add utils functions for data processing and metrics calc
+- **src**: initialize root module
