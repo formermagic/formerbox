@@ -26,7 +26,7 @@ def parse_subject(text: Text) -> Text:
     return required_validator(text, msg="Subject is required.")
 
 
-class GitneticCz(BaseCommitizen):
+class FormerBoxCz(BaseCommitizen):
     bump_pattern = defaults.bump_pattern
     bump_map = defaults.bump_map
     commit_parser = (
@@ -219,4 +219,4 @@ class GitneticCz(BaseCommitizen):
         return full_changelog
 
 
-discover_this = GitneticCz
+discover_this = FormerBoxCz  # pylint: disable=invalid-name

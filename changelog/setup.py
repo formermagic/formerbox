@@ -2,9 +2,9 @@ from setuptools import setup
 
 
 setup(
-    name="gitnetic-cz",
+    name="formerbox-cz",
     version="0.1.0",
-    py_modules=["cz_gitnetic"],
+    py_modules=["cz_formerbox"],
     license="Not open source",
     long_description="description for the cz",
     install_requires=["commitizen"],
