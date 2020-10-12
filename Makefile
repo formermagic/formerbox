@@ -1,2 +1,2 @@
 style:
-	black gitnetic tests
+	black formerbox tests

@@ -2,15 +2,15 @@ Convert arbitrary datasets into text datasets
 =======================================================================================================================
 
 If you want to train a transformer-based model on your arbitrary dataset, first you need to convert the dataset to a
-text file. This is done with :class:`~gitnetic.cli.ConvertDataset` subcommand which uses the 
-:class:`~gitnetic.DatasetConverter` to map any dataset into the text file for further processing.
+text file. This is done with :class:`~formerbox.cli.ConvertDataset` subcommand which uses the 
+:class:`~formerbox.DatasetConverter` to map any dataset into the text file for further processing.
 
 We recommend using `🤗/datasets <https://github.com/huggingface/datasets>`__ for any mapping and processing.
 
 Subcommand required parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: gitnetic.cli.ConvertDataset.Params
+.. autoclass:: formerbox.cli.ConvertDataset.Params
     :members:
 
 Built-in dataset converters in the library
@@ -24,7 +24,7 @@ Converts the github bigquery dataset into the pretokenized text data files.
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: gitnetic.CodeLMDatasetConverter.Params
+.. autoclass:: formerbox.CodeLMDatasetConverter.Params
     :members:
 
 Example cli command
@@ -32,7 +32,7 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m gitnetic convert_dataset  \
+    python -m formerbox convert_dataset  \
         --converter code-lm-converter   \
                                         \
         --script_path json              \
@@ -51,7 +51,7 @@ Making your own dataset converter
     from typing import Dict, Text, Union
 
     from datasets import Dataset, DatasetDict, load_dataset
-    from gitnetic.common.dataclass_argparse import DataclassBase
+    from formerbox.common.dataclass_argparse import DataclassBase
 
 
     @DatasetConverter.register("my-converter", constructor="from_partial")

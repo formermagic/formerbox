@@ -1,26 +1,26 @@
 Preprocess text datasets
 =======================================================================================================================
 
-Transformer modules are designed to work with :class:`~gitnetic.IndexedDataset` datasets. Such datasets are already
+Transformer modules are designed to work with :class:`~formerbox.IndexedDataset` datasets. Such datasets are already
 tokenized and can be easily accessed at any index with additional metadata (e.g. sample dimensions and lengths). This
 is especially useful for more efficient and balanced sampling when we sample batches of uniform token lengths.
 
 Preprocessing only works with text datasets. That means that if you have an arbitrary dataset (e.g. JSON or CSV file),
 you'll have to first convert the raw dataset into its textual representation. Also note, that indexed datasets
-(:class:`~gitnetic.IndexedDataset`) do not support multicolumn processing, so you'll have to keep as many binarized
+(:class:`~formerbox.IndexedDataset`) do not support multicolumn processing, so you'll have to keep as many binarized
 pair of files as many columns you want to get.
 
-At its core preprocessing requires 2 components – :class:`~gitnetic.TokenizerModule` and :class:`~gitnetic.Binarizer`.
+At its core preprocessing requires 2 components – :class:`~formerbox.TokenizerModule` and :class:`~formerbox.Binarizer`.
 
-* The :class:`~gitnetic.TokenizerModule` uses the pre-trained tokenizer to convert text samples into input ids 
+* The :class:`~formerbox.TokenizerModule` uses the pre-trained tokenizer to convert text samples into input ids 
   (i.e. token ids).
 
-* The :class:`~gitnetic.Binarizer` prepares the dataset for mapping and then maps the samples into binarized data.
+* The :class:`~formerbox.Binarizer` prepares the dataset for mapping and then maps the samples into binarized data.
 
 Subcommand required parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: gitnetic.cli.Preprocess.Params
+.. autoclass:: formerbox.cli.Preprocess.Params
     :members:
 
 Built-in tokenizer modules in the library
@@ -29,12 +29,12 @@ Built-in tokenizer modules in the library
 transformer-tokenizer-fast
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Uses the :class:`~gitnetic.TransformerTokenizerFast` under the hood to map text samples into a tokenized encoding.
+Uses the :class:`~formerbox.TransformerTokenizerFast` under the hood to map text samples into a tokenized encoding.
 
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: gitnetic.TransformerTokenizerModule.Params
+.. autoclass:: formerbox.TransformerTokenizerModule.Params
     :members:
 
 Built-in binarizers in the library
@@ -48,7 +48,7 @@ Converts text samples into a tokenized encoding, supports the overflowing batche
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: gitnetic.FlatBinarizer.Params
+.. autoclass:: formerbox.FlatBinarizer.Params
     :members:
 
 Example cli command
@@ -56,7 +56,7 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m gitnetic preprocess                           \
+    python -m formerbox preprocess                           \
         --tokenizer transformer-tokenizer-fast              \
         --binarizer flat-binarizer                          \
         --output_path <output_path>                         \
@@ -82,9 +82,9 @@ Making your own binarizer
     from typing import Any, Callable, Dict, Text
 
     import torch
-    from gitnetic import Binarizer
-    from gitnetic.common.dataclass_argparse import DataclassBase
-    from gitnetic.data.indexed_dataset_setup import IndexedDatasetSetup
+    from formerbox import Binarizer
+    from formerbox.common.dataclass_argparse import DataclassBase
+    from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
     from transformers import PreTrainedTokenizerFast
 
 

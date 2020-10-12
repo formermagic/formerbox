@@ -2,14 +2,14 @@ Train a transformer-based model
 =======================================================================================================================
 
 You can train a transformer-based model with a `train` cli subcommand. All you have to do is to make or use a built-in
-:class:`~gitnetic.TaskModule` class and prepare the :class:`~gitnetic.TransformerTrainer` instance. Each of these 
+:class:`~formerbox.TaskModule` class and prepare the :class:`~formerbox.TransformerTrainer` instance. Each of these 
 components specify the required parameters in the params dataclasses (see `params_type` property for the type), 
 so you will not miss one.
 
 Built-in tasks in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These are the built-in :class:`~gitnetic.TaskModule` components you can use to train a model.
+These are the built-in :class:`~formerbox.TaskModule` components you can use to train a model.
 
 transformer-task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -19,27 +19,27 @@ The task for training transformer language models with a pre-trained tokenizer.
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: gitnetic.TaskModule.Params
+.. autoclass:: formerbox.TaskModule.Params
     :members:
 
-.. autoclass:: gitnetic.TransformerModule.Params
+.. autoclass:: formerbox.TransformerModule.Params
     :members:
 
-.. autoclass:: gitnetic.TransformerDataModule.Params
+.. autoclass:: formerbox.TransformerDataModule.Params
     :members:
 
-.. autoclass:: gitnetic.TransformerTrainer.Params
+.. autoclass:: formerbox.TransformerTrainer.Params
     :members:
 
 See `pytorch_lightning.Trainer <https://pytorch-lightning.readthedocs.io/en/latest/trainer.html#trainer-class-api>`__ 
-docs to find other :class:`~gitnetic.TransformerTrainer` parameters.
+docs to find other :class:`~formerbox.TransformerTrainer` parameters.
 
 Example cli command
 ***********************************************************************************************************************
 
 .. code-block:: shell
 
-    python -m gitnetic train                                    \
+    python -m formerbox train                                    \
         --task transformer-task                                 \
         --config_path <model-config.yml>                        \
         --tokenizer_path <tokenizer_path>                       \
@@ -66,9 +66,9 @@ Example cli command
 Making your own task
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If no built-in task fits to your needs you can make a new one based on the :class:`~gitnetic.TaskModule` class. You'll 
+If no built-in task fits to your needs you can make a new one based on the :class:`~formerbox.TaskModule` class. You'll 
 need to specify a module and datamodule to define a new task. Each task should also implement the 
-:func:`~gitnetic.TaskModule.setup` method where given the tuple with parsed params you initialize the task comps.
+:func:`~formerbox.TaskModule.setup` method where given the tuple with parsed params you initialize the task comps.
 
 Example of a new task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -79,8 +79,8 @@ Example of a new task
     from dataclasses import dataclass, field
     from typing import Tuple, Type, Union
 
-    from gitnetic import TaskModule, TransformerDataModule, TransformerModule
-    from gitnetic.common.dataclass_argparse import (
+    from formerbox import TaskModule, TransformerDataModule, TransformerModule
+    from formerbox.common.dataclass_argparse import (
         DataclassArgumentParser,
         DataclassBase, 
         get_params_item
