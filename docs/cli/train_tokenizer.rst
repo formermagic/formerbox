@@ -5,13 +5,13 @@ You can train a new tokenizer (:class:`~tokenizers.Tokenizer`) and convert it to
 :class:`~transformers.PreTrainedTokenizer` or :class:`~transformers.PreTrainedTokenizerFast` instance with the
 `train_tokenizer` cli subcommand.
 
-All you have to do is to make or use a built-in tokenizer module (:class:`~gitnetic.TokenizerModule`) class,
+All you have to do is to make or use a built-in tokenizer module (:class:`~formerbox.TokenizerModule`) class,
 and prepare an instance with its defined dataclass params (i.e. pass arguments through a cli command).
 
 Built-in tokenizer modules in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These are the built-in :class:`~gitnetic.TokenizerModule` components you can use to train a tokenizer.
+These are the built-in :class:`~formerbox.TokenizerModule` components you can use to train a tokenizer.
 
 transformer-tokenizer-fast
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -21,10 +21,10 @@ Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :cla
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: gitnetic.cli.TrainTokenizer.Params
+.. autoclass:: formerbox.cli.TrainTokenizer.Params
     :members:
 
-.. autoclass:: gitnetic.TransformerTokenizerModule.Params
+.. autoclass:: formerbox.TransformerTokenizerModule.Params
     :members:
 
 Example cli command
@@ -32,7 +32,7 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m gitnetic train_tokenizer              \
+    python -m formerbox train_tokenizer              \
             --tokenizer transformer-tokenizer-fast  \
             --tokenizer_path <>                     \
             --files <text_file>[<text_file>...]     \
@@ -41,10 +41,10 @@ Example cli command
 Making your own tokenizer module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If no built-in component fits to your needs you can make a new one based on the :class:`~gitnetic.TokenizerModule` class. 
+If no built-in component fits to your needs you can make a new one based on the :class:`~formerbox.TokenizerModule` class. 
 You'll need to define a backend :class:`~tokenizers.Tokenizer` and implement abstract methods.
 
-.. autoclass:: gitnetic.TokenizerModule
+.. autoclass:: formerbox.TokenizerModule
     :members:
 
 Example of a new task
@@ -57,7 +57,7 @@ Example of a new task
     from typing import Any, List, Text, Union
 
     from gitneti import TokenizerModule
-    from gitnetic.common.dataclass_argparse import DataclassBase
+    from formerbox.common.dataclass_argparse import DataclassBase
     from tokenizers import AddedToken
     from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
