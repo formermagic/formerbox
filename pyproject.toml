@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "gitnetic"
+name = "formerbox"
 version = "0.1.0"
 description = ""
 authors = ["mozharovsky <mozharovsky@live.com>"]
 
 [tool.poetry.scripts]
-gitnetic-cli = 'gitnetic.__main__:run_main'
+formerbox-cli = 'formerbox.__main__:run_main'
 
 [tool.poetry.dependencies]
 # Deep learning toolkit
@@ -63,7 +63,7 @@ pytest = "^6.1.1"
 pytest-ordering = "^0.6"
 
 [tool.commitizen]
-name = "cz_gitnetic"
+name = "cz_formerbox"
 version = "0.1.0"
 tag_format = "$version"
 

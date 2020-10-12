@@ -27,7 +27,7 @@ def test_cli_convert_dataset(
 
     argv = shlex.split(
         f"""
-        gitnetic-cli convert_dataset        \
+        formerbox-cli convert_dataset        \
             --converter {converter}         \
             --script_path json              \
             --data_files {data_files}       \
@@ -65,7 +65,7 @@ def test_cli_train_tokenizer(
 
     argv = shlex.split(
         f"""
-        gitnetic-cli train_tokenizer            \
+        formerbox-cli train_tokenizer            \
             --tokenizer {tokenizer}             \
             --tokenizer_path {tokenizer_path}   \
             --files {files}                     \
@@ -104,7 +104,7 @@ def test_cli_preprocess(
 
     argv = shlex.split(
         f"""
-        gitnetic-cli preprocess                 \
+        formerbox-cli preprocess                 \
             --train_prefix {train_prefix}       \
             --valid_prefix {valid_prefix}       \
             --test_prefix {test_prefix}         \
@@ -151,7 +151,7 @@ def test_cli_train(
 
     argv = shlex.split(
         f"""
-        gitnetic-cli train                              \
+        formerbox-cli train                              \
             --task {task}                               \
             --config_path {config_path}                 \
             --tokenizer_path {tokenizer_path}           \
