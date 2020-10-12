@@ -1,11 +1,11 @@
 version: "3"
 
 services:
-  gitnetic-ml:
+  formerbox:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: gitnetic-ml
+    container_name: formerbox
     ports:
       - "8000:8000"
     volumes:

@@ -1,8 +1,8 @@
 {
-  "name": "gitnetic-ml",
+  "name": "formerbox",
   "context": "..",
   "dockerComposeFile": "../docker-compose.yml",
-  "service": "gitnetic-ml",
+  "service": "formerbox",
   "workspaceFolder": "/app",
   "settings": {
     "terminal.integrated.shell.linux": "/bin/bash",
