@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Text
 
 import pytest
-from gitnetic.cli import main
-from gitnetic.utils import append_path_suffix
+from formerbox.cli import main
+from formerbox.utils import append_path_suffix
 
 logger = logging.getLogger(__name__)
 

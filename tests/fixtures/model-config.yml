@@ -16,7 +16,7 @@ model:
     gradient_checkpointing: false
 
 tokenizer:
-  name: gitnetic.tasks.base_transformers.TransformerTokenizerFast
+  name: formerbox.tasks.base_transformers.TransformerTokenizerFast
   params:
     add_prefix_space: false
     trim_offsets: true
