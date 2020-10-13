@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "formerbox"
-version = "0.1.0"
+version = "0.1.7"
 description = ""
 authors = ["mozharovsky <mozharovsky@live.com>"]
 
@@ -20,7 +20,7 @@ spacy = "^2.2.4"
 sacrebleu = "^1.4.13"
 
 # Machine learning toolkit
-numpy = "^1.18.5"
+numpy = "^1.19.2"
 pandas = "^1.0.4"
 scikit-learn = "^0.23.1"
 scipy = "^1.4.1"
