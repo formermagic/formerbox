@@ -9,8 +9,8 @@ from formerbox.common.dataclass_argparse import (
     DataclassBase,
     get_params_item,
 )
-from formerbox.tasks.base_transformers.base_task import TaskModule
-from formerbox.tasks.base_transformers.base_trainer import TransformerTrainer
+from formerbox.tasks import TaskModule
+from formerbox.training import TransformerTrainer
 
 logger = logging.getLogger(__name__)
 
