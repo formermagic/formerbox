@@ -1,2 +1,0 @@
-from .run_codebert_pretraining import CodeBertLMPretraining
-from .tokenization_codebert import CodeBertTokenizerFast
