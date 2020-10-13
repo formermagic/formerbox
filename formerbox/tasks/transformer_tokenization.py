@@ -1,11 +1,10 @@
 from typing import Any, List, Optional, Text, Union
 
+from formerbox.utils.code_tokenizer import SpecialToken
 from tokenizers import AddedToken
 from tokenizers.implementations import ByteLevelBPETokenizer
 from tokenizers.processors import RobertaProcessing
 from transformers import BatchEncoding, PreTrainedTokenizer, PreTrainedTokenizerFast
-
-from formerbox.utils.code_tokenizer import SpecialToken
 
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
