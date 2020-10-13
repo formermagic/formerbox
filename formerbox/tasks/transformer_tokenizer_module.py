@@ -3,14 +3,13 @@ from pathlib import Path
 from typing import Any, List, Optional, Text, Union
 
 from formerbox.common.dataclass_argparse import DataclassBase
+from formerbox.modules import TokenizerModule
+from formerbox.tasks.transformer_tokenization import TransformerTokenizerFast
 from formerbox.utils.code_tokenizer import SpecialToken
 from formerbox.utils.utils import path_to_posix
 from tokenizers import AddedToken
 from tokenizers.implementations import ByteLevelBPETokenizer
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
-
-from .base_tokenization import TransformerTokenizerFast
-from .tokenization_module import TokenizerModule
 
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
