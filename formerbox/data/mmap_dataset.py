@@ -9,14 +9,14 @@ from typing import List, Optional, Text, Type, Union
 
 import numpy as np
 import torch
-from torch import Tensor
-
 from formerbox.data.indexed_dataset import (
     IndexedDatasetBase,
     IndexedDatasetBuilderBase,
     element_code,
     element_codes,
 )
+from numpy import int32, int64
+from torch import Tensor
 
 
 def _warmup_mmap_file(filepath: Text) -> None:
@@ -62,19 +62,19 @@ class MMapIndexedDataset(MMapIndexedDatasetBase):
         self.index_buffer = memoryview(self.index_buffer_mmap)
         self.dim_offsets = np.frombuffer(
             self.index_buffer,
-            dtype=np.int32,
+            dtype=int32,
             count=self.length + 1,  # one for an initial item
             offset=offset,
         )
 
         offset += self.dim_offsets.nbytes
         self.sizes = np.frombuffer(
-            self.index_buffer, dtype=np.int32, count=num_sizes, offset=offset
+            self.index_buffer, dtype=int32, count=num_sizes, offset=offset
         )
 
         offset += self.sizes.nbytes
         self.data_offsets = np.frombuffer(
-            self.index_buffer, dtype=np.int64, count=self.length, offset=offset
+            self.index_buffer, dtype=int64, count=self.length, offset=offset
         )
 
     def read_data_file(self, filepath: Text) -> None:
@@ -129,7 +129,7 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderBase):
         self,
         data_filepath: Text,
         index_filepath: Text,
-        dtype: np.dtype = np.dtype(np.int64),
+        dtype: np.dtype = np.dtype(int64),
         dataset_type: Type[IndexedDatasetBase] = MMapIndexedDataset,
     ) -> None:
         super().__init__(data_filepath, index_filepath, dtype, dataset_type)
@@ -217,10 +217,10 @@ class IndexWriter:
         self.stream.write(struct.pack("<QQ", len(dim_offsets), len(sizes)))
 
         # prepare numpy buffers
-        dim_offsets_buffer = np.array(dim_offsets, dtype=np.int32).tobytes(order="C")
-        sizes_buffer = np.array(sizes, dtype=np.int32).tobytes(order="C")
+        dim_offsets_buffer = np.array(dim_offsets, dtype=int32).tobytes(order="C")
+        sizes_buffer = np.array(sizes, dtype=int32).tobytes(order="C")
         pointers = self.data_offsets(sizes, dim_offsets)
-        data_offsets_buffer = np.array(pointers, dtype=np.int64).tobytes(order="C")
+        data_offsets_buffer = np.array(pointers, dtype=int64).tobytes(order="C")
 
         # write numpy buffers
         self.stream.write(dim_offsets_buffer)

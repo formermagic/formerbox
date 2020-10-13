@@ -13,6 +13,7 @@ from formerbox.data.indexed_dataset import (
     IndexedDatasetBuilderBase,
 )
 from formerbox.data.mmap_dataset import MMapIndexedDataset, MMapIndexedDatasetBuilder
+from numpy import int32, int64
 from typing_extensions import Literal
 
 
@@ -58,19 +59,19 @@ class IndexedDatasetSetup(HasParsableParams):
             result = IndexedDatasetSetup(
                 dataset_builder_type=IndexedDatasetBuilder,
                 dataset_type=IndexedDataset,
-                dataset_dtype=np.dtype(np.int32),
+                dataset_dtype=np.dtype(int32),
             )
         elif dataset_impl == "cached":
             result = IndexedDatasetSetup(
                 dataset_builder_type=IndexedDatasetBuilder,
                 dataset_type=IndexedCachedDataset,
-                dataset_dtype=np.dtype(np.int32),
+                dataset_dtype=np.dtype(int32),
             )
         elif dataset_impl == "mmap":
             result = IndexedDatasetSetup(
                 dataset_builder_type=MMapIndexedDatasetBuilder,
                 dataset_type=MMapIndexedDataset,
-                dataset_dtype=np.dtype(np.int64),
+                dataset_dtype=np.dtype(int64),
             )
         else:
             raise ValueError("Unable to match the given dataset type.")
