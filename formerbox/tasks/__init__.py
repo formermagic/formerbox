@@ -1,7 +1,4 @@
-from .base_transformers import (
-    SaveCheckpointAtStep,
-    TransformerDataModule,
-    TransformerModule,
-    TransformerTask,
-    TransformerTrainer,
-)
+from formerbox.tasks.task_module import TaskModule
+from formerbox.tasks.transformer_task import TransformerTask
+from formerbox.tasks.transformer_tokenization import TransformerTokenizerFast
+from formerbox.tasks.transformer_tokenizer_module import TransformerTokenizerModule
