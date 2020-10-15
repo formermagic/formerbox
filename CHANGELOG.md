@@ -1,3 +1,26 @@
+# v0.1.7 (2020-10-15)
+
+# Refactor
+
+- **cli**: use correct paths to import modules
+- **tasks**: add transformer task class
+- **base_transformers**: remove moved files
+- **base_transformers**: move transformer trainer to training dir
+- **base_transformers**: move transformer tokenizer module to tasks dir
+- **base_transformers**: move tokenization to tasks dir
+- **base_transformers**: move task module to tasks dir
+- **base_transformers**: move tokenizer module to modules dir
+- **base_transformers**: move module and datamodule to modules dir
+- **base_transformers**: move loading from config to training dir
+- **base_transformers**: move metrics to modules/metrics
+- **base_transformers**: move callbacks to modules/callbacks
+- **tasks**: remove codebert deprecated task
+- **data**: shut the static checker for numpy data types
+
+# Features
+
+- **contrib**: add lightning trainer protocol with properties
+
 # v0.1.5 (2020-10-12)
 
 # Refactor
@@ -9,14 +32,14 @@
 
 # Fix
 
-## CLI
+# CLI
 
 - **cli**: keep only token-related items in the tokenizer config
 - **cli**: duplicate args to avoid errors in subparsers
 - **cli**: save pretrained tokenizer
 - **cli**: parse and inject dynamic args in a callback
 
-## Base Transformers
+# Base Transformers
 
 - **base_transformers**: remove training args from token config
 - **base_transformers**: skip watching models as it causes pickle errors
@@ -33,7 +56,7 @@
 - **base_transformers**: add missing module import
 - **base_transformers**: return input batch on transfer_batch_to_device
 
-## Common
+# Common
 
 - **common**: remove property decorator for class attribute
 - **common**: make ParamsType non covariant type
@@ -43,7 +66,7 @@
 - **common**: return entry type from registrable decorator
 - **common**: remove unconstrained generics assert check
 
-## Data
+# Data
 
 - **data**: avoid splitting errors due to formats diff
 - **data**: use master branch script for loading text datasets
@@ -59,13 +82,13 @@
 - **data**: use prod operation to get the total size of buffer across all dims
 - **data**: export samplers from samplers module
 
-## Utils
+# Utils
 
 - **utils**: unwrap optional loss value properly
 - **utils**: tokenize string literals with a prefix without an extra space between
 - **utils**: move replacement below as in the original impl
 
-## Codebert
+# Codebert
 
 - **codebert**: write special token state dict instead of a string value
 - **codebert**: pass required positional arguments
@@ -73,17 +96,17 @@
 - **codebert**: use relative import for class within the same module
 - **codebert**: add a workaround that prevents from saving pretrained tokenizer
 
-## Optim
+# Optim
 
 - **optim**: align polynomial decay scheduler with original bert paper impl
 
-## Misc
+# Misc
 
 - **changelog**: use correct relative import from commitizen module
 
 # Refactor
 
-## CLI
+# CLI
 
 - **cli**: check if setup params exist
 - **cli**: check if parsed params exist
@@ -114,7 +137,7 @@
 - **cli**: use dataset setup class instead of custom methods to init a dataset
 - **cli**: remove unnecessary step that adds special tokens
 
-## Base Transformers
+# Base Transformers
 
 - **base_transformers**: calc perplexity with a new metric class
 - **base_transformers**: use a dataclass dict output for transformer models
@@ -208,7 +231,7 @@
 - **base_transformers**: calm down unused-argument warning
 - **base_transformers**: move class attributes to instance
 
-## Common
+# Common
 
 - **common**: check if module_finder is FileFinder
 - **common**: remove redundant ArgumentRegistrable class
@@ -223,7 +246,7 @@
 - **common**: remove unused imports
 - **common**: make sure cls objects are callable and return inferred T instances
 
-## Data
+# Data
 
 - **data**: make base binarizer class generic
 - **data**: make dataset converter generic
@@ -301,7 +324,7 @@
 - **data**: wrap int32 type to dtype object
 - **data**: fix typing for binary file io
 
-## Utils
+# Utils
 
 - **utils**: return float tensor for perplexity
 - **utils**: optimize typing imports
@@ -316,7 +339,7 @@
 - **utils**: return a path to the cloned repository
 - **utils**: use functions instead of classes for commit parsing
 
-## Codebert
+# Codebert
 
 - **codebert**: add deprecation warning & fix type checking
 - **codebert**: dismiss type checker warnings as the module is deprecated
@@ -330,9 +353,9 @@
 - **codebert**: make helper methods private
 - **codebert**: move making params with weight decay to weight_decay_params method
 
-## Optim
+# Optim
 
-## Samplers
+# Samplers
 
 - **samplers**: use renamed indexed dataset base class
 - **samplers**: inherit from UniformMaxTokensBatchSampler
@@ -344,7 +367,7 @@
 - **samplers**: add batch sampler standard attributes to the base class
 - **samplers**: use a base mixin class for data_source
 
-## Misc
+# Misc
 
 - get rid of typeguard typechecked decorator
 - **tests**: rename resources -> fixures
@@ -360,7 +383,7 @@
 
 # Features
 
-## CLI
+# CLI
 
 - **cli**: save the pretrained tokenizer to the output directory
 - **cli**: import user module from user dir path
@@ -379,7 +402,7 @@
 - **cli**: add a select option to build datasets of different types
 - **cli**: add data preprocess cli script to convert text datasets to indexed datasets
 
-## Base Transformers
+# Base Transformers
 
 - **base_transformers**: save hyperparameters to restore args from checkpoints
 - **base_transformers**: add perplexity metric basic impl
@@ -413,7 +436,7 @@
 - **base_transformers**: add a module for training language models
 - **base_transformers**: add base mixin and params classes for transformer modules
 
-## Common
+# Common
 
 - **common**: list choices from available comps if a registrable passed
 - **common**: add a method to import the user module from dir path
@@ -429,7 +452,7 @@
 - **common**: add constructor parameter for registry records
 - **common**: add a registry container for subclasses
 
-## Data
+# Data
 
 - **data**: add block_size static arg
 - **data**: split dataset into train/valid/test subsets
@@ -453,7 +476,7 @@
 - **data**: add indexed dataset base class and builder helper class
 - **data**: init module
 
-## Utils
+# Utils
 
 - **utils**: add iter_stide method to make overlaping groups from iterable obj
 - **utils**: add a method to parse string inputs into boolean values
@@ -466,7 +489,7 @@
 - **utils**: add git commit parser class
 - **utils**: add utils functions for data processing and metrics calc
 
-## Codebert
+# Codebert
 
 - **codebert**: build batch sampler with tpu support
 - **codebert**: import torch_xla module if possible for tpu support
@@ -476,18 +499,18 @@
 - **codebert**: add custom codebert tokenizer subclass
 - **codebert**: add text dataset class that reads lines and converts to token ids
 
-## Optim
+# Optim
 
 - **optim**: add AdamW optimizer with correct type hints
 - **optim**: add a method to configure params with weight decay
 - **optim**: add custom get_polynomial_decay_with_warmup lr scheduler
 
-## Samplers
+# Samplers
 
 - **samplers**: add a uniform max tokens batch sampler class
 - **samplers**: add base class BatchSampler for batch sampling subclasses
 
-## Misc
+# Misc
 
 - setup main app logging
 - add a main file for app setup
