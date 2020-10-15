@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from formerbox.contrib import LightningTrainer
 from formerbox.data.indexed_dataset import IndexedDatasetBase
 from formerbox.data.samplers import (
     BatchSampler,
@@ -9,8 +10,6 @@ from formerbox.data.samplers import (
 )
 from torch.utils.data import DataLoader
 from transformers import DataCollator
-
-from .lightning_trainer import LightningTrainer
 
 try:
     import horovod.torch as hvd  # type: ignore
@@ -32,12 +31,8 @@ TPU_CORES_ERROR = """
 """
 
 
-# pylint: disable=too-many-ancestors
-class BaseTrainingMixin:
-    def __init__(self) -> None:
-        # this ensures that all parents get __init__ called
-        super().__init__()
-        self.trainer: Optional[LightningTrainer] = None
+class LightningModuleMixin:
+    trainer: Optional[LightningTrainer]
 
     def get_dataloader(
         self,

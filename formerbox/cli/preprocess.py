@@ -14,7 +14,7 @@ from formerbox.common.dataclass_argparse import (
 )
 from formerbox.data.binarizer import Binarizer
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
-from formerbox.tasks.base_transformers import TokenizerModule
+from formerbox.modules import TokenizerModule
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]

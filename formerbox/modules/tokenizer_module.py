@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, List, Optional, Text, Union, Type
+from typing import Any, List, Optional, Text, Type, Union
 
 from formerbox.common.has_params import HasParsableParams, ParamsType
 from formerbox.common.registrable import Registrable

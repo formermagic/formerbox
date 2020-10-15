@@ -10,18 +10,19 @@ from typing import Any, Dict, List, Optional, Text, Type, Union
 import numpy as np
 import torch
 from formerbox.utils import all_subclasses, path_to_posix
+from numpy import float32, float64, int8, int16, int32, int64, uint8, uint16
 from torch.utils.data import Dataset
 from typing_extensions import Protocol
 
 element_codes = {
-    1: np.uint8,
-    2: np.int8,
-    3: np.int16,
-    4: np.int32,
-    5: np.int64,
-    6: np.float,
-    7: np.double,
-    8: np.uint16,
+    1: uint8,
+    2: int8,
+    3: int16,
+    4: int32,
+    5: int64,
+    6: float32,
+    7: float64,
+    8: uint16,
 }
 
 
@@ -33,13 +34,13 @@ def element_code(dtype: np.dtype) -> int:
 
 
 def read_longs(stream: Union[FileIO, BufferedReader], num: int) -> np.ndarray:
-    buffer = np.empty(num, dtype=np.int64)
+    buffer = np.empty(num, dtype=int64)
     stream.readinto(buffer)  # type: ignore
     return buffer
 
 
 def write_longs(stream: Union[FileIO, BufferedWriter], buffer: List[int]) -> None:
-    stream.write(np.array(buffer, dtype=np.int64))  # type: ignore
+    stream.write(np.array(buffer, dtype=int64))  # type: ignore
 
 
 def make_index_filepath(prefix_path: Text) -> Text:
@@ -240,8 +241,7 @@ class IndexedCachedDataset(IndexedDataset):
         for idx in indices:
             self.cache_index[idx] = size_offset
             item_size = self.data_offsets[idx + 1] - self.data_offsets[idx]
-            item_offset = self.data_offsets[idx] * self.dtype.itemsize
-
+            item_offset = self.data_offsets[idx] * self.dtype.itemsize  # type: ignore
             # read a buffer to cache from file
             buffer = np.fromfile(
                 self.data_stream,
@@ -324,7 +324,7 @@ class IndexedDatasetBuilder(IndexedDatasetBuilderBase):
         self,
         data_filepath: Text,
         index_filepath: Text,
-        dtype: np.dtype = np.dtype(np.int32),
+        dtype: np.dtype = np.dtype(int32),
         dataset_type: Type[IndexedDatasetBase] = IndexedDataset,
     ) -> None:
         super().__init__(data_filepath, index_filepath, dtype, dataset_type)

@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 from argparse import Namespace
 from dataclasses import dataclass, field
 from typing import Text, Tuple, Type, TypeVar, Union
@@ -8,50 +7,17 @@ from formerbox.common.dataclass_argparse import (
     DataclassBase,
     get_params_item,
 )
-from formerbox.common.has_params import HasParsableParams
-from formerbox.common.registrable import Registrable
-from transformers import PreTrainedTokenizerBase
-from typing_extensions import Protocol
-
-from .base_config import model_from_config, tokenizer_from_config
-from .base_modules import TransformerDataModule, TransformerModule
+from formerbox.modules import TransformerDataModule as DataModule
+from formerbox.modules import TransformerModule as Module
+from formerbox.tasks.task_module import TaskModule
+from formerbox.training.load_from_config import model_from_config, tokenizer_from_config
 
 T = TypeVar("T", bound="TaskModule")  # pylint: disable=invalid-name
-Tokenizer = PreTrainedTokenizerBase
-ModuleType = TypeVar("ModuleType", bound="TransformerModule")
-DataModuleType = TypeVar("DataModuleType", bound="TransformerDataModule")
 ParamType = Union[DataclassBase, Namespace]
 
 
-class TaskModuleBase(Protocol[ModuleType, DataModuleType]):
-    ...
-
-
-class TaskModule(
-    TaskModuleBase[ModuleType, DataModuleType],
-    Registrable,
-    HasParsableParams,
-    metaclass=ABCMeta,
-):
-    def __init__(
-        self,
-        tokenizer: Tokenizer,
-        module: ModuleType,
-        datamodule: DataModuleType,
-    ) -> None:
-        super().__init__()
-        self.tokenizer = tokenizer
-        self.module = module
-        self.datamodule = datamodule
-
-    @classmethod
-    @abstractmethod
-    def setup(cls: Type[T], params: Tuple[ParamType, ...]) -> T:
-        raise NotImplementedError()
-
-
 @TaskModule.register("transformer-task")
-class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
+class TransformerTask(TaskModule[Module, DataModule]):
     @dataclass
     class Params(DataclassBase):
         config_path: Text = field(
@@ -66,8 +32,8 @@ class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
 
     ComponentParams = Tuple[
         params_type,
-        TransformerModule.params_type,
-        TransformerDataModule.params_type,
+        Module.params_type,
+        DataModule.params_type,
     ]
 
     @classmethod
@@ -79,11 +45,11 @@ class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
         )
         module_params = get_params_item(
             params=params,
-            params_type=TransformerModule.params_type,
+            params_type=Module.params_type,
         )
         datamodule_params = get_params_item(
             params=params,
-            params_type=TransformerDataModule.params_type,
+            params_type=DataModule.params_type,
         )
 
         # make sure the params exist
@@ -115,14 +81,10 @@ class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
         )
 
         # prepare a transformer module
-        module = TransformerModule(
-            model=model, tokenizer=tokenizer, params=module_params
-        )
+        module = Module(model=model, tokenizer=tokenizer, params=module_params)
 
         # prepare a transformer datamodule
-        datamodule = TransformerDataModule(
-            tokenizer=tokenizer, params=datamodule_params
-        )
+        datamodule = DataModule(tokenizer=tokenizer, params=datamodule_params)
 
         return cls(tokenizer, module, datamodule)
 
@@ -131,5 +93,5 @@ class TransformerTask(TaskModule[TransformerModule, TransformerDataModule]):
         cls: Type["TransformerTask"], parser: DataclassArgumentParser
     ) -> None:
         parser.add_arguments(cls.Params)
-        TransformerModule.add_argparse_params(parser)
-        TransformerDataModule.add_argparse_params(parser)
+        Module.add_argparse_params(parser)
+        DataModule.add_argparse_params(parser)

@@ -10,7 +10,7 @@ from formerbox.common.dataclass_argparse import (
     DataclassBase,
     get_params_item,
 )
-from formerbox.tasks.base_transformers import TokenizerModule
+from formerbox.modules import TokenizerModule
 
 logger = logging.getLogger(__name__)
 
