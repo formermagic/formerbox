@@ -9,7 +9,7 @@ formerbox-cli = 'formerbox.__main__:run_main'
 
 [tool.poetry.dependencies]
 # Deep learning toolkit
-python = "^3.7"
+python = ">=3.6.0"
 torch = "^1.6.0"
 pytorch-lightning = "^0.10.0"
 
