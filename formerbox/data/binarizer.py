@@ -165,6 +165,14 @@ class FlatBinarizer(Binarizer):
                 " Default is set to `8`."
             },
         )
+        split_chunks: bool = field(
+            default=False,
+            metadata={
+                "help": "Whether or not to write overlapping long document chunks"
+                " as independent samples into the resulting dataset. You might"
+                " want to use this strategy for preparing a language modeling dataset."
+            },
+        )
 
     params: Params
     params_type: Type[Params] = Params
@@ -200,7 +208,9 @@ class FlatBinarizer(Binarizer):
             assert isinstance(instance, dict)
             input_ids = instance["input_ids"]
 
-            if isinstance(input_ids[0], list):
+            # write each chunk as a sample if `input_ids` is a batch
+            # and the `split_chunks` flag is set to true
+            if isinstance(input_ids[0], list) and self.params.split_chunks:
                 for ids in input_ids:
                     consumer(torch.tensor(ids))
             else:
