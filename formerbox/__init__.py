@@ -1,3 +1,8 @@
+try:
+    from importlib.metadata import PackageNotFoundError, version  # type: ignore
+except ImportError:
+    from importlib_metadata import version, PackageNotFoundError  # type: ignore
+
 from formerbox.cli import ConvertDataset, Preprocess, Subcommand, Train, TrainTokenizer
 from formerbox.common import (
     DataclassArgumentParser,
@@ -30,3 +35,8 @@ from formerbox.tasks import (
     TransformerTokenizerModule,
 )
 from formerbox.training import TransformerTrainer
+
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:
+    __version__ = "unknown"
