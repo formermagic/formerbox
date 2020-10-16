@@ -10,7 +10,6 @@ from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.common.has_params import HasParsableParams, ParamsType
 from formerbox.common.registrable import Registrable
 from formerbox.utils import append_path_suffix, lazy_groups_of
-from formerbox.utils.code_tokenizer import tokenize_python
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +71,8 @@ class DatasetConverter(Registrable, HasParsableParams[ParamsType], metaclass=ABC
         raise NotImplementedError()
 
 
-@DatasetConverter.register("code-lm-converter", constructor="from_partial")
-class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
+@DatasetConverter.register("transformer-converter", constructor="from_partial")
+class TransformerDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     @dataclass
     class Params(DataclassBase):
         script_path: Text = field(
@@ -217,9 +216,9 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         result: Union[Instance, List[Instance]]
         content = instance["content"]
         if isinstance(content, list):
-            result = [self.tokenize_text(text) for text in content]
+            result = [self.preprocess_text(text) for text in content]
         else:
-            result = self.tokenize_text(content)
+            result = self.preprocess_text(content)
         return {"output_data": result}
 
     def save_dataset(
@@ -231,14 +230,9 @@ class CodeLMDatasetConverter(DatasetConverter, DatasetProcessingMixin):
                 instances = [instance for instance in group if instance]
                 stream.write("\n".join(instances))
 
-    def tokenize_text(self, text: Text) -> Instance:
+    def preprocess_text(self, text: Text) -> Instance:
         # workaround to avoid disambiguation in parsing text datasets
-        text = text.replace("\b", "\r")
-        tokens = tokenize_python(text, keep_comments=True)
-        result = " ".join(tokens)
-        if not result:
-            return None
-        return result
+        return text.replace("\b", "\r")
 
     def search_data_files(self, data_files: List[Text]) -> List[Text]:
         assert data_files

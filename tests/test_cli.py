@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 FIXTURES_DIR_ERROR = "Fixtures dir doesn't exist"
 
 
-@pytest.mark.parametrize("converter", ["code-lm-converter"])
+@pytest.mark.parametrize("converter", ["transformer-converter"])
 def test_cli_convert_dataset(
     tmp_path: Path,
     fixtures_directory: Path,
@@ -27,7 +27,7 @@ def test_cli_convert_dataset(
 
     argv = shlex.split(
         f"""
-        formerbox-cli convert_dataset        \
+        formerbox-cli convert_dataset       \
             --converter {converter}         \
             --script_path json              \
             --data_files {data_files}       \
@@ -50,7 +50,7 @@ def test_cli_convert_dataset(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["transformer-tokenizer-fast"])
+@pytest.mark.parametrize("tokenizer", ["code-tokenizer-fast"])
 def test_cli_train_tokenizer(
     tmp_path: Path,
     fixtures_directory: Path,
@@ -65,7 +65,7 @@ def test_cli_train_tokenizer(
 
     argv = shlex.split(
         f"""
-        formerbox-cli train_tokenizer            \
+        formerbox-cli train_tokenizer           \
             --tokenizer {tokenizer}             \
             --tokenizer_path {tokenizer_path}   \
             --files {files}                     \
@@ -84,8 +84,8 @@ def test_cli_train_tokenizer(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["transformer-tokenizer-fast"])
-@pytest.mark.parametrize("binarizer", ["flat-binarizer"])
+@pytest.mark.parametrize("tokenizer", ["code-tokenizer-fast"])
+@pytest.mark.parametrize("binarizer", ["transformer-binarizer"])
 def test_cli_preprocess(
     tmp_path: Path,
     fixtures_directory: Path,
@@ -104,7 +104,7 @@ def test_cli_preprocess(
 
     argv = shlex.split(
         f"""
-        formerbox-cli preprocess                 \
+        formerbox-cli preprocess                \
             --train_prefix {train_prefix}       \
             --valid_prefix {valid_prefix}       \
             --test_prefix {test_prefix}         \
@@ -151,7 +151,7 @@ def test_cli_train(
 
     argv = shlex.split(
         f"""
-        formerbox-cli train                              \
+        formerbox-cli train                             \
             --task {task}                               \
             --config_path {config_path}                 \
             --tokenizer_path {tokenizer_path}           \

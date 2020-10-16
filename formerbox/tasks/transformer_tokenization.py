@@ -1,6 +1,5 @@
 from typing import Any, List, Optional, Text, Union
 
-from formerbox.utils.code_tokenizer import SpecialToken
 from tokenizers import AddedToken
 from tokenizers.implementations import ByteLevelBPETokenizer
 from tokenizers.processors import RobertaProcessing
@@ -55,13 +54,6 @@ class TransformerTokenizerFast(PreTrainedTokenizerFast):
         kwargs.setdefault("sep_token", sep_token)
         kwargs.setdefault("cls_token", cls_token)
         kwargs.setdefault("mask_token", mask_token)
-
-        additional_special_tokens: List[Token] = []
-        for token in SpecialToken:
-            kwargs.setdefault(token.name, token.value)
-            additional_special_tokens.append(token.value)
-
-        kwargs.setdefault("additional_special_tokens", additional_special_tokens)
 
         super().__init__(
             ByteLevelBPETokenizer(

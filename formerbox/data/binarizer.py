@@ -18,10 +18,16 @@ from typing_extensions import Literal
 logger = logging.getLogger(__name__)
 
 Truncation = Literal[
-    "only_first",
+    "only_first",  # equals to `truncation=True`
     "only_second",
     "longest_first",
     "do_not_truncate",
+]
+
+Padding = Literal[
+    "longest",  # equals to `padding=True`
+    "max_length",
+    "do_not_pad",
 ]
 
 
@@ -102,13 +108,17 @@ class Binarizer(Registrable, HasParsableParams[ParamsType], metaclass=ABCMeta):
         raise NotImplementedError()
 
 
-@Binarizer.register(name="flat-binarizer", constructor="from_partial")
-class FlatBinarizer(Binarizer):
+@Binarizer.register(name="transformer-binarizer", constructor="from_partial")
+class TransformerBinarizer(Binarizer):
     @dataclass
     class Params(DataclassBase):
         truncation: Truncation = field(
             default="do_not_truncate",
             metadata={"help": "Activates and controls the truncation."},
+        )
+        padding: Padding = field(
+            default="do_not_pad",
+            metadata={"help": "Controls the padding strategy."},
         )
         max_length: Optional[int] = field(
             default=None,
@@ -155,6 +165,14 @@ class FlatBinarizer(Binarizer):
                 " Default is set to `8`."
             },
         )
+        split_chunks: bool = field(
+            default=False,
+            metadata={
+                "help": "Whether or not to write overlapping long document chunks"
+                " as independent samples into the resulting dataset. You might"
+                " want to use this strategy for preparing a language modeling dataset."
+            },
+        )
 
     params: Params
     params_type: Type[Params] = Params
@@ -190,7 +208,9 @@ class FlatBinarizer(Binarizer):
             assert isinstance(instance, dict)
             input_ids = instance["input_ids"]
 
-            if isinstance(input_ids[0], list):
+            # write each chunk as a sample if `input_ids` is a batch
+            # and the `split_chunks` flag is set to true
+            if isinstance(input_ids[0], list) and self.params.split_chunks:
                 for ids in input_ids:
                     consumer(torch.tensor(ids))
             else:
@@ -214,6 +234,7 @@ class FlatBinarizer(Binarizer):
             encoding = self.tokenizer(
                 batch,
                 truncation=truncation,
+                padding=self.params.padding,
                 max_length=self.params.max_length,
                 stride=self.params.stride,
                 return_overflowing_tokens=self.params.return_overflowing_tokens,

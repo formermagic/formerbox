@@ -1,3 +1,21 @@
+# v0.1.8 (2020-10-16)
+
+# Features
+
+- **code**: add tokenizer module for source code nlp tasks
+- **code**: add fast tokenizer for source code nlp tasks
+- **code**: add dataset converter for source code nlp tasks
+- **data**: add split_chunks parameter to control the writing strategy
+- **data**: add padding parameter for padding strategy selection
+
+# Refactor
+
+- **cli**: update names for imported classes
+- **data**: rename FlatBinarizer -> TransformerBinarizer
+- **data**: remove code preprocessing from common component
+- **tasks**: optimize parsing pretrained args from params
+- **tasks**: remove code special tokens from base classes
+
 # v0.1.7 (2020-10-15)
 
 # Refactor
