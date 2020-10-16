@@ -11,10 +11,10 @@ import time
 from multiprocessing import Pool
 from typing import Any, Callable, Optional, Text
 
-from tqdm import tqdm
-
-from formerbox.data import Binarizer, dataset_dest_filepath, find_offsets
+from formerbox.data import Binarizer
+from formerbox.data.binarizer import dataset_dest_filepath, find_offsets
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
