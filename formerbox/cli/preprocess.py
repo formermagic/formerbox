@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from time import time
 from typing import Any, Dict, Optional, Text, Tuple, Union
 
-import formerbox.cli.functional.preprocess as F
+from formerbox.cli.functional import temp_filepath
 from formerbox.cli.subcommand import Subcommand
 from formerbox.common.dataclass_argparse import (
     DataclassArgumentParser,
@@ -159,7 +159,7 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
         logger.info("Start processing %s subset...", split)
         start_time = time()
 
-        output_prefix = F.temp_filepath(
+        output_prefix = temp_filepath(
             filepath=datafile_prefix,
             suffix="",
             output_path=cmd_params.output_path,
