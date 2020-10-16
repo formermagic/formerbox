@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 FIXTURES_DIR_ERROR = "Fixtures dir doesn't exist"
 
 
-@pytest.mark.parametrize("converter", ["code-lm-converter"])
+@pytest.mark.parametrize("converter", ["transformer-converter"])
 def test_cli_convert_dataset(
     tmp_path: Path,
     fixtures_directory: Path,
@@ -50,7 +50,7 @@ def test_cli_convert_dataset(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["transformer-tokenizer-fast"])
+@pytest.mark.parametrize("tokenizer", ["code-tokenizer-fast"])
 def test_cli_train_tokenizer(
     tmp_path: Path,
     fixtures_directory: Path,
@@ -84,8 +84,8 @@ def test_cli_train_tokenizer(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["transformer-tokenizer-fast"])
-@pytest.mark.parametrize("binarizer", ["flat-binarizer"])
+@pytest.mark.parametrize("tokenizer", ["code-tokenizer-fast"])
+@pytest.mark.parametrize("binarizer", ["transformer-binarizer"])
 def test_cli_preprocess(
     tmp_path: Path,
     fixtures_directory: Path,
