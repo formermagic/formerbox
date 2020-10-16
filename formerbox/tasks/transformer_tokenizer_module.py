@@ -5,7 +5,6 @@ from typing import Any, List, Optional, Text, Union
 from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.modules import TokenizerModule
 from formerbox.tasks.transformer_tokenization import TransformerTokenizerFast
-from formerbox.utils.code_tokenizer import SpecialToken
 from formerbox.utils.utils import path_to_posix
 from tokenizers import AddedToken
 from tokenizers.implementations import ByteLevelBPETokenizer
@@ -102,9 +101,6 @@ class TransformerTokenizerModule(TokenizerModule):
             "<unk>",
             "<mask>",
         ]
-
-        for token in SpecialToken:
-            self.special_tokens.append(token.value)
 
         self.backend_tokenizer = ByteLevelBPETokenizer(
             add_prefix_space=params.add_prefix_space,
