@@ -18,10 +18,16 @@ from typing_extensions import Literal
 logger = logging.getLogger(__name__)
 
 Truncation = Literal[
-    "only_first",
+    "only_first",  # equals to `truncation=True`
     "only_second",
     "longest_first",
     "do_not_truncate",
+]
+
+Padding = Literal[
+    "longest",  # equals to `padding=True`
+    "max_length",
+    "do_not_pad",
 ]
 
 
@@ -109,6 +115,10 @@ class FlatBinarizer(Binarizer):
         truncation: Truncation = field(
             default="do_not_truncate",
             metadata={"help": "Activates and controls the truncation."},
+        )
+        padding: Padding = field(
+            default="do_not_pad",
+            metadata={"help": "Controls the padding strategy."},
         )
         max_length: Optional[int] = field(
             default=None,
@@ -214,6 +224,7 @@ class FlatBinarizer(Binarizer):
             encoding = self.tokenizer(
                 batch,
                 truncation=truncation,
+                padding=self.params.padding,
                 max_length=self.params.max_length,
                 stride=self.params.stride,
                 return_overflowing_tokens=self.params.return_overflowing_tokens,
