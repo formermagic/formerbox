@@ -7,3 +7,4 @@ wandb/*
 .ipynb_checkpoints/
 lightning_logs/
 *.egg-info/
+dist/*
