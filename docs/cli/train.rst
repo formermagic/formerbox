@@ -39,7 +39,7 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m formerbox train                                    \
+    python -m formerbox train                                   \
         --task transformer-task                                 \
         --config_path <model-config.yml>                        \
         --tokenizer_path <tokenizer_path>                       \

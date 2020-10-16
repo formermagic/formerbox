@@ -56,7 +56,7 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m formerbox preprocess                           \
+    python -m formerbox preprocess                          \
         --tokenizer transformer-tokenizer-fast              \
         --binarizer flat-binarizer                          \
         --output_path <output_path>                         \

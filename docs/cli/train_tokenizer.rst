@@ -32,7 +32,7 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m formerbox train_tokenizer              \
+    python -m formerbox train_tokenizer             \
             --tokenizer transformer-tokenizer-fast  \
             --tokenizer_path <>                     \
             --files <text_file>[<text_file>...]     \

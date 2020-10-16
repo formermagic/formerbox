@@ -32,14 +32,14 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m formerbox convert_dataset  \
-        --converter code-lm-converter   \
-                                        \
-        --script_path json              \
-        --data_files <data_files>       \
-        --output_path <output_path>     \
-        --batch_size <batch_size>       \
-        --num_proc <num_proc>           \
+    python -m formerbox convert_dataset     \
+        --converter code-lm-converter       \
+                                            \
+        --script_path json                  \
+        --data_files <data_files>           \
+        --output_path <output_path>         \
+        --batch_size <batch_size>           \
+        --num_proc <num_proc>               \
         --train_test_split true
 
 Making your own dataset converter
