@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, List, Optional, Text, Union
+from typing import Any, Dict, List, Optional, Text, Union
 
 from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.modules import TokenizerModule
@@ -114,7 +114,7 @@ class TransformerTokenizerModule(TokenizerModule):
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> PreTrainedTokenizerFast:
+    ) -> TransformersTokenizer:
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
         vocab_file = path_to_posix(tokenizer_path / "vocab.json")
@@ -163,24 +163,32 @@ class TransformerTokenizerModule(TokenizerModule):
         # save the pre-trained tokenizer
         tokenizer.save_pretrained(save_directory)
 
-    @staticmethod
-    def from_pretrained(params: Params, **kwargs: Any) -> PreTrainedTokenizerFast:
+    @classmethod
+    def from_pretrained(cls, params: Params, **kwargs: Any) -> TransformersTokenizer:
+        # prepare init arguments from params
         assert params.tokenizer_path is not None
+        init_kwargs = cls.get_args(params)
+        kwargs.update(init_kwargs)
 
-        # prepare static typed args
-        non_positional_params = vars(params).copy()
-        non_positional_params.pop("tokenizer_path", None)
-        kwargs.update(non_positional_params)
+        # get the pretrained tokenizer
+        tokenizer = TransformerTokenizerFast.from_pretrained(
+            params.tokenizer_path, **kwargs
+        )
+        assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
-        # remove training args
+        return tokenizer
+
+    @staticmethod
+    def get_args(params: Params) -> Dict[Text, Any]:
+        # prepare a copy of args for the pretrained tokenizer
+        kwargs = vars(params).copy()
+
+        # preserve pretrained tokenizer path
+        kwargs.pop("tokenizer_path", None)
+
+        # remove training-stage arguments
         kwargs.pop("files", None)
         kwargs.pop("vocab_size", None)
         kwargs.pop("min_frequency", None)
 
-        tokenizer = TransformerTokenizerFast.from_pretrained(
-            params.tokenizer_path, **kwargs
-        )
-
-        assert isinstance(tokenizer, PreTrainedTokenizerFast)
-
-        return tokenizer
+        return kwargs
