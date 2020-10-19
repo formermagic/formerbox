@@ -127,7 +127,7 @@ class TransformerTrainer(Registrable, HasParsableParams):
 
         # prepare a trainer
         trainer_args = Namespace(**{**args, **override_kwargs})
-        pl_trainer = Trainer.from_argparse_args(trainer_args)
+        pl_trainer: Trainer = Trainer.from_argparse_args(trainer_args)
 
         # run the train loop
         # pylint: disable=no-member
