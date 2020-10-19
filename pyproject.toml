@@ -42,6 +42,7 @@ more-itertools = "^8.5.0"
 jsonlines = "^1.2.0"
 overrides = "^3.1.0"
 traitlets = "^4.3.3"
+PyYAML = "^5.3.1"
 
 # Conditionally installed for backward compatibility with older Python versions
 dataclasses = { version = "^0.7", python = "^3.6,<3.7" }
