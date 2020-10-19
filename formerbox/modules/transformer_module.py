@@ -158,7 +158,10 @@ class TransformerModule(
         # model forward pass & prepare metrics values
         outputs = self.forward(**batch)
         assert outputs.loss is not None
+        # prepare clear tensors for logging
+        loss = outputs.loss.detach().cpu()
         perplexity = self.perplexity(outputs.logits, batch["labels"])
+        perplexity = perplexity.detach().cpu()
         batch_size = torch.tensor(len(batch["input_ids"]))
 
         # get the latest scheduled learning rate
@@ -172,7 +175,7 @@ class TransformerModule(
                 learning_rate = torch.tensor(float("nan"))
 
         # log training metrics
-        self.log("train_loss", outputs.loss, prog_bar=True)
+        self.log("train_loss", loss, prog_bar=True)
         self.log("train_ppl", perplexity, prog_bar=True)
         self.log("train_lr", learning_rate, prog_bar=True)
         self.log("train_bsz", batch_size, prog_bar=True)
@@ -189,12 +192,17 @@ class TransformerModule(
     ) -> None:
         del kwargs  # nouse
         self.prepare_batch(batch, batch_idx)
+
         # model forward pass & prepare metrics
         outputs = self.forward(**batch)
         assert outputs.loss is not None
+        # prepare clear tensors for logging
+        loss = outputs.loss.detach().cpu()
         perplexity = self.perplexity(outputs.logits, batch["labels"])
+        perplexity = perplexity.detach().cpu()
+
         # log validation metrics
-        self.log("val_loss", outputs.loss, prog_bar=True)
+        self.log("val_loss", loss, prog_bar=True)
         self.log("val_ppl", perplexity, prog_bar=True)
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
