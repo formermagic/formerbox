@@ -51,7 +51,7 @@ class SaveCheckpointAtStep(Callback):
             )
 
         # prepare the checkpoint save dir
-        Path(self.filepath).mkdir(exist_ok=True)
+        Path(self.filepath).mkdir(parents=True, exist_ok=True)
 
     def on_train_batch_end(
         self,
