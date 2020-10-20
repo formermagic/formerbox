@@ -1,12 +1,15 @@
+import logging
 import os
 from pathlib import Path
-from typing import Dict, Optional, Text
+from typing import Any, Dict, Optional, Text
 
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.core.lightning import LightningModule
 from torch import Tensor
+
+logger = logging.getLogger(__name__)
 
 
 class SaveCheckpointAtStep(Callback):
@@ -18,12 +21,14 @@ class SaveCheckpointAtStep(Callback):
         num_last_checkpoints: int,
         monitor: Text = "val_loss",
         prefix: Text = "checkpoint",
+        save_on_epoch_end: bool = True,
     ) -> None:
         self.save_step_frequency = save_step_frequency
         self.filepath = filepath
         self.num_last_checkpoints = num_last_checkpoints
         self.monitor = monitor
         self.prefix = prefix
+        self.save_on_epoch_end = save_on_epoch_end
         self.best_monitor = f"best_{self.monitor}"
         self.monitor_start_value = torch.tensor(0.0)
 
@@ -48,37 +53,32 @@ class SaveCheckpointAtStep(Callback):
         # prepare the checkpoint save dir
         Path(self.filepath).mkdir(exist_ok=True)
 
-    # pylint: disable=too-many-arguments
     def on_train_batch_end(
         self,
         trainer: Trainer,
         pl_module: LightningModule,
+        outputs: Any,
         batch: Dict[Text, Tensor],
         batch_idx: int,
         dataloader_idx: int,
     ) -> None:
-        del batch, dataloader_idx
-        epoch = trainer.current_epoch
-        global_step = trainer.global_step
+        del outputs, batch, batch_idx, dataloader_idx  # nouse
 
-        if global_step % self.save_step_frequency == 0:
-            # set the initial start value from the loaded state
-            self.monitor_start_value = getattr(pl_module, self.best_monitor)
+        # check if we should save at current step
+        if trainer.global_step % self.save_step_frequency == 0:
+            self.save_checkpoint(trainer, pl_module)
 
-            # save the last checkpoint
-            filename = f"{self.prefix}_last.ckpt"
-            self.save_last_checkpoint(filename, trainer, pl_module)
+    def on_train_epoch_end(
+        self,
+        trainer: Trainer,
+        pl_module: LightningModule,
+        outputs: Any,
+    ) -> None:
+        del outputs  # nouse
 
-            # save current checkpoint with a global step in the name
-            filename = f"{self.prefix}_epoch={epoch}_global_step={global_step}.ckpt"
-            self.save_last_checkpoint(filename, trainer, pl_module)
-
-            # save the best checkpoint with the selected monitor
-            filename = f"{self.prefix}_{self.best_monitor}.ckpt"
-            self.save_best_checkpoint(filename, trainer, pl_module, batch_idx)
-
-            # keep only latest `num` checkpoints + best + last
-            self._keep_last_files(self.num_last_checkpoints, dirname=self.filepath)
+        # save checkpoint if needed
+        if self.save_on_epoch_end:
+            self.save_checkpoint(trainer, pl_module)
 
     def update_best_monitor(
         self, monitor_value: Tensor, pl_module: LightningModule
@@ -86,13 +86,36 @@ class SaveCheckpointAtStep(Callback):
         if hasattr(pl_module, self.best_monitor):
             setattr(pl_module, self.best_monitor, monitor_value)
 
+    def save_checkpoint(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        # get the training progress attributes
+        epoch = trainer.current_epoch
+        global_step = trainer.global_step
+
+        # set the initial start value from the loaded state
+        self.monitor_start_value = getattr(pl_module, self.best_monitor)
+
+        # save the last checkpoint
+        filename = f"{self.prefix}_last.ckpt"
+        self.save_last_checkpoint(filename, trainer, pl_module)
+
+        # save current checkpoint with a global step in the name
+        filename = f"{self.prefix}_epoch={epoch}_global_step={global_step}.ckpt"
+        self.save_last_checkpoint(filename, trainer, pl_module)
+
+        # save the best checkpoint with the selected monitor
+        filename = f"{self.prefix}_{self.best_monitor}.ckpt"
+        self.save_best_checkpoint(filename, trainer, pl_module)
+
+        # keep only latest `num` checkpoints + best + last
+        self._keep_last_files(self.num_last_checkpoints, dirname=self.filepath)
+
     def save_best_checkpoint(
         self,
         filename: Text,
         trainer: Trainer,
         pl_module: LightningModule,
-        batch_idx: int,
     ) -> None:
+        step = trainer.global_step
         metrics = self.get_metrics(trainer)
         monitor_value: Optional[Tensor] = metrics.get(self.monitor)
         best_value: Optional[Tensor] = metrics.get(self.best_monitor)
@@ -102,7 +125,7 @@ class SaveCheckpointAtStep(Callback):
         if best_value is None:
             # update and sync logged metrics with the best_monitor value
             metrics[self.best_monitor] = self.monitor_start_value
-            trainer.logger_connector.log_metrics(metrics, {}, step=batch_idx)
+            trainer.logger_connector.log_metrics(metrics, {}, step=step)
             return
 
         # replace the initial value
@@ -113,7 +136,7 @@ class SaveCheckpointAtStep(Callback):
         if torch.le(monitor_value, best_value).item():
             # update and sync logged metrics with the best_monitor value
             metrics[self.best_monitor] = monitor_value
-            trainer.logger_connector.log_metrics(metrics, {}, step=batch_idx)
+            trainer.logger_connector.log_metrics(metrics, {}, step=step)
 
             # update the best_monitor buffer
             self.update_best_monitor(monitor_value, pl_module)

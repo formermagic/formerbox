@@ -1,3 +1,18 @@
+# v0.1.11 (2020-10-20)
+
+# Refactor
+
+- **callbacks**: update method args for lightning 1.0
+- **callbacks**: save checkpoint on training epoch end
+- **modules**: prepare clear tensors for logging
+- **training**: specify trainer type for better ide help
+
+# Fix
+
+- **cli**: import an existing module attribute
+
+# v0.1.9 (2020-10-16)
+
 # v0.1.8 (2020-10-16)
 
 # Features
