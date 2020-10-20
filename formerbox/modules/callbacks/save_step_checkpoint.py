@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Optional, Text, Any
+from typing import Any, Dict, Optional, Text
 
 import torch
 from pytorch_lightning import Trainer
