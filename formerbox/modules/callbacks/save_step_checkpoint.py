@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Optional, Text
+from typing import Dict, Optional, Text, Any
 
 import torch
 from pytorch_lightning import Trainer
@@ -57,17 +57,26 @@ class SaveCheckpointAtStep(Callback):
         self,
         trainer: Trainer,
         pl_module: LightningModule,
+        outputs: Any,
         batch: Dict[Text, Tensor],
         batch_idx: int,
         dataloader_idx: int,
     ) -> None:
-        del batch, batch_idx, dataloader_idx  # nouse
+        del outputs, batch, batch_idx, dataloader_idx  # nouse
 
         # check if we should save at current step
         if trainer.global_step % self.save_step_frequency == 0:
             self.save_checkpoint(trainer, pl_module)
 
-    def on_train_epoch_end(self, trainer: Trainer, pl_module: LightningModule) -> None:
+    def on_train_epoch_end(
+        self,
+        trainer: Trainer,
+        pl_module: LightningModule,
+        outputs: Any,
+    ) -> None:
+        del outputs  # nouse
+
+        # save checkpoint if needed
         if self.save_on_epoch_end:
             self.save_checkpoint(trainer, pl_module)
 
