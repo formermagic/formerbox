@@ -11,7 +11,7 @@ formerbox-cli = 'formerbox.__main__:run_main'
 # Deep learning toolkit
 python = "^3.6.1"
 torch = "^1.6.0"
-pytorch-lightning = "^0.10.0"
+pytorch-lightning = "^1.0.2"
 
 # NLP toolkit packages
 transformers = "~3.3.1"
