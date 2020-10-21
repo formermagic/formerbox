@@ -1,7 +1,7 @@
 from typing import Dict, Iterable, List, Optional, Union
 
 from pytorch_lightning import LightningDataModule, Trainer
-from pytorch_lightning.callbacks import Callback, EarlyStopping, ModelCheckpoint
+from pytorch_lightning.callbacks import Callback, ModelCheckpoint
 from pytorch_lightning.cluster_environments.cluster_environment import (
     ClusterEnvironment,
 )
@@ -10,11 +10,9 @@ from pytorch_lightning.profiler import BaseProfiler
 from typing_extensions import Protocol
 
 
-# pylint: disable=fixme
 class LightningTrainerProperties(Protocol):
     logger: Union[LightningLoggerBase, Iterable[LightningLoggerBase], bool]
     checkpoint_callback: Union[ModelCheckpoint, bool]
-    early_stop_callback: Optional[Union[EarlyStopping, bool]]  # todo: remove in v1.0.0
     callbacks: Optional[List[Callback]]
     default_root_dir: Optional[str]
     gradient_clip_val: float
@@ -61,9 +59,6 @@ class LightningTrainerProperties(Protocol):
     cluster_environment: Optional[ClusterEnvironment]
     amp_backend: str
     amp_level: str
-    overfit_pct: Optional[float]  # backward compatible, todo: remove in v1.0.0
-    log_save_interval: Optional[int]  # backward compatible, todo: remove in 0.11
-    row_log_interval: Optional[int]  # backward compatible, todo: remove in 0.11
 
 
 class DataConnectorProperties(Protocol):
