@@ -158,9 +158,13 @@ class TransformerModule(
         # model forward pass & prepare metrics values
         outputs = self.forward(**batch)
         assert outputs.loss is not None
-        # prepare clear tensors for logging
+
+        # prepare detached tensors for logging
         loss = outputs.loss.detach().cpu()
-        perplexity = self.perplexity(outputs.logits, batch["labels"])
+        logits = outputs.logits.detach()
+        labels = batch["labels"].detach()
+
+        perplexity = self.perplexity(logits, labels)
         perplexity = perplexity.detach().cpu()
         batch_size = torch.tensor(len(batch["input_ids"]))
 
@@ -196,9 +200,13 @@ class TransformerModule(
         # model forward pass & prepare metrics
         outputs = self.forward(**batch)
         assert outputs.loss is not None
-        # prepare clear tensors for logging
+
+        # prepare detached tensors for logging
         loss = outputs.loss.detach().cpu()
-        perplexity = self.perplexity(outputs.logits, batch["labels"])
+        logits = outputs.logits.detach()
+        labels = batch["labels"].detach()
+
+        perplexity = self.perplexity(logits, labels)
         perplexity = perplexity.detach().cpu()
 
         # log validation metrics
