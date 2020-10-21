@@ -65,9 +65,10 @@ class UniformMaxTokensBatchSampler(UniformBatchSampler):
         current_index = 0
         while current_index < len(sorted_indices):
             index = sorted_indices[current_index]
-            batch_indices.append(index)
             batch_tokens += self.data_source.sizes[index]
-            current_index += 1
+            if batch_tokens <= self.max_tokens:
+                batch_indices.append(index)
+                current_index += 1
 
             if batch_tokens >= self.max_tokens:
                 batches.append(batch_indices)

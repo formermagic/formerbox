@@ -1,3 +1,16 @@
+# v0.1.12 (2020-10-22)
+
+# Refactor
+
+- **modules**: add configured loggers
+- **data**: remove super slow mmap file warmup
+
+# Fix
+
+- **modules**: detach output tensors to avoid double backward pass
+- **samplers**: remove sampling more than max_tokens in a batch
+- **callbacks**: create parent dirs if they do not exist
+
 # v0.1.11 (2020-10-20)
 
 # Refactor

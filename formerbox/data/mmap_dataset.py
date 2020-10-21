@@ -19,12 +19,6 @@ from numpy import int32, int64
 from torch import Tensor
 
 
-def _warmup_mmap_file(filepath: Text) -> None:
-    with open(filepath, mode="rb") as stream:
-        while stream.read(100 * 1024 * 1024):
-            pass
-
-
 class MMapIndexedDatasetBase(IndexedDatasetBase, metaclass=ABCMeta):
     def __init__(self, filepath_prefix: Text) -> None:
         super().__init__(filepath_prefix)
@@ -55,8 +49,6 @@ class MMapIndexedDataset(MMapIndexedDatasetBase):
             self.length = length - 1  # has one extra (initial) item
             offset = index_file.tell()
 
-        _warmup_mmap_file(filepath)
-
         self.index_buffer_mmap = np.memmap(filepath, mode="r", order="C")
         assert self.index_buffer_mmap is not None
         self.index_buffer = memoryview(self.index_buffer_mmap)
@@ -78,7 +70,6 @@ class MMapIndexedDataset(MMapIndexedDatasetBase):
         )
 
     def read_data_file(self, filepath: Text) -> None:
-        _warmup_mmap_file(filepath)
         self.data_buffer_mmap = np.memmap(filepath, mode="r", order="C")
         assert self.data_buffer_mmap is not None
         self.data_buffer = memoryview(self.data_buffer_mmap)
