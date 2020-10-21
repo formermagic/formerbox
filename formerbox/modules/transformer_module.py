@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
@@ -18,6 +19,8 @@ from transformers import PreTrainedModel, PreTrainedTokenizer, PreTrainedTokeniz
 from typing_extensions import Protocol
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+
+logger = logging.getLogger(__name__)
 
 
 class TransformerModuleOutput(Protocol):
