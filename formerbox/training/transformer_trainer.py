@@ -1,3 +1,4 @@
+import logging
 import os
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
@@ -11,6 +12,8 @@ from formerbox.tasks import TaskModule
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, EarlyStopping
 from pytorch_lightning.loggers.wandb import LightningLoggerBase, WandbLogger
+
+logger = logging.getLogger(__name__)
 
 
 class TransformerTrainer(Registrable, HasParsableParams):
