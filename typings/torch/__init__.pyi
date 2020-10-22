@@ -25791,7 +25791,6 @@ def layer_norm(input: Tensor, normalized_shape: _size, weight: Optional[Tensor] 
 def le(self: Tensor, other: Number, *, out: Optional[Tensor] = ...) -> Tensor:
     ...
 
-@overload
 def le(self: Tensor, other: Tensor, *, out: Optional[Tensor] = ...) -> Tensor:
     ...
 
