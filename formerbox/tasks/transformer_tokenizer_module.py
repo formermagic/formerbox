@@ -151,7 +151,7 @@ class TransformerTokenizerModule(TokenizerModule):
             tokenizer_path = save_directory
 
         # make the output dir if it doesn't exist
-        tokenizer_path.mkdir(exist_ok=True)
+        tokenizer_path.mkdir(parents=True, exist_ok=True)
 
         # save the trained tokenizer to `tokenizer_output_path`
         self.backend_tokenizer.save_model(save_directory)
