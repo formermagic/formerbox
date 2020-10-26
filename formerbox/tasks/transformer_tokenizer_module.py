@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Union
@@ -12,6 +13,8 @@ from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+
+logger = logging.getLogger(__name__)
 
 
 def fix_tokenizer(tokenizer: TransformersTokenizer) -> None:

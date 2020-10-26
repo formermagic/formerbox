@@ -11,9 +11,9 @@ from formerbox.common.has_params import HasParsableParams, ParamsType
 from formerbox.common.registrable import Registrable
 from formerbox.utils import append_path_suffix, lazy_groups_of
 
-logger = logging.getLogger(__name__)
-
 Instance = Optional[Text]
+
+logger = logging.getLogger(__name__)
 
 
 class DatasetProcessingMixin:

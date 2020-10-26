@@ -1,3 +1,4 @@
+import logging
 from typing import Any, List, Optional, Text, Union
 
 from formerbox.tasks import TransformerTokenizerFast
@@ -7,6 +8,8 @@ from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+
+logger = logging.getLogger(__name__)
 
 
 VOCAB_FILES_NAMES = {

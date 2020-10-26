@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any, Text, Union
 
@@ -10,6 +11,8 @@ from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 Token = Union[Text, AddedToken]
 TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+
+logger = logging.getLogger(__name__)
 
 
 @TokenizerModule.register("code-tokenizer-fast", constructor="from_partial")

@@ -1,3 +1,4 @@
+import logging
 from argparse import Namespace
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Text, Type, Union
@@ -15,6 +16,8 @@ from formerbox.data.indexed_dataset import (
 from formerbox.data.mmap_dataset import MMapIndexedDataset, MMapIndexedDatasetBuilder
 from numpy import int32, int64
 from typing_extensions import Literal
+
+logger = logging.getLogger(__name__)
 
 
 class IndexedDatasetSetup(HasParsableParams):

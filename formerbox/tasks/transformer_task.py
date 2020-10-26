@@ -1,3 +1,4 @@
+import logging
 from argparse import Namespace
 from dataclasses import dataclass, field
 from typing import Text, Tuple, Type, TypeVar, Union
@@ -14,6 +15,8 @@ from formerbox.training.load_from_config import model_from_config, tokenizer_fro
 
 T = TypeVar("T", bound="TaskModule")  # pylint: disable=invalid-name
 ParamType = Union[DataclassBase, Namespace]
+
+logger = logging.getLogger(__name__)
 
 
 @TaskModule.register("transformer-task")
