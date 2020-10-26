@@ -18,14 +18,12 @@ logger = logging.getLogger(__name__)
 
 
 def fix_tokenizer(tokenizer: TransformersTokenizer) -> None:
-    init_kwargs = {}
-    for key, value in tokenizer.init_kwargs.items():
+    init_kwargs = getattr(tokenizer, "init_kwargs", {})
+    for key, value in init_kwargs.items():
         if isinstance(value, AddedToken):
             init_kwargs[key] = str(value)
         else:
             init_kwargs[key] = value
-
-    tokenizer.init_kwargs = init_kwargs
 
 
 @TokenizerModule.register(name="transformer-tokenizer-fast", constructor="from_partial")
