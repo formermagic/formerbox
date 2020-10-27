@@ -26,21 +26,21 @@ Subcommand required parameters
 Built-in tokenizer modules in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-transformer-tokenizer-fast
+byte-level-bpe-tokenizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Uses the :class:`~formerbox.TransformerTokenizerFast` under the hood to map text samples into a tokenized encoding.
+Uses the :class:`~formerbox.ByteLevelBPETokenizerFast` under the hood to map text samples into a tokenized encoding.
 
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: formerbox.TransformerTokenizerModule.Params
+.. autoclass:: formerbox.ByteLevelBPETokenizerModule.Params
     :members:
 
 Built-in binarizers in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-flat-binarizer
+transformer-binarizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Converts text samples into a tokenized encoding, supports the overflowing batches with stride for long docs processing.
@@ -48,7 +48,7 @@ Converts text samples into a tokenized encoding, supports the overflowing batche
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: formerbox.FlatBinarizer.Params
+.. autoclass:: formerbox.TransformerBinarizer.Params
     :members:
 
 Example cli command
@@ -57,8 +57,8 @@ Example cli command
 .. code-block:: shell
 
     python -m formerbox preprocess                          \
-        --tokenizer transformer-tokenizer-fast              \
-        --binarizer flat-binarizer                          \
+        --tokenizer byte-level-bpe-tokenizer                \
+        --binarizer transformer-binarizer                   \
         --output_path <output_path>                         \
         --train_prefix <train_prefix>                       \
         --valid_prefix <valid_prefix>                       \
