@@ -46,12 +46,12 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
         raise NotImplementedError()
 
     def fix_tokenizer(self, tokenizer: TransformersTokenizer) -> None:
-    init_kwargs = getattr(tokenizer, "init_kwargs", {})
-    for key, value in init_kwargs.items():
-        if isinstance(value, AddedToken):
-            init_kwargs[key] = str(value)
-        else:
-            init_kwargs[key] = value
+        init_kwargs = getattr(tokenizer, "init_kwargs", {})
+        for key, value in init_kwargs.items():
+            if isinstance(value, AddedToken):
+                init_kwargs[key] = str(value)
+            else:
+                init_kwargs[key] = value
 
     def save_pretrained(
         self, save_directory: Text, legacy_format: bool, **kwargs: Any
@@ -172,20 +172,29 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
     ) -> TransformersTokenizer:
+        # prepare paths for the tokenizer files
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
+
         vocab_file = path_to_posix(tokenizer_path / "vocab.json")
         merges_file = path_to_posix(tokenizer_path / "merges.txt")
-        return TransformerTokenizerFast(
-            vocab_file=vocab_file, merges_file=merges_file, **kwargs
+
+        # configure the pretrained tokenizer
+        return ByteLevelBPETokenizerFast(
+            vocab_file=vocab_file,
+            merges_file=merges_file,
+            **kwargs,
         )
 
     def train_tokenizer(self, *args: Any, **kwargs: Any) -> None:
         del args, kwargs  # use designated args
+
         # train a tokenizer model
         assert self.params.files is not None
         assert self.params.vocab_size is not None
-        self.backend_tokenizer.train(
+        assert isinstance(self.tokenizer, ByteLevelBPETokenizer)
+
+        self.tokenizer.train(
             files=self.params.files,
             vocab_size=self.params.vocab_size,
             min_frequency=self.params.min_frequency,
@@ -214,11 +223,11 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
     def from_pretrained(cls, params: Params, **kwargs: Any) -> TransformersTokenizer:
         # prepare init arguments from params
         assert params.tokenizer_path is not None
-        init_kwargs = cls.get_args(params)
+        init_kwargs = cls.get_tokenizer_args(params)
         kwargs.update(init_kwargs)
 
         # get the pretrained tokenizer
-        tokenizer = TransformerTokenizerFast.from_pretrained(
+        tokenizer = ByteLevelBPETokenizerFast.from_pretrained(
             params.tokenizer_path, **kwargs
         )
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
