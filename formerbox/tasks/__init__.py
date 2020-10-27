@@ -13,7 +13,7 @@ EXPORT_TASKS = str2bool(os.environ.get("EXPORT_TASKS", default="true"))
 
 if EXPORT_TASKS:
     from formerbox.tasks.code import (
+        CodeBBPETokenizerFast,
+        CodeBBPETokenizerModule,
         CodeDatasetConverter,
-        CodeTokenizerFast,
-        CodeTokenizerModule,
     )
