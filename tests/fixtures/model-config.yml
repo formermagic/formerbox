@@ -16,7 +16,7 @@ model:
     gradient_checkpointing: false
 
 tokenizer:
-  name: formerbox.tasks.TransformerTokenizerFast
+  name: formerbox.tasks.CodeBBPETokenizerFast
   params:
     add_prefix_space: false
     trim_offsets: true
