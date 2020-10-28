@@ -16,7 +16,7 @@ These are the built-in :class:`~formerbox.TokenizerModule` components you can us
 transformer-tokenizer-fast
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :class:`~TransformerTokenizerFast`.
+Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :class:`~ByteLevelBPETokenizerFast`.
 
 Required parameters
 ***********************************************************************************************************************
@@ -24,7 +24,7 @@ Required parameters
 .. autoclass:: formerbox.cli.TrainTokenizer.Params
     :members:
 
-.. autoclass:: formerbox.TransformerTokenizerModule.Params
+.. autoclass:: formerbox.ByteLevelBPETokenizerModule.Params
     :members:
 
 Example cli command
@@ -33,21 +33,21 @@ Example cli command
 .. code-block:: shell
 
     python -m formerbox train_tokenizer             \
-            --tokenizer transformer-tokenizer-fast  \
-            --tokenizer_path <>                     \
+            --tokenizer byte-level-bpe-tokenizer    \
+            --tokenizer_path <path>                 \
             --files <text_file>[<text_file>...]     \
             --vocab_size <vocab_size>
 
 Making your own tokenizer module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If no built-in component fits to your needs you can make a new one based on the :class:`~formerbox.TokenizerModule` class. 
+If no built-in component fits to your needs you can make a new one based on the :class:`~formerbox.TokenizerModule` class.
 You'll need to define a backend :class:`~tokenizers.Tokenizer` and implement abstract methods.
 
 .. autoclass:: formerbox.TokenizerModule
     :members:
 
-Example of a new task
+Example of a new tokenizer module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
@@ -65,8 +65,8 @@ Example of a new task
     Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 
-    @TokenizerModule.register(name="transformer-tokenizer-fast", constructor="from_partial")
-    class TransformerTokenizerModule(TokenizerModule):
+    @TokenizerModule.register(name="my-tokenizer", constructor="from_partial")
+    class MyTokenizerModule(TokenizerModule):
         # pylint: disable=arguments-differ
         @dataclass
         class Params(DataclassBase):

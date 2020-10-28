@@ -1,5 +1,6 @@
 import collections
 import dataclasses
+import logging
 import sys
 import typing
 from argparse import ArgumentParser, Namespace
@@ -24,6 +25,8 @@ from typing_inspect import (
 T = typing.TypeVar("T")  # pylint: disable=invalid-name
 DataclassBaseType = Type["DataclassBase"]
 DataclassTypes = Union[DataclassBaseType, typing.Iterable[DataclassBaseType]]
+
+logger = logging.getLogger(__name__)
 
 
 def get_parsed_attr(

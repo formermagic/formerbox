@@ -1,8 +1,5 @@
+import logging
 from typing import Dict, Optional, Text
-
-from torch import Tensor
-from torch.utils.data import Dataset
-from transformers import DataCollator
 
 from formerbox.data.indexed_dataset import IndexedDatasetBase
 from formerbox.data.samplers import (
@@ -10,6 +7,11 @@ from formerbox.data.samplers import (
     UniformBatchSampler,
     UniformMaxTokensBatchSampler,
 )
+from torch import Tensor
+from torch.utils.data import Dataset
+from transformers import DataCollator
+
+logger = logging.getLogger(__name__)
 
 
 class DatasetIterator(Dataset):

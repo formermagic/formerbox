@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "formerbox"
-version = "0.1.12"
+version = "0.1.13"
 description = ""
 authors = ["mozharovsky <mozharovsky@live.com>"]
 
@@ -14,7 +14,7 @@ torch = "^1.6.0"
 pytorch-lightning = "^1.0.2"
 
 # NLP toolkit packages
-transformers = "~3.3.1"
+transformers = "^3.4.0"
 datasets = "^1.1.2"
 spacy = "^2.2.4"
 sacrebleu = "^1.4.13"

@@ -99,7 +99,8 @@ def save_tokenizer(tokenizer: Tokenizer, output_path: Text) -> None:
 
     # keep only token-related items in the config
     token_config_kwargs = {}
-    for arg_name, arg_value in tokenizer.init_kwargs.items():
+    init_kwargs = getattr(tokenizer, "init_kwargs", {})
+    for arg_name, arg_value in init_kwargs.items():
         if "file" in arg_name:
             continue
         if arg_value is None:
@@ -107,7 +108,7 @@ def save_tokenizer(tokenizer: Tokenizer, output_path: Text) -> None:
 
         token_config_kwargs[arg_name] = arg_value
 
-    tokenizer.init_kwargs = token_config_kwargs
+    setattr(tokenizer, "init_kwargs", token_config_kwargs)
     tokenizer.save_pretrained(save_directory=output_path)
 
 

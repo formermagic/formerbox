@@ -1,3 +1,4 @@
+import logging
 from abc import abstractmethod
 from argparse import _SubParsersAction
 from typing import Any, Callable, Dict, Optional, Text, Tuple, Type, TypeVar
@@ -6,6 +7,8 @@ from formerbox.common.dataclass_argparse import DataclassArgumentParser
 from formerbox.common.registrable import Entry, Registrable
 
 T = TypeVar("T", bound="Subcommand")  # pylint: disable=invalid-name
+
+logger = logging.getLogger(__name__)
 
 
 class Subcommand(Registrable):

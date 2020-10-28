@@ -4,9 +4,9 @@ from typing import Optional, Text
 from formerbox.data import DatasetConverter, TransformerDatasetConverter
 from formerbox.utils.code_tokenizer import tokenize_python
 
-logger = logging.getLogger(__name__)
-
 Instance = Optional[Text]
+
+logger = logging.getLogger(__name__)
 
 
 @DatasetConverter.register("code-converter", constructor="from_partial")

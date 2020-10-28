@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import importlib
+import logging
 from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Text, Tuple, Type, TypeVar, Union
 
@@ -26,6 +27,8 @@ Entry = TypeVar("Entry")
 RegistryKey = Union[Text, Type[T]]
 RegistryRecord = Tuple[Type[T], Optional[Text]]
 RegistryMap = Dict[Text, RegistryRecord]
+
+logger = logging.getLogger(__name__)
 
 
 class Registrable(PartialInitable):

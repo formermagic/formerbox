@@ -1,3 +1,4 @@
+import logging
 from importlib import import_module
 from pathlib import Path
 from typing import Any, Dict, Text, Type, Union
@@ -11,6 +12,8 @@ from transformers import (
 )
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+
+logger = logging.getLogger(__name__)
 
 
 def import_class_from_string(path: Text) -> Type[Any]:

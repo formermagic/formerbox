@@ -1,3 +1,26 @@
+# v0.1.13 (2020-10-27)
+
+# Refactor
+
+- **tasks**: export code bbpe tokenization components
+- **code**: use code bbpe tokenizer in code bbpe tokenization module
+- **code**: inherit code bbpe tokenization from byte level bpe tokenizer
+- **tasks**: use byte level bpe tokenizer in bbpe tokenization module
+- **tasks**: move base tokenization interface to TransformerTokenizerModule
+- **tasks**: inherit bbpe fast tokenizer from roberta tokenizer
+- **cli**: rewrite init_kwargs through dynamic attributes
+- **tasks**: rewrite init_kwargs through dynamic attributes
+- add configured logger to main files
+- **training**: add configured logger for training
+
+# Fix
+
+- **tasks**: create parent directory if one doesn't exist yet
+
+# Features
+
+- **typings**: add transformers auto-generated stubs for pylance support
+
 # v0.1.12 (2020-10-22)
 
 # Refactor

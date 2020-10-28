@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import struct
@@ -17,6 +18,8 @@ from formerbox.data.indexed_dataset import (
 )
 from numpy import int32, int64
 from torch import Tensor
+
+logger = logging.getLogger(__name__)
 
 
 class MMapIndexedDatasetBase(IndexedDatasetBase, metaclass=ABCMeta):

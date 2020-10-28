@@ -50,7 +50,7 @@ def test_cli_convert_dataset(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["code-tokenizer-fast"])
+@pytest.mark.parametrize("tokenizer", ["code-bbpe-tokenizer"])
 def test_cli_train_tokenizer(
     tmp_path: Path,
     fixtures_directory: Path,
@@ -84,7 +84,7 @@ def test_cli_train_tokenizer(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["code-tokenizer-fast"])
+@pytest.mark.parametrize("tokenizer", ["code-bbpe-tokenizer"])
 @pytest.mark.parametrize("binarizer", ["transformer-binarizer"])
 def test_cli_preprocess(
     tmp_path: Path,
