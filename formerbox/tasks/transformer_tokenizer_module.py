@@ -66,7 +66,7 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
         tokenizer_path.mkdir(parents=True, exist_ok=True)
 
         # save the trained tokenizer to `tokenizer_output_path`
-        self.tokenizer.save_model(save_directory)
+        self.tokenizer.save(str(tokenizer_path / "tokenizer.json"))
 
         # prepare the pre-trained tokenizer
         tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
