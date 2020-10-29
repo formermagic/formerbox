@@ -57,10 +57,7 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
         self, save_directory: Text, legacy_format: bool, **kwargs: Any
     ) -> None:
         # make sure the `tokenizer_output_path` is a pathlike object
-        if isinstance(save_directory, str):
             tokenizer_path = Path(save_directory)
-        else:
-            tokenizer_path = save_directory
 
         # make the output dir if it doesn't exist
         tokenizer_path.mkdir(parents=True, exist_ok=True)
