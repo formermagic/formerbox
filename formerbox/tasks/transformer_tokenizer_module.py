@@ -7,8 +7,7 @@ from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.modules.tokenizer_module import ParamsType, TokenizerModule
 from formerbox.tasks.transformer_tokenization import ByteLevelBPETokenizerFast
 from tokenizers import AddedToken
-from tokenizers.implementations import BaseTokenizer as FastTokenizer
-from tokenizers.implementations import ByteLevelBPETokenizer
+from tokenizers.implementations import BaseTokenizer, ByteLevelBPETokenizer
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 Token = Union[Text, AddedToken]
@@ -28,7 +27,7 @@ SPECIAL_TOKENS: List[Token] = [
 
 class TransformerTokenizerModule(TokenizerModule[ParamsType]):
     special_tokens: List[Token]
-    tokenizer: FastTokenizer
+    tokenizer: BaseTokenizer
 
     def __init__(self, params: ParamsType, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -37,7 +36,7 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
         self.tokenizer = self.build_tokenizer(params)
 
     @classmethod
-    def build_tokenizer(cls, params: ParamsType) -> FastTokenizer:
+    def build_tokenizer(cls, params: ParamsType) -> BaseTokenizer:
         raise NotImplementedError()
 
     @classmethod
