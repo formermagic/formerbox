@@ -233,12 +233,12 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
     def from_pretrained(
         cls, tokenizer_path: Union[Text, Path], **kwargs: Any
     ) -> ByteLevelBPETokenizerFast:
+        # convert `tokenizer_path` to string
+        if isinstance(tokenizer_path, Path):
+            tokenizer_path = str(tokenizer_path)
 
-        # get the pretrained tokenizer
-        tokenizer = ByteLevelBPETokenizerFast.from_pretrained(
-            params.tokenizer_path, **kwargs
-        )
-        assert isinstance(tokenizer, PreTrainedTokenizerFast)
+        # load the pretrained tokenizer
+        tokenizer = ByteLevelBPETokenizerFast.from_pretrained(tokenizer_path, **kwargs)
 
         return tokenizer
 
