@@ -182,8 +182,7 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> TransformersTokenizer:
-        # prepare paths for the tokenizer files
+    ) -> ByteLevelBPETokenizerFast:
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
 
@@ -231,11 +230,9 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
         )
 
     @classmethod
-    def from_pretrained(cls, params: Params, **kwargs: Any) -> TransformersTokenizer:
-        # prepare init arguments from params
-        assert params.tokenizer_path is not None
-        init_kwargs = cls.get_tokenizer_args(params)
-        kwargs.update(init_kwargs)
+    def from_pretrained(
+        cls, tokenizer_path: Union[Text, Path], **kwargs: Any
+    ) -> ByteLevelBPETokenizerFast:
 
         # get the pretrained tokenizer
         tokenizer = ByteLevelBPETokenizerFast.from_pretrained(
