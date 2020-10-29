@@ -195,8 +195,8 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
         if not self.params.legacy_format:
             tokenizer_file = str(tokenizer_path / "tokenizer.json")
 
-        vocab_file = path_to_posix(tokenizer_path / "vocab.json")
-        merges_file = path_to_posix(tokenizer_path / "merges.txt")
+        # merge user-defined arguments into kwargs
+        kwargs.update(self.get_tokenizer_args(self.params))
 
         # configure the pretrained tokenizer
         return ByteLevelBPETokenizerFast(
