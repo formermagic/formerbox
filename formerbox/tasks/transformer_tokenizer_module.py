@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Text, Union
 from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.modules.tokenizer_module import ParamsType, TokenizerModule
 from formerbox.tasks.transformer_tokenization import ByteLevelBPETokenizerFast
-from formerbox.utils.utils import path_to_posix
 from tokenizers import AddedToken
 from tokenizers.implementations import BaseTokenizer as FastTokenizer
 from tokenizers.implementations import ByteLevelBPETokenizer
@@ -183,8 +182,12 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
     ) -> ByteLevelBPETokenizerFast:
+        # prepare paths to the tokenizer files
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
+        vocab_file = str(tokenizer_path / "vocab.json")
+        merges_file = str(tokenizer_path / "merges.txt")
+
 
         vocab_file = path_to_posix(tokenizer_path / "vocab.json")
         merges_file = path_to_posix(tokenizer_path / "merges.txt")
