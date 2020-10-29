@@ -188,6 +188,12 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
         vocab_file = str(tokenizer_path / "vocab.json")
         merges_file = str(tokenizer_path / "merges.txt")
 
+        # prepare the unified pre-trained tokenizer path
+        # tokenizers will produce this file if no legacy
+        # format is specified while saving
+        tokenizer_file: Optional[Text] = None
+        if not self.params.legacy_format:
+            tokenizer_file = str(tokenizer_path / "tokenizer.json")
 
         vocab_file = path_to_posix(tokenizer_path / "vocab.json")
         merges_file = path_to_posix(tokenizer_path / "merges.txt")
@@ -196,6 +202,7 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
         return ByteLevelBPETokenizerFast(
             vocab_file=vocab_file,
             merges_file=merges_file,
+            tokenizer_file=tokenizer_file,
             **kwargs,
         )
 
