@@ -45,6 +45,14 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
     def get_tokenizer_args(cls, params: ParamsType) -> Dict[Text, Any]:
         raise NotImplementedError()
 
+    def configure_tokenizer(
+        self, tokenizer_path: Union[Text, Path], **kwargs: Any
+    ) -> TransformersTokenizer:
+        raise NotImplementedError()
+
+    def train_tokenizer(self, *args: Any, **kwargs: Any) -> None:
+        raise NotImplementedError()
+
     def save_pretrained(
         self, save_directory: Text, legacy_format: bool, **kwargs: Any
     ) -> None:
@@ -71,6 +79,11 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
             save_directory=save_directory, legacy_format=legacy_format
         )
 
+    @staticmethod
+    def from_pretrained(
+        tokenizer_path: Union[Text, Path], **kwargs: Any
+    ) -> TransformersTokenizer:
+        raise NotImplementedError()
 
     def __fix_tokenizer(self, tokenizer: TransformersTokenizer) -> None:
         init_kwargs = getattr(tokenizer, "init_kwargs", {})
