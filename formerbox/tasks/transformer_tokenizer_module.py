@@ -45,14 +45,6 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
     def get_tokenizer_args(cls, params: ParamsType) -> Dict[Text, Any]:
         raise NotImplementedError()
 
-    def fix_tokenizer(self, tokenizer: TransformersTokenizer) -> None:
-        init_kwargs = getattr(tokenizer, "init_kwargs", {})
-        for key, value in init_kwargs.items():
-            if isinstance(value, AddedToken):
-                init_kwargs[key] = str(value)
-            else:
-                init_kwargs[key] = value
-
     def save_pretrained(
         self, save_directory: Text, legacy_format: bool, **kwargs: Any
     ) -> None:
@@ -72,12 +64,21 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
         tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
 
         # workaround for saving tokenizer bugs in the transformers backend
-        self.fix_tokenizer(tokenizer)
+        self.__fix_tokenizer(tokenizer)
 
         # save the pre-trained tokenizer
         tokenizer.save_pretrained(
             save_directory=save_directory, legacy_format=legacy_format
         )
+
+
+    def __fix_tokenizer(self, tokenizer: TransformersTokenizer) -> None:
+        init_kwargs = getattr(tokenizer, "init_kwargs", {})
+        for key, value in init_kwargs.items():
+            if isinstance(value, AddedToken):
+                init_kwargs[key] = str(value)
+            else:
+                init_kwargs[key] = value
 
 
 @TokenizerModule.register(name="byte-level-bpe-tokenizer", constructor="from_partial")
