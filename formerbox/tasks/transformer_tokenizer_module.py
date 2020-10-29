@@ -250,9 +250,16 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
         # preserve pretrained tokenizer path
         kwargs.pop("tokenizer_path", None)
 
+        # remove the legacy pretrained format flag
+        kwargs.pop("legacy_format", None)
+
         # remove training-stage arguments
         kwargs.pop("files", None)
         kwargs.pop("vocab_size", None)
         kwargs.pop("min_frequency", None)
+        kwargs.pop("dropout", None)
+        kwargs.pop("unicode_normalizer", None)
+        kwargs.pop("continuing_subword_prefix", None)
+        kwargs.pop("end_of_word_suffix", None)
 
         return kwargs
