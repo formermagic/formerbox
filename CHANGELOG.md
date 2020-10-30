@@ -1,3 +1,41 @@
+# v0.1.14 (2020-10-30)
+
+# Refactor
+
+## Tasks
+
+- **tasks**: remove unused generic type
+- **code**: remove unused `dropout` in code tokenizer fast
+- **tasks**: rename `tokenizer_path` -> `save_directory`
+- **code**: override template methods to use code bbpe fast tokenizer
+- **tasks**: rename `FastTokenizer` -> `BaseTokenizer`
+- **tasks**: get path strings via direct conversion to str object
+- **tasks**: conform to base tokenizer module class signatures
+- **tasks**: simplify making tokenizer_path a pathlike object
+- **tasks**: save whole pre-trained tokenizer instead of just a model
+- **tasks**: rename `fix_tokenizer` -> `\_\_fix_tokenizer`
+- **tasks**: remove dropout arg from base tokenizer fast
+
+## CLI
+
+- **cli**: use command params for getting pretrained tokenizer path
+- **cli**: remove file paths from tokenizer configs while saving
+- **cli**: remove `parse_repository` empty file
+
+# Features
+
+- **cli**: support tokenizer saving with `legacy_format` flag
+- **tasks**: add `tokenizer_file` in pretrained data configs
+- **tasks**: inject fast tokenizer user-defined args while configuring one
+- **tasks**: use pre-trained rust tokenizer while configuring
+- **tasks**: ignore training args while saving pre-trained tokenizer
+- **tasks**: define main methods signature in `TransformerTokenizerModule`
+- **tasks**: setup fast tokenizer pipeline with tokenizers lib components
+
+# Fix
+
+- **tasks**: do not inject params values into pre-trained tokenizer
+
 # v0.1.13 (2020-10-27)
 
 # Refactor
