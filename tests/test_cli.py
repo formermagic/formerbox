@@ -69,7 +69,8 @@ def test_cli_train_tokenizer(
             --tokenizer {tokenizer}             \
             --save_directory {save_directory}   \
             --files {files}                     \
-            --vocab_size 20000
+            --vocab_size 20000                  \
+            --legacy_format false
         """
     )
 
