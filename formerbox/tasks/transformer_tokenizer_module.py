@@ -114,11 +114,9 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
                 " in the unified JSON file format of the `tokenizers` library."
             },
         )
-        tokenizer_path: Optional[Text] = field(
+        save_directory: Optional[Text] = field(
             default=None,
-            metadata={
-                "help": "A path to pretrained tokenizer files or a save directory."
-            },
+            metadata={"help": "A path for saving the pre-trained tokenizer."},
         )
         add_prefix_space: bool = field(
             default=False,
@@ -225,8 +223,8 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
     ) -> None:
         # take the directory from params if not specified
         if save_directory is None:
-            assert self.params.tokenizer_path is not None
-            save_directory = self.params.tokenizer_path
+            assert self.params.save_directory is not None
+            save_directory = self.params.save_directory
 
         # get the `legacy_format` argument value
         legacy_format = kwargs.pop("legacy_format", self.params.legacy_format)
