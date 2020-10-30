@@ -111,7 +111,7 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
             metadata={
                 "help": "Whether to save the tokenizer in legacy format (default),"
                 " i.e. with tokenizer specific vocabulary and separate added_tokens files"
-                " in the unified JSON file format of the `tokenizers` library."
+                " or in the unified JSON file format of the `tokenizers` library."
             },
         )
         save_directory: Optional[Text] = field(
