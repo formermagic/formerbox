@@ -110,13 +110,14 @@ def test_cli_preprocess(
             --test_prefix {test_prefix}         \
             --tokenizer {tokenizer}             \
             --tokenizer_path {tokenizer_path}   \
+            --legacy_format false               \
             --binarizer {binarizer}             \
             --max_length 512                    \
-            --return_overflowing_tokens True    \
+            --return_overflowing_tokens true    \
             --output_path {output_path}         \
             --num_proc 8                        \
             --batch_size 512                    \
-            --batched True                      \
+            --batched true                      \
             --dataset_impl mmap
         """
     )
