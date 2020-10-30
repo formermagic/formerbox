@@ -17,7 +17,4 @@ model:
 
 tokenizer:
   name: formerbox.tasks.CodeBBPETokenizerFast
-  params:
-    add_prefix_space: false
-    trim_offsets: true
-    lowercase: true
+  params: {}
