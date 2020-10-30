@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 VOCAB_FILES_NAMES = {
     "vocab_file": "vocab.json",
     "merges_file": "merges.txt",
+    "tokenizer_file": "tokenizer.json",
 }
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {},
     "merges_file": {},
+    "tokenizer_file": {},
 }
 
 PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
@@ -47,7 +49,6 @@ class CodeBBPETokenizerFast(ByteLevelBPETokenizerFast):
         add_prefix_space: bool = False,
         trim_offsets: bool = True,
         lowercase: bool = False,
-        dropout: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals, too-many-arguments
@@ -66,7 +67,6 @@ class CodeBBPETokenizerFast(ByteLevelBPETokenizerFast):
             add_prefix_space=add_prefix_space,
             trim_offsets=trim_offsets,
             lowercase=lowercase,
-            dropout=dropout,
             **kwargs,
         )
 

@@ -32,6 +32,9 @@ class Preprocess(Subcommand):
                 "help": "The name of a registered tokenizer module to use.",
             },
         )
+        tokenizer_path: Text = field(
+            metadata={"help": "A path to the pre-trained tokenizer files."}
+        )
         binarizer: Text = field(
             metadata={
                 "choices": Binarizer,
@@ -51,6 +54,14 @@ class Preprocess(Subcommand):
         test_prefix: Optional[Text] = field(
             default=None,
             metadata={"help": "Test dataset text file prefix."},
+        )
+        legacy_format: bool = field(
+            default=True,
+            metadata={
+                "help": "Whether to save the tokenizer in legacy format (default),"
+                " i.e. with tokenizer specific vocabulary and separate added_tokens files"
+                " or in the unified JSON file format of the `tokenizers` library."
+            },
         )
 
     def add_subparser(
@@ -78,8 +89,6 @@ class Preprocess(Subcommand):
             assert isinstance(params, self.Params)
 
             # add dybamic args to the subparser
-            tokenizer_cls, _ = TokenizerModule.from_registry(params.tokenizer)
-            tokenizer_cls.add_argparse_params(subparser)
             binarizer_cls, _ = Binarizer.from_registry(params.binarizer)
             binarizer_cls.add_argparse_params(subparser)
 
@@ -94,22 +103,24 @@ class Preprocess(Subcommand):
         return subparser, defaults
 
 
-def save_tokenizer(tokenizer: Tokenizer, output_path: Text) -> None:
+def save_tokenizer(
+    tokenizer: Tokenizer, output_path: Text, legacy_format: bool
+) -> None:
+    # prepare the tokenizer path
     output_path = os.path.join(output_path, "tokenizer")
 
     # keep only token-related items in the config
-    token_config_kwargs = {}
-    init_kwargs = getattr(tokenizer, "init_kwargs", {})
-    for arg_name, arg_value in init_kwargs.items():
-        if "file" in arg_name:
-            continue
-        if arg_value is None:
-            continue
-
-        token_config_kwargs[arg_name] = arg_value
+    token_config_kwargs = getattr(tokenizer, "init_kwargs", {})
+    token_config_kwargs.pop("name_or_path", None)
+    token_config_kwargs.pop("special_tokens_map_file", None)
 
     setattr(tokenizer, "init_kwargs", token_config_kwargs)
-    tokenizer.save_pretrained(save_directory=output_path)
+
+    # save the pre-trained tokenizer
+    tokenizer.save_pretrained(
+        save_directory=output_path,
+        legacy_format=legacy_format,
+    )
 
 
 def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
@@ -122,8 +133,7 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
 
     # prepare the pretrained tokenizer
     tokenizer_cls, _ = TokenizerModule.from_registry(cmd_params.tokenizer)
-    tokenizer_params = get_params_item(params, params_type=tokenizer_cls.params_type)
-    tokenizer = tokenizer_cls.from_pretrained(params=tokenizer_params)
+    tokenizer = tokenizer_cls.from_pretrained(cmd_params.tokenizer_path)
 
     # prepare the dataset setup
     dataset_setup_params = get_params_item(
@@ -145,7 +155,11 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     # prepare the output dir for writing data files
     os.makedirs(cmd_params.output_path, exist_ok=True)
     # save the pretrained tokenizer to the output directory
-    save_tokenizer(tokenizer, cmd_params.output_path)
+    save_tokenizer(
+        tokenizer,
+        output_path=cmd_params.output_path,
+        legacy_format=cmd_params.legacy_format,
+    )
 
     # run dataset binarization for each split
     for split, datafile_prefix in (

@@ -58,26 +58,27 @@ def test_cli_train_tokenizer(
 ) -> None:
     assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
     files = fixtures_directory / "tiny_dataset" / "tiny_dataset.train.src"
-    tokenizer_path = tmp_path / "tiny_dataset" / "tokenizer"
-    assert not os.path.exists(tokenizer_path)
+    save_directory = tmp_path / "tiny_dataset" / "tokenizer"
+    assert not os.path.exists(save_directory)
 
-    tokenizer_path.mkdir(parents=True, exist_ok=True)
+    save_directory.mkdir(parents=True, exist_ok=True)
 
     argv = shlex.split(
         f"""
         formerbox-cli train_tokenizer           \
             --tokenizer {tokenizer}             \
-            --tokenizer_path {tokenizer_path}   \
+            --save_directory {save_directory}   \
             --files {files}                     \
-            --vocab_size 20000
+            --vocab_size 20000                  \
+            --legacy_format false
         """
     )
 
     sys.argv = argv
     main(prog="tests")
 
-    assert os.path.exists(tokenizer_path)
-    assert len(os.listdir(tokenizer_path)) > 0
+    assert os.path.exists(save_directory)
+    assert len(os.listdir(save_directory)) > 0
 
     shutil.rmtree(tmp_path)
 
@@ -110,13 +111,14 @@ def test_cli_preprocess(
             --test_prefix {test_prefix}         \
             --tokenizer {tokenizer}             \
             --tokenizer_path {tokenizer_path}   \
+            --legacy_format false               \
             --binarizer {binarizer}             \
             --max_length 512                    \
-            --return_overflowing_tokens True    \
+            --return_overflowing_tokens true    \
             --output_path {output_path}         \
             --num_proc 8                        \
             --batch_size 512                    \
-            --batched True                      \
+            --batched true                      \
             --dataset_impl mmap
         """
     )

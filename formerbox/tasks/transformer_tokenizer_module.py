@@ -6,10 +6,8 @@ from typing import Any, Dict, List, Optional, Text, Union
 from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.modules.tokenizer_module import ParamsType, TokenizerModule
 from formerbox.tasks.transformer_tokenization import ByteLevelBPETokenizerFast
-from formerbox.utils.utils import path_to_posix
 from tokenizers import AddedToken
-from tokenizers.implementations import BaseTokenizer as FastTokenizer
-from tokenizers.implementations import ByteLevelBPETokenizer
+from tokenizers.implementations import BaseTokenizer, ByteLevelBPETokenizer
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 Token = Union[Text, AddedToken]
@@ -29,7 +27,7 @@ SPECIAL_TOKENS: List[Token] = [
 
 class TransformerTokenizerModule(TokenizerModule[ParamsType]):
     special_tokens: List[Token]
-    tokenizer: FastTokenizer
+    tokenizer: BaseTokenizer
 
     def __init__(self, params: ParamsType, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -38,46 +36,57 @@ class TransformerTokenizerModule(TokenizerModule[ParamsType]):
         self.tokenizer = self.build_tokenizer(params)
 
     @classmethod
-    def build_tokenizer(cls, params: ParamsType) -> FastTokenizer:
+    def build_tokenizer(cls, params: ParamsType) -> BaseTokenizer:
         raise NotImplementedError()
 
     @classmethod
     def get_tokenizer_args(cls, params: ParamsType) -> Dict[Text, Any]:
         raise NotImplementedError()
 
-    def fix_tokenizer(self, tokenizer: TransformersTokenizer) -> None:
+    def configure_tokenizer(
+        self, tokenizer_path: Union[Text, Path], **kwargs: Any
+    ) -> TransformersTokenizer:
+        raise NotImplementedError()
+
+    def train_tokenizer(self, *args: Any, **kwargs: Any) -> None:
+        raise NotImplementedError()
+
+    def save_pretrained(
+        self, save_directory: Text, legacy_format: bool, **kwargs: Any
+    ) -> None:
+        # make sure the `tokenizer_output_path` is a pathlike object
+        tokenizer_path = Path(save_directory)
+
+        # make the output dir if it doesn't exist
+        tokenizer_path.mkdir(parents=True, exist_ok=True)
+
+        # save the trained tokenizer to `tokenizer_output_path`
+        self.tokenizer.save(str(tokenizer_path / "tokenizer.json"))
+
+        # prepare the pre-trained tokenizer
+        tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
+
+        # workaround for saving tokenizer bugs in the transformers backend
+        self.__fix_tokenizer(tokenizer)
+
+        # save the pre-trained tokenizer
+        tokenizer.save_pretrained(
+            save_directory=save_directory, legacy_format=legacy_format
+        )
+
+    @staticmethod
+    def from_pretrained(
+        tokenizer_path: Union[Text, Path], **kwargs: Any
+    ) -> TransformersTokenizer:
+        raise NotImplementedError()
+
+    def __fix_tokenizer(self, tokenizer: TransformersTokenizer) -> None:
         init_kwargs = getattr(tokenizer, "init_kwargs", {})
         for key, value in init_kwargs.items():
             if isinstance(value, AddedToken):
                 init_kwargs[key] = str(value)
             else:
                 init_kwargs[key] = value
-
-    def save_pretrained(
-        self, save_directory: Text, legacy_format: bool, **kwargs: Any
-    ) -> None:
-        # make sure the `tokenizer_output_path` is a pathlike object
-        if isinstance(save_directory, str):
-            tokenizer_path = Path(save_directory)
-        else:
-            tokenizer_path = save_directory
-
-        # make the output dir if it doesn't exist
-        tokenizer_path.mkdir(parents=True, exist_ok=True)
-
-        # save the trained tokenizer to `tokenizer_output_path`
-        self.tokenizer.save_model(save_directory)
-
-        # prepare the pre-trained tokenizer
-        tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
-
-        # workaround for saving tokenizer bugs in the transformers backend
-        self.fix_tokenizer(tokenizer)
-
-        # save the pre-trained tokenizer
-        tokenizer.save_pretrained(
-            save_directory=save_directory, legacy_format=legacy_format
-        )
 
 
 @TokenizerModule.register(name="byte-level-bpe-tokenizer", constructor="from_partial")
@@ -102,14 +111,12 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
             metadata={
                 "help": "Whether to save the tokenizer in legacy format (default),"
                 " i.e. with tokenizer specific vocabulary and separate added_tokens files"
-                " in the unified JSON file format of the `tokenizers` library."
+                " or in the unified JSON file format of the `tokenizers` library."
             },
         )
-        tokenizer_path: Optional[Text] = field(
+        save_directory: Optional[Text] = field(
             default=None,
-            metadata={
-                "help": "A path to pretrained tokenizer files or a save directory."
-            },
+            metadata={"help": "A path for saving the pre-trained tokenizer."},
         )
         add_prefix_space: bool = field(
             default=False,
@@ -171,18 +178,28 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> TransformersTokenizer:
-        # prepare paths for the tokenizer files
+    ) -> ByteLevelBPETokenizerFast:
+        # prepare paths to the tokenizer files
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
+        vocab_file = str(tokenizer_path / "vocab.json")
+        merges_file = str(tokenizer_path / "merges.txt")
 
-        vocab_file = path_to_posix(tokenizer_path / "vocab.json")
-        merges_file = path_to_posix(tokenizer_path / "merges.txt")
+        # prepare the unified pre-trained tokenizer path
+        # tokenizers will produce this file if no legacy
+        # format is specified while saving
+        tokenizer_file: Optional[Text] = None
+        if not self.params.legacy_format:
+            tokenizer_file = str(tokenizer_path / "tokenizer.json")
+
+        # merge user-defined arguments into kwargs
+        kwargs.update(self.get_tokenizer_args(self.params))
 
         # configure the pretrained tokenizer
         return ByteLevelBPETokenizerFast(
             vocab_file=vocab_file,
             merges_file=merges_file,
+            tokenizer_file=tokenizer_file,
             **kwargs,
         )
 
@@ -206,8 +223,8 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
     ) -> None:
         # take the directory from params if not specified
         if save_directory is None:
-            assert self.params.tokenizer_path is not None
-            save_directory = self.params.tokenizer_path
+            assert self.params.save_directory is not None
+            save_directory = self.params.save_directory
 
         # get the `legacy_format` argument value
         legacy_format = kwargs.pop("legacy_format", self.params.legacy_format)
@@ -220,17 +237,15 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
         )
 
     @classmethod
-    def from_pretrained(cls, params: Params, **kwargs: Any) -> TransformersTokenizer:
-        # prepare init arguments from params
-        assert params.tokenizer_path is not None
-        init_kwargs = cls.get_tokenizer_args(params)
-        kwargs.update(init_kwargs)
+    def from_pretrained(
+        cls, tokenizer_path: Union[Text, Path], **kwargs: Any
+    ) -> ByteLevelBPETokenizerFast:
+        # convert `tokenizer_path` to string
+        if isinstance(tokenizer_path, Path):
+            tokenizer_path = str(tokenizer_path)
 
-        # get the pretrained tokenizer
-        tokenizer = ByteLevelBPETokenizerFast.from_pretrained(
-            params.tokenizer_path, **kwargs
-        )
-        assert isinstance(tokenizer, PreTrainedTokenizerFast)
+        # load the pretrained tokenizer
+        tokenizer = ByteLevelBPETokenizerFast.from_pretrained(tokenizer_path, **kwargs)
 
         return tokenizer
 
@@ -242,9 +257,16 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
         # preserve pretrained tokenizer path
         kwargs.pop("tokenizer_path", None)
 
+        # remove the legacy pretrained format flag
+        kwargs.pop("legacy_format", None)
+
         # remove training-stage arguments
         kwargs.pop("files", None)
         kwargs.pop("vocab_size", None)
         kwargs.pop("min_frequency", None)
+        kwargs.pop("dropout", None)
+        kwargs.pop("unicode_normalizer", None)
+        kwargs.pop("continuing_subword_prefix", None)
+        kwargs.pop("end_of_word_suffix", None)
 
         return kwargs
