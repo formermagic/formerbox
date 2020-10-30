@@ -105,18 +105,13 @@ class Preprocess(Subcommand):
 def save_tokenizer(
     tokenizer: Tokenizer, output_path: Text, legacy_format: bool
 ) -> None:
+    # prepare the tokenizer path
     output_path = os.path.join(output_path, "tokenizer")
 
     # keep only token-related items in the config
-    token_config_kwargs = {}
-    init_kwargs = getattr(tokenizer, "init_kwargs", {})
-    for arg_name, arg_value in init_kwargs.items():
-        if "file" in arg_name:
-            continue
-        if arg_value is None:
-            continue
-
-        token_config_kwargs[arg_name] = arg_value
+    token_config_kwargs = getattr(tokenizer, "init_kwargs", {})
+    token_config_kwargs.pop("name_or_path", None)
+    token_config_kwargs.pop("special_tokens_map_file", None)
 
     setattr(tokenizer, "init_kwargs", token_config_kwargs)
 
