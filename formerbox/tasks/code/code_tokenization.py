@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 VOCAB_FILES_NAMES = {
     "vocab_file": "vocab.json",
     "merges_file": "merges.txt",
+    "tokenizer_file": "tokenizer.json",
 }
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {},
     "merges_file": {},
+    "tokenizer_file": {},
 }
 
 PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
