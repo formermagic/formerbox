@@ -13,7 +13,7 @@
 - **tasks**: conform to base tokenizer module class signatures
 - **tasks**: simplify making tokenizer_path a pathlike object
 - **tasks**: save whole pre-trained tokenizer instead of just a model
-- **tasks**: rename `fix_tokenizer` -> `\_\_fix_tokenizer`
+- **tasks**: rename `fix_tokenizer` -> `__fix_tokenizer`
 - **tasks**: remove dropout arg from base tokenizer fast
 
 ## CLI
