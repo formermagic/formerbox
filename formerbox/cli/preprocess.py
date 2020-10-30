@@ -32,6 +32,9 @@ class Preprocess(Subcommand):
                 "help": "The name of a registered tokenizer module to use.",
             },
         )
+        tokenizer_path: Text = field(
+            metadata={"help": "A path to the pre-trained tokenizer files."}
+        )
         binarizer: Text = field(
             metadata={
                 "choices": Binarizer,
@@ -86,8 +89,6 @@ class Preprocess(Subcommand):
             assert isinstance(params, self.Params)
 
             # add dybamic args to the subparser
-            tokenizer_cls, _ = TokenizerModule.from_registry(params.tokenizer)
-            tokenizer_cls.add_argparse_params(subparser)
             binarizer_cls, _ = Binarizer.from_registry(params.binarizer)
             binarizer_cls.add_argparse_params(subparser)
 
@@ -132,8 +133,7 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
 
     # prepare the pretrained tokenizer
     tokenizer_cls, _ = TokenizerModule.from_registry(cmd_params.tokenizer)
-    tokenizer_params = get_params_item(params, params_type=tokenizer_cls.params_type)
-    tokenizer = tokenizer_cls.from_pretrained(params=tokenizer_params)
+    tokenizer = tokenizer_cls.from_pretrained(cmd_params.tokenizer_path)
 
     # prepare the dataset setup
     dataset_setup_params = get_params_item(
