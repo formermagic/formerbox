@@ -49,7 +49,6 @@ class CodeBBPETokenizerFast(ByteLevelBPETokenizerFast):
         add_prefix_space: bool = False,
         trim_offsets: bool = True,
         lowercase: bool = False,
-        dropout: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals, too-many-arguments
@@ -68,7 +67,6 @@ class CodeBBPETokenizerFast(ByteLevelBPETokenizerFast):
             add_prefix_space=add_prefix_space,
             trim_offsets=trim_offsets,
             lowercase=lowercase,
-            dropout=dropout,
             **kwargs,
         )
 
