@@ -10,27 +10,7 @@ Token = Union[Text, AddedToken]
 logger = logging.getLogger(__name__)
 
 
-VOCAB_FILES_NAMES = {
-    "vocab_file": "vocab.json",
-    "merges_file": "merges.txt",
-    "tokenizer_file": "tokenizer.json",
-}
-
-PRETRAINED_VOCAB_FILES_MAP = {
-    "vocab_file": {},
-    "merges_file": {},
-    "tokenizer_file": {},
-}
-
-PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
-
-
-class ByteLevelBPETokenizerFast(RobertaTokenizerFast):
-    vocab_files_names = VOCAB_FILES_NAMES
-    pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
-    max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
-    model_input_names = ["attention_mask"]
-
+class RobertaTokenizer(RobertaTokenizerFast):
     def __init__(
         self,
         vocab_file: Text,
