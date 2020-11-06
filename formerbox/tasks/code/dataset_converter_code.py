@@ -9,6 +9,7 @@ Instance = Optional[Text]
 logger = logging.getLogger(__name__)
 
 
+@DatasetConverter.register("code", constructor="from_partial")
 class CodeDatasetConverter(TransformerDatasetConverter):
     def preprocess_text(self, text: Text) -> Instance:
         # workaround to avoid disambiguation in parsing text datasets
