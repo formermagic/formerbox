@@ -16,5 +16,5 @@ model:
     gradient_checkpointing: false
 
 tokenizer:
-  name: formerbox.tasks.CodeBBPETokenizerFast
+  name: formerbox.tasks.CodeRobertaTokenizer
   params: {}
