@@ -23,17 +23,17 @@ from formerbox.data import (
     TransformerBinarizer,
     TransformerDatasetConverter,
 )
-from formerbox.modules import TokenizerModule, TransformerDataModule, TransformerModule
+from formerbox.modules import TokenizerTrainer, TransformerDataModule, TransformerModule
 from formerbox.optim import AdamW, get_polynomial_decay_with_warmup, weight_decay_params
 from formerbox.tasks import (
-    ByteLevelBPETokenizerFast,
-    ByteLevelBPETokenizerModule,
-    CodeBBPETokenizerFast,
-    CodeBBPETokenizerModule,
+    BaseTokenizerTrainer,
     CodeDatasetConverter,
+    CodeRobertaTokenizer,
+    CodeRobertaTokenizerTrainer,
+    RobertaTokenizer,
+    RobertaTokenizerTrainer,
     TaskModule,
     TransformerTask,
-    TransformerTokenizerModule,
 )
 from formerbox.training import TransformerTrainer
 
