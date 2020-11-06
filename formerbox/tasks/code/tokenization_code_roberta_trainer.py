@@ -2,20 +2,17 @@ import logging
 from pathlib import Path
 from typing import Any, Optional, Text, Union
 
-from formerbox.modules import TokenizerModule
-from formerbox.tasks import ByteLevelBPETokenizerModule
-from formerbox.tasks.code.code_tokenization import CodeBBPETokenizerFast
+from formerbox.modules import TokenizerTrainer
+from formerbox.tasks.code.tokenization_code_roberta import CodeRobertaTokenizer
+from formerbox.tasks.tokenization_roberta_trainer import RobertaTokenizerTrainer
 from formerbox.utils.code_tokenizer import SpecialToken
-from tokenizers import AddedToken
-
-Token = Union[Text, AddedToken]
 
 logger = logging.getLogger(__name__)
 
 
-@TokenizerModule.register("code-bbpe-tokenizer", constructor="from_partial")
-class CodeBBPETokenizerModule(ByteLevelBPETokenizerModule):
-    Params = ByteLevelBPETokenizerModule.Params
+@TokenizerTrainer.register("code-roberta", constructor="from_partial")
+class CodeRobertaTokenizerTrainer(RobertaTokenizerTrainer):
+    Params = RobertaTokenizerTrainer.Params
 
     def __init__(self, params: Params, **kwargs: Any) -> None:
         super().__init__(params, **kwargs)
@@ -26,7 +23,7 @@ class CodeBBPETokenizerModule(ByteLevelBPETokenizerModule):
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> CodeBBPETokenizerFast:
+    ) -> CodeRobertaTokenizer:
         # prepare paths to the tokenizer files
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
@@ -44,22 +41,9 @@ class CodeBBPETokenizerModule(ByteLevelBPETokenizerModule):
         kwargs.update(self.get_tokenizer_args(self.params))
 
         # configure the pretrained tokenizer
-        return CodeBBPETokenizerFast(
+        return CodeRobertaTokenizer(
             vocab_file=vocab_file,
             merges_file=merges_file,
             tokenizer_file=tokenizer_file,
             **kwargs,
         )
-
-    @classmethod
-    def from_pretrained(
-        cls, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> CodeBBPETokenizerFast:
-        # convert `tokenizer_path` to string
-        if isinstance(tokenizer_path, Path):
-            tokenizer_path = str(tokenizer_path)
-
-        # load the pretrained tokenizer
-        tokenizer = CodeBBPETokenizerFast.from_pretrained(tokenizer_path, **kwargs)
-
-        return tokenizer
