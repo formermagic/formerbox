@@ -10,7 +10,7 @@ from formerbox.common.dataclass_argparse import (
     DataclassBase,
     get_params_item,
 )
-from formerbox.modules import TokenizerModule
+from formerbox.modules import TokenizerTrainer
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class TrainTokenizer(Subcommand):
     class Params(DataclassBase):
         tokenizer: Text = field(
             metadata={
-                "choices": TokenizerModule,
+                "choices": TokenizerTrainer,
                 "help": "The name of a registered tokenizer module to use.",
             },
         )
@@ -49,7 +49,7 @@ class TrainTokenizer(Subcommand):
             assert isinstance(params, self.Params)
 
             # add dybamic args to the subparser
-            tokenizer_cls, _ = TokenizerModule.from_registry(params.tokenizer)
+            tokenizer_cls, _ = TokenizerTrainer.from_registry(params.tokenizer)
             tokenizer_cls.add_argparse_params(subparser)
 
             # inject dataclass_types to the parent parser
@@ -70,7 +70,7 @@ def train_tokenizer(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None
 
     cmd_params = get_params_item(params, params_type=TrainTokenizer.Params)
 
-    tokenizer_cls, tokenizer_init = TokenizerModule.from_registry(cmd_params.tokenizer)
+    tokenizer_cls, tokenizer_init = TokenizerTrainer.from_registry(cmd_params.tokenizer)
     tokenizer_params = get_params_item(params, params_type=tokenizer_cls.params_type)
     tokenizer = tokenizer_init(params=tokenizer_params)
 
