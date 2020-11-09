@@ -10,31 +10,15 @@ you'll have to first convert the raw dataset into its textual representation. Al
 (:class:`~formerbox.IndexedDataset`) do not support multicolumn processing, so you'll have to keep as many binarized
 pair of files as many columns you want to get.
 
-At its core preprocessing requires 2 components – :class:`~formerbox.TokenizerModule` and :class:`~formerbox.Binarizer`.
+Preprocessing requires 2 components – :class:`~transformers.PreTrainedTokenizerFast` and :class:`~formerbox.Binarizer`.
 
-* The :class:`~formerbox.TokenizerModule` uses the pre-trained tokenizer to convert text samples into input ids 
-  (i.e. token ids).
-
+* The :class:`~transformers.PreTrainedTokenizerFast` converts text samples into input ids (i.e. token ids).
 * The :class:`~formerbox.Binarizer` prepares the dataset for mapping and then maps the samples into binarized data.
 
 Subcommand required parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: formerbox.cli.Preprocess.Params
-    :members:
-
-Built-in tokenizer modules in the library
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-byte-level-bpe-tokenizer
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Uses the :class:`~formerbox.ByteLevelBPETokenizerFast` under the hood to map text samples into a tokenized encoding.
-
-Required parameters
-***********************************************************************************************************************
-
-.. autoclass:: formerbox.ByteLevelBPETokenizerModule.Params
     :members:
 
 Built-in binarizers in the library
@@ -57,14 +41,12 @@ Example cli command
 .. code-block:: shell
 
     python -m formerbox preprocess                          \
-        --tokenizer byte-level-bpe-tokenizer                \
+        --tokenizer_path <tokenizer_path>                   \
         --binarizer transformer-binarizer                   \
         --output_path <output_path>                         \
         --train_prefix <train_prefix>                       \
         --valid_prefix <valid_prefix>                       \
         --test_prefix <test_prefix>                         \
-                                                            \
-        --tokenizer_path <tokenizer_path>                   \
                                                             \
         --max_length 512 --return_overflowing_tokens true   \
         --batch_size 512 --batched true
