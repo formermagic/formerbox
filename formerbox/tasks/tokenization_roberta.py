@@ -62,3 +62,21 @@ class RobertaTokenizer(RobertaTokenizerFast):
         post_processor = processors.ByteLevel(trim_offsets=trim_offsets)
         self.backend_tokenizer.post_processor = post_processor
         self.trim_offsets = trim_offsets
+
+    @property
+    def pad_token_id(self) -> int:
+        token_id = self.convert_tokens_to_ids(self.pad_token)
+        assert isinstance(token_id, int)
+        return token_id
+
+    @property
+    def sep_token_id(self) -> int:
+        token_id = self.convert_tokens_to_ids(self.sep_token)
+        assert isinstance(token_id, int)
+        return token_id
+
+    @property
+    def cls_token_id(self) -> int:
+        token_id = self.convert_tokens_to_ids(self.cls_token)
+        assert isinstance(token_id, int)
+        return token_id
