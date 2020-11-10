@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Union
 
 from formerbox.common.dataclass_argparse import DataclassBase
+from formerbox.modules import TokenizerTrainer
 from formerbox.tasks.tokenization_roberta import RobertaTokenizer
 from formerbox.tasks.tokenization_trainer import TokenizerTrainerBase
 from tokenizers.implementations import ByteLevelBPETokenizer
@@ -11,7 +12,7 @@ from tokenizers.implementations import ByteLevelBPETokenizer
 logger = logging.getLogger(__name__)
 
 
-@TokenizerTrainerBase.register(name="roberta", constructor="from_partial")
+@TokenizerTrainer.register(name="roberta", constructor="from_partial")
 class RobertaTokenizerTrainer(TokenizerTrainerBase):
     # pylint: disable=arguments-differ
     @dataclass
