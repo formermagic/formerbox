@@ -3,7 +3,7 @@ import os
 from formerbox.tasks.task_module import TaskModule
 from formerbox.tasks.tokenization_roberta import RobertaTokenizer
 from formerbox.tasks.tokenization_roberta_trainer import RobertaTokenizerTrainer
-from formerbox.tasks.tokenization_trainer import BaseTokenizerTrainer
+from formerbox.tasks.tokenization_trainer import TokenizerTrainerBase
 from formerbox.tasks.transformer_task import TransformerTask
 from formerbox.utils.utils import str2bool
 

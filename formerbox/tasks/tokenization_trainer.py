@@ -21,7 +21,7 @@ SPECIAL_TOKENS: List[Token] = [
 ]
 
 
-class BaseTokenizerTrainer(TokenizerTrainer[ParamsType]):
+class TokenizerTrainerBase(TokenizerTrainer[ParamsType]):
     special_tokens: List[Token]
     tokenizer: BaseTokenizer
 
