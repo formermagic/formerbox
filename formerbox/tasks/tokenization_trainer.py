@@ -56,8 +56,12 @@ class TokenizerTrainerBase(TokenizerTrainer[ParamsType]):
         # make the output dir if it doesn't exist
         tokenizer_path.mkdir(parents=True, exist_ok=True)
 
-        # save the trained tokenizer to `tokenizer_output_path`
-        self.tokenizer.save(str(tokenizer_path / "tokenizer.json"))
+        # save the legacy tokenizer to `tokenizer_path`
+        if legacy_format:
+            self.tokenizer.save_model(str(tokenizer_path))
+        # save the unified tokenizer to `tokenizer_path`
+        else:
+            self.tokenizer.save(str(tokenizer_path / "tokenizer.json"))
 
         # prepare the pre-trained tokenizer
         tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
