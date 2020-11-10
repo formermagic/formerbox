@@ -44,13 +44,13 @@ Making your own tokenizer trainer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If no built-in component fits to your needs you can make a new one based on the :class:`~formerbox.TokenizerTrainer` class.
-Note, that we provide some out-of-the-box features in :class:`~formerbox.BaseTokenizerTrainer` class, so you can inherit
+Note, that we provide some out-of-the-box features in :class:`~formerbox.TokenizerTrainerBase` class, so you can inherit
 from it directly. You'll need to define a backend :class:`~tokenizers.Tokenizer` and implement abstract methods.
 
 .. autoclass:: formerbox.TokenizerTrainer
     :members:
 
-.. autoclass:: formerbox.BaseTokenizerTrainer
+.. autoclass:: formerbox.TokenizerTrainerBase
     :members:
 
 Example of a new tokenizer trainer
@@ -66,13 +66,13 @@ Example of a new tokenizer trainer
     from tokenizers.implementations import ByteLevelBPETokenizer
     from transformers import PreTrainedTokenizerFast
     from formerbox.common.dataclass_argparse import DataclassBase
-    from formerbox.tasks.tokenization_trainer import BaseTokenizerTrainer
+    from formerbox.tasks.tokenization_trainer import TokenizerTrainerBase
 
     logger = logging.getLogger(__name__)
 
 
-    @BaseTokenizerTrainer.register(name="my-tokenizer", constructor="from_partial")
-    class MyTokenizerTrainer(BaseTokenizerTrainer):
+    @TokenizerTrainerBase.register(name="my-tokenizer", constructor="from_partial")
+    class MyTokenizerTrainer(TokenizerTrainerBase):
         # pylint: disable=arguments-differ
         @dataclass
         class Params(DataclassBase):
