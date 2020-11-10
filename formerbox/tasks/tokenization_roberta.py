@@ -59,7 +59,13 @@ class RobertaTokenizer(RobertaTokenizerFast):
         self.add_prefix_space = add_prefix_space
 
         # setup tokenizer post-processing
-        post_processor = processors.ByteLevel(trim_offsets=trim_offsets)
+        post_processor = processors.RobertaProcessing(
+            sep=(self.sep_token, self.sep_token_id),
+            cls=(self.cls_token, self.cls_token_id),
+            trim_offsets=trim_offsets,
+            add_prefix_space=add_prefix_space,
+        )
+
         self.backend_tokenizer.post_processor = post_processor
         self.trim_offsets = trim_offsets
 
