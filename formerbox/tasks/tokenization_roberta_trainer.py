@@ -5,14 +5,14 @@ from typing import Any, Dict, List, Optional, Text, Union
 
 from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.tasks.tokenization_roberta import RobertaTokenizer
-from formerbox.tasks.tokenization_trainer import BaseTokenizerTrainer
+from formerbox.tasks.tokenization_trainer import TokenizerTrainerBase
 from tokenizers.implementations import ByteLevelBPETokenizer
 
 logger = logging.getLogger(__name__)
 
 
-@BaseTokenizerTrainer.register(name="roberta", constructor="from_partial")
-class RobertaTokenizerTrainer(BaseTokenizerTrainer):
+@TokenizerTrainerBase.register(name="roberta", constructor="from_partial")
+class RobertaTokenizerTrainer(TokenizerTrainerBase):
     # pylint: disable=arguments-differ
     @dataclass
     class Params(DataclassBase):
