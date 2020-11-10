@@ -36,7 +36,7 @@ Example cli command
 
     python -m formerbox train_tokenizer             \
             --tokenizer roberta                     \
-            --tokenizer_path <path>                 \
+            --save_directory <path>                 \
             --files <text_file>[<text_file>...]     \
             --vocab_size <vocab_size>
 
