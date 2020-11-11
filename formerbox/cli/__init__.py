@@ -1,5 +1,5 @@
-from argparse import Namespace
-from typing import Optional, Text
+from argparse import Namespace, _SubParsersAction
+from typing import Iterable, Optional, Text
 
 from formerbox.cli.convert_dataset import ConvertDataset
 from formerbox.cli.preprocess import Preprocess
@@ -35,28 +35,42 @@ def add_plugin_resolve_args(parser: DataclassArgumentParser) -> None:
     )
 
 
-def make_parser(prog: Optional[Text] = None) -> DataclassArgumentParser:
-    # create an argument parser with plugin-resolving args
-    parser = DataclassArgumentParser(prog=prog)
-    add_plugin_resolve_args(parser)
-
-    # register additional classes with specified packages or user-dir
-    args = parser.parse_known_args()[0]
-    register_additional_classes(args)
-
-    # create subparsers for working with subcommands
-    subparsers = parser.add_subparsers(
-        title="Commands", parser_class=DataclassArgumentParser
-    )
-
-    # add subcommands and register their args
-    for subcommand_name in sorted(Subcommand.list_available()):
+def register_subcommands(
+    subcommand_names: Iterable[Text], subparsers: _SubParsersAction
+) -> None:
+    for subcommand_name in subcommand_names:
         subcommand_cls = Subcommand.from_name(subcommand_name)
         subcommand = subcommand_cls()
 
         subparser, defaults = subcommand.add_subparser(subparsers)
         subparser.set_defaults(**defaults)
         add_plugin_resolve_args(subparser)  # duplicate args to avoid errors
+
+
+def make_parser(prog: Optional[Text] = None) -> DataclassArgumentParser:
+    # create an argument parser with plugin-resolving args
+    parser = DataclassArgumentParser(prog=prog)
+    add_plugin_resolve_args(parser)
+
+    # create subparsers for working with subcommands
+    subparsers = parser.add_subparsers(
+        title="Commands", parser_class=DataclassArgumentParser
+    )
+
+    # add built-in subcommands with their configs.
+    # note, that we do it prior to registering additional plugins
+    # to display contextualized help messages if users ask
+    default_subcommands = set(sorted(Subcommand.list_available()))
+    register_subcommands(default_subcommands, subparsers)
+
+    # register additional classes with specified packages or user-dir
+    args = parser.parse_known_args()[0]
+    register_additional_classes(args)
+
+    # register user-defined custom subcommands if any
+    all_subcommands = set(sorted(Subcommand.list_available()))
+    user_subcommands = all_subcommands.difference(default_subcommands)
+    register_subcommands(user_subcommands, subparsers)
 
     return parser
 
