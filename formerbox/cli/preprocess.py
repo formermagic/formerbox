@@ -12,9 +12,9 @@ from formerbox.common.dataclass_argparse import (
     DataclassBase,
     get_params_item,
 )
+from formerbox.data import TokenizerBase
 from formerbox.data.binarizer import Binarizer
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
-from formerbox.tasks import TokenizerBase
 from transformers import PreTrainedTokenizerFast as Tokenizer
 
 logger = logging.getLogger(__name__)
