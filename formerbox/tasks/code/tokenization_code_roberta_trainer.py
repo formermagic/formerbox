@@ -2,9 +2,9 @@ import logging
 from pathlib import Path
 from typing import Any, Optional, Text, Union
 
+from formerbox.data.tokenizers import RobertaTokenizerTrainer
 from formerbox.modules import TokenizerTrainer
 from formerbox.tasks.code.tokenization_code_roberta import CodeRobertaTokenizer
-from formerbox.tasks.tokenization_roberta_trainer import RobertaTokenizerTrainer
 from formerbox.utils.code_tokenizer import SpecialToken
 
 logger = logging.getLogger(__name__)
