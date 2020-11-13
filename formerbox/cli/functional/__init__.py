@@ -1,1 +1,1 @@
-from .preprocess import temp_filepath
+from formerbox.cli.functional.preprocess import temp_filepath
