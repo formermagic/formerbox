@@ -1,4 +1,4 @@
-from .dataclass_argparse import DataclassArgumentParser, DataclassBase
-from .has_params import HasParams, HasParsableParams
-from .partial_initable import PartialInitable
-from .registrable import Registrable
+from formerbox.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
+from formerbox.common.has_params import HasParams, HasParsableParams
+from formerbox.common.partial_initable import PartialInitable
+from formerbox.common.registrable import Registrable
