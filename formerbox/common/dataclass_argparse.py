@@ -22,7 +22,7 @@ from typing_inspect import (
     is_union_type,
 )
 
-T = typing.TypeVar("T")  # pylint: disable=invalid-name
+ParamsType = typing.TypeVar("ParamsType")
 DataclassBaseType = Type["DataclassBase"]
 DataclassTypes = Union[DataclassBaseType, typing.Iterable[DataclassBaseType]]
 
@@ -43,9 +43,9 @@ def get_parsed_attr(
 
 def get_params_item(
     params: Tuple[Union["DataclassBase", Namespace], ...],
-    params_type: Type[T],
+    params_type: Type[ParamsType],
     default: Optional[Any] = None,
-) -> Optional[T]:
+) -> Optional[ParamsType]:
     for args in params:
         if isinstance(args, params_type):
             return args
