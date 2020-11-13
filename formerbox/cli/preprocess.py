@@ -14,6 +14,7 @@ from formerbox.common.dataclass_argparse import (
 )
 from formerbox.data.binarizer import Binarizer
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
+from formerbox.tasks import TokenizerBase
 from transformers import PreTrainedTokenizerFast as Tokenizer
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,12 @@ logger = logging.getLogger(__name__)
 class Preprocess(Subcommand):
     @dataclass
     class Params(DataclassBase):
+        tokenizer: Text = field(
+            metadata={
+                "choices": TokenizerBase,
+                "help": "The name of a tokenizer to load from.",
+            }
+        )
         tokenizer_path: Text = field(
             metadata={"help": "A path to the pre-trained tokenizer files."}
         )
@@ -123,7 +130,8 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
     cmd_params = get_params_item(params, params_type=Preprocess.Params)
 
     # prepare the pretrained tokenizer
-    tokenizer = Tokenizer.from_pretrained(cmd_params.tokenizer_path)
+    tokenizer_cls = TokenizerBase.from_name(cmd_params.tokenizer)
+    tokenizer = tokenizer_cls.from_pretrained(cmd_params.tokenizer_path)
 
     # prepare the dataset setup
     dataset_setup_params = get_params_item(
