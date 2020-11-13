@@ -9,3 +9,9 @@ from formerbox.data.indexed_dataset import (
     IndexedDatasetBuilder,
 )
 from formerbox.data.mmap_dataset import MMapIndexedDataset, MMapIndexedDatasetBuilder
+from formerbox.data.tokenizers import (
+    RobertaTokenizer,
+    RobertaTokenizerTrainer,
+    TokenizerBase,
+    TokenizerTrainerBase,
+)
