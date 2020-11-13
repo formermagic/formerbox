@@ -11,24 +11,11 @@ from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.common.has_params import HasParsableParams, ParamsType
 from formerbox.common.registrable import Registrable
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
+from formerbox.data.tokenizers.tokenization_base import Padding, Truncation
 from formerbox.utils import iter_stide
 from transformers import PreTrainedTokenizerFast
-from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)
-
-Truncation = Literal[
-    "only_first",  # equals to `truncation=True`
-    "only_second",
-    "longest_first",
-    "do_not_truncate",
-]
-
-Padding = Literal[
-    "longest",  # equals to `padding=True`
-    "max_length",
-    "do_not_pad",
-]
 
 
 def dataset_dest_filepath(filepath_prefix: Text, extension: Text) -> Text:
