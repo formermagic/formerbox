@@ -20,6 +20,10 @@ from formerbox.data import (
     IndexedDatasetBuilder,
     MMapIndexedDataset,
     MMapIndexedDatasetBuilder,
+    RobertaTokenizer,
+    RobertaTokenizerTrainer,
+    TokenizerBase,
+    TokenizerTrainerBase,
     TransformerBinarizer,
     TransformerDatasetConverter,
 )
@@ -29,11 +33,7 @@ from formerbox.tasks import (
     CodeDatasetConverter,
     CodeRobertaTokenizer,
     CodeRobertaTokenizerTrainer,
-    RobertaTokenizer,
-    RobertaTokenizerTrainer,
     TaskModule,
-    TokenizerBase,
-    TokenizerTrainerBase,
     TransformerTask,
 )
 from formerbox.training import TransformerTrainer
