@@ -1,10 +1,11 @@
 import logging
 from typing import Any, Optional, Text, Union
 
-from formerbox.tasks.tokenization_base import TokenizerBase
+from formerbox.data.tokenizers.tokenization_base import TokenizerBase
+from transformers import RobertaTokenizerFast
+
 from tokenizers import AddedToken, pre_tokenizers, processors
 from tokenizers.normalizers import Lowercase, Sequence
-from transformers import RobertaTokenizerFast
 
 Token = Union[Text, AddedToken]
 
