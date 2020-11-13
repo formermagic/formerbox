@@ -1,13 +1,11 @@
 import logging
 from typing import Any, List, Optional, Text, Union
 
-from formerbox.tasks import ByteLevelBPETokenizerFast
+from formerbox.tasks import RobertaTokenizer, TokenizerBase
 from formerbox.utils.code_tokenizer import SpecialToken
 from tokenizers import AddedToken
-from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 Token = Union[Text, AddedToken]
-TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +25,8 @@ PRETRAINED_VOCAB_FILES_MAP = {
 PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
 
 
-class CodeBBPETokenizerFast(ByteLevelBPETokenizerFast):
+@TokenizerBase.register("code-roberta")
+class CodeRobertaTokenizer(RobertaTokenizer, TokenizerBase):
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES

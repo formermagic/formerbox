@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Optional, Text, Union
 
+from formerbox.tasks.tokenization_base import TokenizerBase
 from tokenizers import AddedToken, pre_tokenizers, processors
 from tokenizers.normalizers import Lowercase, Sequence
 from transformers import RobertaTokenizerFast
@@ -10,27 +11,8 @@ Token = Union[Text, AddedToken]
 logger = logging.getLogger(__name__)
 
 
-VOCAB_FILES_NAMES = {
-    "vocab_file": "vocab.json",
-    "merges_file": "merges.txt",
-    "tokenizer_file": "tokenizer.json",
-}
-
-PRETRAINED_VOCAB_FILES_MAP = {
-    "vocab_file": {},
-    "merges_file": {},
-    "tokenizer_file": {},
-}
-
-PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
-
-
-class ByteLevelBPETokenizerFast(RobertaTokenizerFast):
-    vocab_files_names = VOCAB_FILES_NAMES
-    pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
-    max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
-    model_input_names = ["attention_mask"]
-
+@TokenizerBase.register("roberta")
+class RobertaTokenizer(RobertaTokenizerFast, TokenizerBase):
     def __init__(
         self,
         vocab_file: Text,
@@ -79,6 +61,15 @@ class ByteLevelBPETokenizerFast(RobertaTokenizerFast):
         self.add_prefix_space = add_prefix_space
 
         # setup tokenizer post-processing
-        post_processor = processors.ByteLevel(trim_offsets=trim_offsets)
+        assert self.sep_token_id is not None
+        assert self.cls_token_id is not None
+
+        post_processor = processors.RobertaProcessing(
+            sep=(self.sep_token, self.sep_token_id),
+            cls=(self.cls_token, self.cls_token_id),
+            trim_offsets=trim_offsets,
+            add_prefix_space=add_prefix_space,
+        )
+
         self.backend_tokenizer.post_processor = post_processor
         self.trim_offsets = trim_offsets

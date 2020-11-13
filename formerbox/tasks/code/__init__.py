@@ -1,3 +1,3 @@
-from .code_dataset_converter import CodeDatasetConverter
-from .code_tokenization import CodeBBPETokenizerFast
-from .code_tokenizer_module import CodeBBPETokenizerModule
+from .dataset_converter_code import CodeDatasetConverter
+from .tokenization_code_roberta import CodeRobertaTokenizer
+from .tokenization_code_roberta_trainer import CodeRobertaTokenizerTrainer

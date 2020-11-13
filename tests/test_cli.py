@@ -50,7 +50,7 @@ def test_cli_convert_dataset(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["code-bbpe-tokenizer"])
+@pytest.mark.parametrize("tokenizer", ["code-roberta"])
 def test_cli_train_tokenizer(
     tmp_path: Path,
     fixtures_directory: Path,

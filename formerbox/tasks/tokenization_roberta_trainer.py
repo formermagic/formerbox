@@ -4,93 +4,16 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Union
 
 from formerbox.common.dataclass_argparse import DataclassBase
-from formerbox.modules.tokenizer_module import ParamsType, TokenizerModule
-from formerbox.tasks.transformer_tokenization import ByteLevelBPETokenizerFast
-from tokenizers import AddedToken
-from tokenizers.implementations import BaseTokenizer, ByteLevelBPETokenizer
-from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
-
-Token = Union[Text, AddedToken]
-TransformersTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+from formerbox.modules import TokenizerTrainer
+from formerbox.tasks.tokenization_roberta import RobertaTokenizer
+from formerbox.tasks.tokenization_trainer import TokenizerTrainerBase
+from tokenizers.implementations import ByteLevelBPETokenizer
 
 logger = logging.getLogger(__name__)
 
 
-SPECIAL_TOKENS: List[Token] = [
-    "<s>",
-    "<pad>",
-    "</s>",
-    "<unk>",
-    "<mask>",
-]
-
-
-class TransformerTokenizerModule(TokenizerModule[ParamsType]):
-    special_tokens: List[Token]
-    tokenizer: BaseTokenizer
-
-    def __init__(self, params: ParamsType, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self.params = params
-        self.special_tokens: List[Token] = SPECIAL_TOKENS
-        self.tokenizer = self.build_tokenizer(params)
-
-    @classmethod
-    def build_tokenizer(cls, params: ParamsType) -> BaseTokenizer:
-        raise NotImplementedError()
-
-    @classmethod
-    def get_tokenizer_args(cls, params: ParamsType) -> Dict[Text, Any]:
-        raise NotImplementedError()
-
-    def configure_tokenizer(
-        self, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> TransformersTokenizer:
-        raise NotImplementedError()
-
-    def train_tokenizer(self, *args: Any, **kwargs: Any) -> None:
-        raise NotImplementedError()
-
-    def save_pretrained(
-        self, save_directory: Text, legacy_format: bool, **kwargs: Any
-    ) -> None:
-        # make sure the `tokenizer_output_path` is a pathlike object
-        tokenizer_path = Path(save_directory)
-
-        # make the output dir if it doesn't exist
-        tokenizer_path.mkdir(parents=True, exist_ok=True)
-
-        # save the trained tokenizer to `tokenizer_output_path`
-        self.tokenizer.save(str(tokenizer_path / "tokenizer.json"))
-
-        # prepare the pre-trained tokenizer
-        tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
-
-        # workaround for saving tokenizer bugs in the transformers backend
-        self.__fix_tokenizer(tokenizer)
-
-        # save the pre-trained tokenizer
-        tokenizer.save_pretrained(
-            save_directory=save_directory, legacy_format=legacy_format
-        )
-
-    @staticmethod
-    def from_pretrained(
-        tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> TransformersTokenizer:
-        raise NotImplementedError()
-
-    def __fix_tokenizer(self, tokenizer: TransformersTokenizer) -> None:
-        init_kwargs = getattr(tokenizer, "init_kwargs", {})
-        for key, value in init_kwargs.items():
-            if isinstance(value, AddedToken):
-                init_kwargs[key] = str(value)
-            else:
-                init_kwargs[key] = value
-
-
-@TokenizerModule.register(name="byte-level-bpe-tokenizer", constructor="from_partial")
-class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
+@TokenizerTrainer.register(name="roberta", constructor="from_partial")
+class RobertaTokenizerTrainer(TokenizerTrainerBase):
     # pylint: disable=arguments-differ
     @dataclass
     class Params(DataclassBase):
@@ -178,7 +101,7 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> ByteLevelBPETokenizerFast:
+    ) -> RobertaTokenizer:
         # prepare paths to the tokenizer files
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
@@ -196,7 +119,7 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
         kwargs.update(self.get_tokenizer_args(self.params))
 
         # configure the pretrained tokenizer
-        return ByteLevelBPETokenizerFast(
+        return RobertaTokenizer(
             vocab_file=vocab_file,
             merges_file=merges_file,
             tokenizer_file=tokenizer_file,
@@ -235,19 +158,6 @@ class ByteLevelBPETokenizerModule(TransformerTokenizerModule):
             legacy_format=legacy_format,
             **kwargs,
         )
-
-    @classmethod
-    def from_pretrained(
-        cls, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> ByteLevelBPETokenizerFast:
-        # convert `tokenizer_path` to string
-        if isinstance(tokenizer_path, Path):
-            tokenizer_path = str(tokenizer_path)
-
-        # load the pretrained tokenizer
-        tokenizer = ByteLevelBPETokenizerFast.from_pretrained(tokenizer_path, **kwargs)
-
-        return tokenizer
 
     @classmethod
     def get_tokenizer_args(cls, params: Params) -> Dict[Text, Any]:
