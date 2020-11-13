@@ -32,6 +32,7 @@ from formerbox.tasks import (
     RobertaTokenizer,
     RobertaTokenizerTrainer,
     TaskModule,
+    TokenizerBase,
     TokenizerTrainerBase,
     TransformerTask,
 )
