@@ -61,6 +61,9 @@ class RobertaTokenizer(RobertaTokenizerFast, TokenizerBase):
         self.add_prefix_space = add_prefix_space
 
         # setup tokenizer post-processing
+        assert self.sep_token_id is not None
+        assert self.cls_token_id is not None
+
         post_processor = processors.RobertaProcessing(
             sep=(self.sep_token, self.sep_token_id),
             cls=(self.cls_token, self.cls_token_id),
@@ -70,21 +73,3 @@ class RobertaTokenizer(RobertaTokenizerFast, TokenizerBase):
 
         self.backend_tokenizer.post_processor = post_processor
         self.trim_offsets = trim_offsets
-
-    @property
-    def pad_token_id(self) -> int:
-        token_id = self.convert_tokens_to_ids(self.pad_token)
-        assert isinstance(token_id, int)
-        return token_id
-
-    @property
-    def sep_token_id(self) -> int:
-        token_id = self.convert_tokens_to_ids(self.sep_token)
-        assert isinstance(token_id, int)
-        return token_id
-
-    @property
-    def cls_token_id(self) -> int:
-        token_id = self.convert_tokens_to_ids(self.cls_token)
-        assert isinstance(token_id, int)
-        return token_id
