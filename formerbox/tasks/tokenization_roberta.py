@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Optional, Text, Union
 
+from formerbox.tasks.tokenization_base import TokenizerBase
 from tokenizers import AddedToken, pre_tokenizers, processors
 from tokenizers.normalizers import Lowercase, Sequence
 from transformers import RobertaTokenizerFast
@@ -10,7 +11,8 @@ Token = Union[Text, AddedToken]
 logger = logging.getLogger(__name__)
 
 
-class RobertaTokenizer(RobertaTokenizerFast):
+@TokenizerBase.register("roberta")
+class RobertaTokenizer(RobertaTokenizerFast, TokenizerBase):
     def __init__(
         self,
         vocab_file: Text,
