@@ -22,11 +22,17 @@ from typing_inspect import (
     is_union_type,
 )
 
+MISSING: Any = "???"
+
 ParamsType = typing.TypeVar("ParamsType")
 DataclassBaseType = Type["DataclassBase"]
 DataclassTypes = Union[DataclassBaseType, typing.Iterable[DataclassBaseType]]
 
 logger = logging.getLogger(__name__)
+
+
+def is_missing(obj: Any) -> bool:
+    return obj is dataclasses.MISSING or obj == MISSING
 
 
 def get_parsed_attr(
@@ -193,7 +199,7 @@ class DataclassArgumentParser(ArgumentParser):
             if is_enum_type(field_type):
                 kwargs["choices"] = list(field_type)  # type: ignore
                 kwargs["type"] = field_type
-                if field_obj.default is not dataclasses.MISSING:
+                if not is_missing(field_obj.default):
                     kwargs["default"] = field_obj.default
                 else:
                     kwargs["required"] = True
@@ -206,13 +212,13 @@ class DataclassArgumentParser(ArgumentParser):
 
                 kwargs["choices"] = choices
                 kwargs["type"] = field_types.pop()
-                if field_obj.default is not dataclasses.MISSING:
+                if not is_missing(field_obj.default):
                     kwargs["default"] = field_obj.default
                 else:
                     kwargs["required"] = True
             elif field_type is bool:
                 kwargs["type"] = str2bool
-                if field_obj.default is not dataclasses.MISSING:
+                if not is_missing(field_obj.default):
                     kwargs["default"] = field_obj.default
                 else:
                     kwargs["required"] = True
@@ -224,17 +230,17 @@ class DataclassArgumentParser(ArgumentParser):
 
                 kwargs["nargs"] = "+"
                 kwargs["type"] = container_types[0]
-                if field_obj.default is not dataclasses.MISSING:
+                if not is_missing(field_obj.default):
                     kwargs["default"] = field_obj.default
-                elif field_obj.default_factory is not dataclasses.MISSING:
+                elif not is_missing(field_obj.default_factory):
                     kwargs["default"] = field_obj.default_factory()
                 else:
                     kwargs["required"] = True
             else:
                 kwargs["type"] = field_type
-                if field_obj.default is not dataclasses.MISSING:
+                if not is_missing(field_obj.default):
                     kwargs["default"] = field_obj.default
-                elif field_obj.default_factory is not dataclasses.MISSING:
+                elif not is_missing(field_obj.default_factory):
                     kwargs["default"] = field_obj.default_factory()
                 else:
                     kwargs["required"] = True
