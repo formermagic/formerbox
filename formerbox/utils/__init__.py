@@ -1,4 +1,4 @@
-from .utils import (
+from formerbox.utils.utils import (
     all_subclasses,
     append_path_suffix,
     init_from_args,
