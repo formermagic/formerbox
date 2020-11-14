@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, Text
 
-from formerbox.data import DatasetConverter, TransformerDatasetConverter
+from formerbox.data import DatasetConverter, DefaultDatasetConverter
 from formerbox.utils.code_tokenizer import tokenize_python
 
 Instance = Optional[Text]
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 @DatasetConverter.register("code", constructor="from_partial")
-class CodeDatasetConverter(TransformerDatasetConverter):
+class CodeDatasetConverter(DefaultDatasetConverter):
     def preprocess_text(self, text: Text) -> Instance:
         # workaround to avoid disambiguation in parsing text datasets
         text = text.replace("\b", "\r")
