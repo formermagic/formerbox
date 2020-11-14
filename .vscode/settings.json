@@ -5,6 +5,5 @@
   "python.terminal.activateEnvInCurrentTerminal": true,
   "editor.semanticTokenColorCustomizations": {
     "enabled": true
-  },
-  "restructuredtext.confPath": ""
+  }
 }
