@@ -1,11 +1,14 @@
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Text, Union
 
+from formerbox.common.dataclass_argparse import MISSING, DataclassBase
 from formerbox.modules.tokenizer_trainer import ParamsType, TokenizerTrainer
+from transformers import PreTrainedTokenizerFast as Tokenizer
+
 from tokenizers import AddedToken
 from tokenizers.implementations import BaseTokenizer
-from transformers import PreTrainedTokenizerFast as Tokenizer
 
 Token = Union[Text, AddedToken]
 
@@ -19,6 +22,22 @@ SPECIAL_TOKENS: List[Token] = [
     "<unk>",
     "<mask>",
 ]
+
+
+@dataclass
+class TokenizerTrainerParams(DataclassBase):
+    files: List[Text] = field(
+        default_factory=MISSING,
+        metadata={"help": "The input text files to train a tokenizer on."},
+    )
+    vocab_size: int = field(
+        default=MISSING,
+        metadata={"help": "The size of a trained tokenizer's vocabulary."},
+    )
+    min_frequency: int = field(
+        default=2,
+        metadata={"help": "The min frequency for calculating subwords merges."},
+    )
 
 
 class TokenizerTrainerBase(TokenizerTrainer[ParamsType]):
