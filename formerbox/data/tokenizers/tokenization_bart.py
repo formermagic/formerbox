@@ -1,8 +1,12 @@
 import logging
 from typing import Any, List, Optional, Text, Union
 
-from formerbox.data.tokenizers import Seq2SeqTokenizer, TokenizerBase
-from formerbox.data.tokenizers.tokenization_base import Padding, Truncation
+from formerbox.data.tokenizers.tokenization_base import (
+    Padding,
+    Seq2SeqTokenizer,
+    TokenizerBase,
+    Truncation,
+)
 from transformers import BartTokenizerFast, BatchEncoding, TensorType
 
 from tokenizers import AddedToken, pre_tokenizers, processors
