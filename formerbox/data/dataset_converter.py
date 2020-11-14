@@ -71,8 +71,8 @@ class DatasetConverter(Registrable, HasParsableParams[ParamsType], metaclass=ABC
         raise NotImplementedError()
 
 
-@DatasetConverter.register("transformer-converter", constructor="from_partial")
-class TransformerDatasetConverter(DatasetConverter, DatasetProcessingMixin):
+@DatasetConverter.register("default", constructor="from_partial")
+class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     @dataclass
     class Params(DataclassBase):
         script_path: Text = field(
