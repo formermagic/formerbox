@@ -5,6 +5,7 @@ from typing import Any, Dict, Text, Tuple, Union
 
 from formerbox.cli.subcommand import Subcommand, _SubParsersAction
 from formerbox.common.dataclass_argparse import (
+    MISSING,
     DataclassArgumentParser,
     DataclassBase,
     get_params_item,
@@ -20,10 +21,11 @@ class Train(Subcommand):
     @dataclass
     class Params(DataclassBase):
         task: Text = field(
+            default=MISSING,
             metadata={
                 "choices": TaskModule,
                 "help": "The name of a registered task to perform training for.",
-            }
+            },
         )
 
     def add_subparser(

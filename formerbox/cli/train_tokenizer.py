@@ -6,6 +6,7 @@ from typing import Any, Dict, Text, Tuple, Union
 
 from formerbox.cli.subcommand import Subcommand
 from formerbox.common.dataclass_argparse import (
+    MISSING,
     DataclassArgumentParser,
     DataclassBase,
     get_params_item,
@@ -20,6 +21,7 @@ class TrainTokenizer(Subcommand):
     @dataclass
     class Params(DataclassBase):
         tokenizer: Text = field(
+            default=MISSING,
             metadata={
                 "choices": TokenizerTrainer,
                 "help": "The name of a registered tokenizer module to use.",

@@ -6,6 +6,7 @@ from typing import Any, Dict, Text, Tuple, Union
 
 from formerbox.cli.subcommand import Subcommand, _SubParsersAction
 from formerbox.common.dataclass_argparse import (
+    MISSING,
     DataclassArgumentParser,
     DataclassBase,
     get_params_item,
@@ -20,10 +21,11 @@ class ConvertDataset(Subcommand):
     @dataclass
     class Params(DataclassBase):
         converter: Text = field(
+            default=MISSING,
             metadata={
                 "choices": DatasetConverter,
                 "help": "The name of a registered dataset converter to use.",
-            }
+            },
         )
 
     def add_subparser(
