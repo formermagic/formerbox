@@ -13,8 +13,12 @@ from formerbox.common import (
     Registrable,
 )
 from formerbox.data import (
+    BartTokenizer,
+    BartTokenizerTrainer,
     Binarizer,
     DatasetConverter,
+    GPT2Tokenizer,
+    GPT2TokenizerTrainer,
     IndexedCachedDataset,
     IndexedDataset,
     IndexedDatasetBuilder,
