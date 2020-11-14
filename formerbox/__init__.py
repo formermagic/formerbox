@@ -17,6 +17,8 @@ from formerbox.data import (
     BartTokenizerTrainer,
     Binarizer,
     DatasetConverter,
+    DefaultBinarizer,
+    DefaultDatasetConverter,
     GPT2Tokenizer,
     GPT2TokenizerTrainer,
     IndexedCachedDataset,
@@ -28,8 +30,6 @@ from formerbox.data import (
     RobertaTokenizerTrainer,
     TokenizerBase,
     TokenizerTrainerBase,
-    TransformerBinarizer,
-    TransformerDatasetConverter,
 )
 from formerbox.modules import TokenizerTrainer, TransformerDataModule, TransformerModule
 from formerbox.optim import AdamW, get_polynomial_decay_with_warmup, weight_decay_params
