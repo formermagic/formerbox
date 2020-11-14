@@ -95,8 +95,8 @@ class Binarizer(Registrable, HasParsableParams[ParamsType], metaclass=ABCMeta):
         raise NotImplementedError()
 
 
-@Binarizer.register(name="transformer-binarizer", constructor="from_partial")
-class TransformerBinarizer(Binarizer):
+@Binarizer.register(name="default", constructor="from_partial")
+class DefaultBinarizer(Binarizer):
     @dataclass
     class Params(DataclassBase):
         truncation: Truncation = field(
