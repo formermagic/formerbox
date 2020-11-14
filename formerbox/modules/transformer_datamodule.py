@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional, Text, Type, Union
 
 import torch
-from formerbox.common.dataclass_argparse import DataclassBase
+from formerbox.common.dataclass_argparse import MISSING, DataclassBase
 from formerbox.common.has_params import HasParsableParams
 from formerbox.common.registrable import Registrable
 from formerbox.data.dataset_iterators import DatasetIterator
@@ -70,10 +70,12 @@ class TransformerDataModule(
     @dataclass
     class Params(DataclassBase):
         train_data_prefix: Text = field(
-            metadata={"help": "A prefix path for the train dataset file."}
+            default=MISSING,
+            metadata={"help": "A prefix path for the train dataset file."},
         )
         val_data_prefix: Text = field(
-            metadata={"help": "A prefix path for the validation dataset file."}
+            default=MISSING,
+            metadata={"help": "A prefix path for the validation dataset file."},
         )
         batch_size: Optional[int] = field(
             default=None,
