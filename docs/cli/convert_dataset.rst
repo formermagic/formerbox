@@ -16,7 +16,18 @@ Subcommand required parameters
 Built-in dataset converters in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-code-lm-converter
+default
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Converts arbitrary dataset with mapping representation containing text into the pretokenized text data files.
+
+Required parameters
+***********************************************************************************************************************
+
+.. autoclass:: formerbox.DefaultDatasetConverter.Params
+    :members:
+
+code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Converts the github bigquery dataset into the pretokenized text data files.
@@ -24,7 +35,7 @@ Converts the github bigquery dataset into the pretokenized text data files.
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: formerbox.CodeLMDatasetConverter.Params
+.. autoclass:: formerbox.CodeDatasetConverter.Params
     :members:
 
 Example cli command
@@ -33,8 +44,7 @@ Example cli command
 .. code-block:: shell
 
     python -m formerbox convert_dataset     \
-        --converter code-lm-converter       \
-                                            \
+        --converter code                    \
         --script_path json                  \
         --data_files <data_files>           \
         --output_path <output_path>         \
