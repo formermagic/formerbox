@@ -24,7 +24,7 @@ Subcommand required parameters
 Built-in binarizers in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-transformer-binarizer
+default
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Converts text samples into a tokenized encoding, supports the overflowing batches with stride for long docs processing.
@@ -32,7 +32,7 @@ Converts text samples into a tokenized encoding, supports the overflowing batche
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: formerbox.TransformerBinarizer.Params
+.. autoclass:: formerbox.DefaultBinarizer.Params
     :members:
 
 Example cli command
@@ -49,7 +49,7 @@ Example cli command
         --tokenizer <tokenizer>                             \
         --tokenizer_path <tokenizer_path>                   \
                                                             \
-        --binarizer transformer-binarizer                   \
+        --binarizer default                                 \
         --max_length 512 --return_overflowing_tokens true   \
         --batch_size 512 --batched true                     \
         --num_proc 16                                       \
