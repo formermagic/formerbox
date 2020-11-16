@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Text, Tuple, Type, Union
 
 from formerbox.common.dataclass_argparse import (
+    MISSING,
     DataclassArgumentParser,
     DataclassBase,
     get_params_item,
@@ -23,9 +24,11 @@ class TransformerTask(TaskModule[Module, DataModule]):
     @dataclass
     class Params(DataclassBase):
         config_path: Text = field(
+            default=MISSING,
             metadata={"help": "A path to the file with model and tokenizer configs."},
         )
         tokenizer_path: Text = field(
+            default=MISSING,
             metadata={"help": "A path to the dir with saved pretrained tokenizer."},
         )
 

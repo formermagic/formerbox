@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Text, Type, Union
 
 from datasets import Dataset, DatasetDict, load_dataset
-from formerbox.common.dataclass_argparse import DataclassBase
+from formerbox.common.dataclass_argparse import MISSING, DataclassBase
 from formerbox.common.has_params import HasParsableParams, ParamsType
 from formerbox.common.registrable import Registrable
 from formerbox.utils import append_path_suffix, lazy_groups_of
@@ -71,11 +71,12 @@ class DatasetConverter(Registrable, HasParsableParams[ParamsType], metaclass=ABC
         raise NotImplementedError()
 
 
-@DatasetConverter.register("transformer-converter", constructor="from_partial")
-class TransformerDatasetConverter(DatasetConverter, DatasetProcessingMixin):
+@DatasetConverter.register("default", constructor="from_partial")
+class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     @dataclass
     class Params(DataclassBase):
         script_path: Text = field(
+            default=MISSING,
             metadata={
                 "help": "The path to the dataset processing script with the dataset builder."
                 " Can be either: \n"
@@ -83,13 +84,15 @@ class TransformerDatasetConverter(DatasetConverter, DatasetProcessingMixin):
                 " (if the script has the same name as the directory)\n"
                 " * a dataset identifier on HuggingFace AWS bucket (list all available"
                 " datasets and ids with datasets.list_datasets())."
-            }
+            },
         )
         output_path: Text = field(
-            metadata={"help": "The output directory to save converted text datasets."}
+            default=MISSING,
+            metadata={"help": "The output directory to save converted text datasets."},
         )
         data_files: List[Text] = field(
-            metadata={"help": "Defining the data_files of the dataset configuration"}
+            default_factory=MISSING,
+            metadata={"help": "Defining the data_files of the dataset configuration"},
         )
         train_test_split: bool = field(
             default=False,

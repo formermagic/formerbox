@@ -10,10 +10,30 @@ a new tokenizer.
 All you have to do is to make or use a built-in tokenizer trainer (:class:`~formerbox.TokenizerTrainer`) class,
 and prepare an instance with its defined dataclass params (i.e. pass arguments through a cli command).
 
+Subcommand required parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: formerbox.cli.TrainTokenizer.Params
+    :members:
+
 Built-in tokenizer trainers in the library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These are the built-in :class:`~formerbox.TokenizerTrainer` components you can use to train a tokenizer.
+
+gpt2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :class:`~formerbox.GPT2Tokenizer`.
+
+Required parameters
+***********************************************************************************************************************
+
+.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
+    :members:
+
+.. autoclass:: formerbox.GPT2TokenizerTrainer.Params
+    :members:
 
 roberta
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -23,10 +43,24 @@ Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :cla
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: formerbox.cli.TrainTokenizer.Params
+.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
     :members:
 
 .. autoclass:: formerbox.RobertaTokenizerTrainer.Params
+    :members:
+
+bart
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :class:`~formerbox.BartTokenizer`.
+
+Required parameters
+***********************************************************************************************************************
+
+.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
+    :members:
+
+.. autoclass:: formerbox.BartTokenizerTrainer.Params
     :members:
 
 Example cli command

@@ -43,8 +43,8 @@ class TransformerTrainer(Registrable, HasParsableParams):
             default=2,
             metadata={"help": "A number of last checkpoints to keep."},
         )
-        seed: int = field(
-            default=17,
+        seed: Optional[int] = field(
+            default=None,
             metadata={"help": "A seed to make experiments reproducible."},
         )
 
@@ -67,10 +67,11 @@ class TransformerTrainer(Registrable, HasParsableParams):
         args = self.trainer_args.copy()
 
         # mark: setup deterministic mode
-        seed = self.params.seed
-        deterministic = args.pop("deterministic", False)
-        if seed is not None or deterministic:
-            seed_everything(seed)
+        if self.params.seed is not None:
+            seed_everything(self.params.seed)
+            deterministic = True
+        else:
+            deterministic = args.pop("deterministic", False)
 
         # mark: setup save checkpoint callbacks
         callbacks: List[Callback] = []

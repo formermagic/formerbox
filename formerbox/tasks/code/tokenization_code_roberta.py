@@ -1,7 +1,7 @@
 import logging
 from typing import Any, List, Optional, Text, Union
 
-from formerbox.tasks import RobertaTokenizer, TokenizerBase
+from formerbox.data.tokenizers import RobertaTokenizer, TokenizerBase
 from formerbox.utils.code_tokenizer import SpecialToken
 from tokenizers import AddedToken
 

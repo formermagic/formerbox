@@ -5,16 +5,16 @@ from typing import Tuple, Type, TypeVar, Union
 from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.common.has_params import HasParsableParams
 from formerbox.common.registrable import Registrable
-
-# pylint: disable=unused-import
 from formerbox.modules import TransformerDataModule, TransformerModule
 from transformers import PreTrainedTokenizerBase
 from typing_extensions import Protocol
 
-T = TypeVar("T", bound="TaskModule")  # pylint: disable=invalid-name
 Tokenizer = PreTrainedTokenizerBase
-ModuleType = TypeVar("ModuleType", bound="TransformerModule")
-DataModuleType = TypeVar("DataModuleType", bound="TransformerDataModule")
+
+ModuleType = TypeVar("ModuleType", bound=TransformerModule)
+DataModuleType = TypeVar("DataModuleType", bound=TransformerDataModule)
+TaskModuleType = TypeVar("TaskModuleType", bound="TaskModule")
+
 ParamType = Union[DataclassBase, Namespace]
 
 
@@ -41,5 +41,7 @@ class TaskModule(
 
     @classmethod
     @abstractmethod
-    def setup(cls: Type[T], params: Tuple[ParamType, ...]) -> T:
+    def setup(
+        cls: Type[TaskModuleType], params: Tuple[ParamType, ...]
+    ) -> TaskModuleType:
         raise NotImplementedError()

@@ -2,28 +2,22 @@ import logging
 from pathlib import Path
 from typing import Any, Optional, Text, Union
 
-from formerbox.data.tokenizers import RobertaTokenizerTrainer
 from formerbox.modules import TokenizerTrainer
-from formerbox.tasks.code.tokenization_code_roberta import CodeRobertaTokenizer
-from formerbox.utils.code_tokenizer import SpecialToken
+from formerbox.data.tokenizers.tokenization_bart import BartTokenizer
+from formerbox.data.tokenizers.tokenization_roberta_trainer import (
+    RobertaTokenizerTrainer,
+)
 
 logger = logging.getLogger(__name__)
 
 
-@TokenizerTrainer.register("code-roberta", constructor="from_partial")
-class CodeRobertaTokenizerTrainer(RobertaTokenizerTrainer):
+@TokenizerTrainer.register(name="bart", constructor="from_partial")
+class BartTokenizerTrainer(RobertaTokenizerTrainer):
     Params = RobertaTokenizerTrainer.Params
-
-    def __init__(self, params: Params, **kwargs: Any) -> None:
-        super().__init__(params, **kwargs)
-
-        # add code special tokens
-        for token in SpecialToken:
-            self.special_tokens.append(token.value)
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> CodeRobertaTokenizer:
+    ) -> BartTokenizer:
         # prepare paths to the tokenizer files
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
@@ -41,7 +35,7 @@ class CodeRobertaTokenizerTrainer(RobertaTokenizerTrainer):
         kwargs.update(self.get_tokenizer_args(self.params))
 
         # configure the pretrained tokenizer
-        return CodeRobertaTokenizer(
+        return BartTokenizer(
             vocab_file=vocab_file,
             merges_file=merges_file,
             tokenizer_file=tokenizer_file,

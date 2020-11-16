@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Text, Type, Union
 
 import numpy as np
-from formerbox.common.dataclass_argparse import DataclassBase
+from formerbox.common.dataclass_argparse import MISSING, DataclassBase
 from formerbox.common.has_params import HasParsableParams
 from formerbox.data.indexed_dataset import (
     IndexedCachedDataset,
@@ -24,6 +24,7 @@ class IndexedDatasetSetup(HasParsableParams):
     @dataclass
     class Params(DataclassBase):
         dataset_impl: Literal["lazy", "cached", "mmap"] = field(
+            default=MISSING,
             metadata={"help": "Determines the type of a dataset to build."},
         )
 

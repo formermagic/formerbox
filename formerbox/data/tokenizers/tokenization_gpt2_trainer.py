@@ -1,34 +1,26 @@
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Text, Union
+from typing import Any, Dict, Optional, Text, Union
 
-from formerbox.common.dataclass_argparse import DataclassBase
+from formerbox.common import MISSING
+from formerbox.data.tokenizers.tokenization_gpt2 import GPT2Tokenizer
+from formerbox.data.tokenizers.tokenization_trainer import (
+    TokenizerTrainerBase,
+    TokenizerTrainerParams,
+)
 from formerbox.modules import TokenizerTrainer
-from formerbox.tasks.tokenization_roberta import RobertaTokenizer
-from formerbox.tasks.tokenization_trainer import TokenizerTrainerBase
+
 from tokenizers.implementations import ByteLevelBPETokenizer
 
 logger = logging.getLogger(__name__)
 
 
-@TokenizerTrainer.register(name="roberta", constructor="from_partial")
-class RobertaTokenizerTrainer(TokenizerTrainerBase):
+@TokenizerTrainer.register(name="gpt2", constructor="from_partial")
+class GPT2TokenizerTrainer(TokenizerTrainerBase):
     # pylint: disable=arguments-differ
     @dataclass
-    class Params(DataclassBase):
-        files: Optional[List[Text]] = field(
-            default=None,
-            metadata={"help": "The input text files to train a tokenizer on."},
-        )
-        vocab_size: Optional[int] = field(
-            default=None,
-            metadata={"help": "The size of a trained tokenizer's vocabulary."},
-        )
-        min_frequency: int = field(
-            default=2,
-            metadata={"help": "The min frequency for calculating subwords merges."},
-        )
+    class Params(TokenizerTrainerParams):
         legacy_format: bool = field(
             default=True,
             metadata={
@@ -37,8 +29,8 @@ class RobertaTokenizerTrainer(TokenizerTrainerBase):
                 " or in the unified JSON file format of the `tokenizers` library."
             },
         )
-        save_directory: Optional[Text] = field(
-            default=None,
+        save_directory: Text = field(
+            default=MISSING,
             metadata={"help": "A path for saving the pre-trained tokenizer."},
         )
         add_prefix_space: bool = field(
@@ -101,7 +93,7 @@ class RobertaTokenizerTrainer(TokenizerTrainerBase):
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
-    ) -> RobertaTokenizer:
+    ) -> GPT2Tokenizer:
         # prepare paths to the tokenizer files
         if isinstance(tokenizer_path, str):
             tokenizer_path = Path(tokenizer_path)
@@ -119,7 +111,7 @@ class RobertaTokenizerTrainer(TokenizerTrainerBase):
         kwargs.update(self.get_tokenizer_args(self.params))
 
         # configure the pretrained tokenizer
-        return RobertaTokenizer(
+        return GPT2Tokenizer(
             vocab_file=vocab_file,
             merges_file=merges_file,
             tokenizer_file=tokenizer_file,

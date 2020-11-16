@@ -8,13 +8,14 @@ from typing import Any, Dict, Optional, Text, Tuple, Union
 from formerbox.cli.functional import temp_filepath
 from formerbox.cli.subcommand import Subcommand
 from formerbox.common.dataclass_argparse import (
+    MISSING,
     DataclassArgumentParser,
     DataclassBase,
     get_params_item,
 )
+from formerbox.data import TokenizerBase
 from formerbox.data.binarizer import Binarizer
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
-from formerbox.tasks import TokenizerBase
 from transformers import PreTrainedTokenizerFast as Tokenizer
 
 logger = logging.getLogger(__name__)
@@ -25,24 +26,29 @@ class Preprocess(Subcommand):
     @dataclass
     class Params(DataclassBase):
         tokenizer: Text = field(
+            default=MISSING,
             metadata={
                 "choices": TokenizerBase,
                 "help": "The name of a tokenizer to load from.",
-            }
+            },
         )
         tokenizer_path: Text = field(
-            metadata={"help": "A path to the pre-trained tokenizer files."}
+            default=MISSING,
+            metadata={"help": "A path to the pre-trained tokenizer files."},
         )
         binarizer: Text = field(
+            default=MISSING,
             metadata={
                 "choices": Binarizer,
                 "help": "The name of a registered binarizer to use.",
             },
         )
         output_path: Text = field(
+            default=MISSING,
             metadata={"help": "An output path for writing output files to."},
         )
         train_prefix: Text = field(
+            default=MISSING,
             metadata={"help": "Train dataset text file prefix."},
         )
         valid_prefix: Optional[Text] = field(
