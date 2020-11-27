@@ -114,7 +114,11 @@ class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
             raise IndexError(f"Index({index}) is out of bounds")
 
     @staticmethod
-    def from_file(filepath_prefix: Union[Text, Path]) -> "IndexedDatasetBase":
+    def from_file(
+        filepath_prefix: Union[Text, Path], **kwargs: Any
+    ) -> "IndexedDatasetBase":
+        del kwargs  # support overrides
+
         filepath_prefix = path_to_posix(filepath_prefix)
         index_filepath = make_index_filepath(filepath_prefix)
         dataset: Optional[IndexedDatasetBase] = None
