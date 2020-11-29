@@ -22,6 +22,10 @@ def collate_batch(
     tokenizer: PreTrainedTokenizerFast,
     pad_value: Optional[int] = None,
 ) -> Tensor:
+    # return an empty tensor if no examples provided
+    if len(sequences) == 0:
+        return torch.LongTensor()
+
     max_length = 0
     prev_max_length = 0
     padding_required = False
