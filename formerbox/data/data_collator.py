@@ -120,11 +120,13 @@ class DataCollatorForSeq2SeqDenoising:
     def add_whole_word_mask(self, inputs: List[EncodedInput]) -> Tuple[Tensor, Tensor]:
         # pipeline: ids -> text -> encoding batch
         # we need these operations to get word bounds
-        input_tokens = self.tokenizer.batch_decode(
+        input_text = self.tokenizer.batch_decode(
             sequences=tolist(inputs),
-            skip_special_tokens=True,
+            skip_special_tokens=False,
+            clean_up_tokenization_spaces=False,  # makes operation idempotent
         )
-        encoding_batch = self.tokenizer(input_tokens)
+
+        encoding_batch = self.tokenizer(text=input_text, add_special_tokens=False)
 
         # batched inputs for further collation
         batched_input_ids: List[EncodedInput] = []
