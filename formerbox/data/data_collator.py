@@ -23,6 +23,7 @@ def collate_batch(
     pad_value: Optional[int] = None,
 ) -> Tensor:
     max_length = 0
+    prev_max_length = 0
     padding_required = False
     for idx, sequence in enumerate(sequences):
         if isinstance(sequence, list):
@@ -32,10 +33,11 @@ def collate_batch(
         # find max_length in sequences
         sequence_length = sequence.size(0)
         if sequence_length > max_length:
+            prev_max_length = max_length
             max_length = sequence_length
 
         # check if sequences are of different lengths
-        if sequence_length != max_length:
+        if prev_max_length != max_length:
             padding_required = True
 
     # handle edge case when sequences have the same length
