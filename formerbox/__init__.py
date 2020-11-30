@@ -17,6 +17,7 @@ from formerbox.data import (
     BartTokenizerTrainer,
     Binarizer,
     DatasetConverter,
+    DatasetIterator,
     DefaultBinarizer,
     DefaultDatasetConverter,
     GPT2Tokenizer,
@@ -28,6 +29,7 @@ from formerbox.data import (
     MMapIndexedDatasetBuilder,
     RobertaTokenizer,
     RobertaTokenizerTrainer,
+    Seq2SeqBinarizer,
     TokenizerBase,
     TokenizerTrainerBase,
 )
