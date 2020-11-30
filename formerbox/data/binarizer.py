@@ -3,13 +3,14 @@ import os
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from io import TextIOWrapper
-from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
 import torch
-from datasets import load_dataset
+from datasets import Dataset, DatasetDict, load_dataset
 from formerbox.common.dataclass_argparse import DataclassBase
 from formerbox.common.has_params import HasParsableParams, ParamsType
 from formerbox.common.registrable import Registrable
+from formerbox.data.indexed_dataset import IndexedDatasetBuilderBase
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
 from formerbox.data.tokenizers.tokenization_base import Padding, Truncation
 from formerbox.utils import iter_stide
@@ -68,67 +69,24 @@ class Binarizer(Registrable, HasParsableParams[ParamsType], metaclass=ABCMeta):
         self.dataset_setup = dataset_setup
         self.tokenizer = tokenizer
 
-    def binarize_dataset(self, filename: Text, output_prefix: Text) -> None:
-        # prepare indexed dataset builder
-        data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
-        index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
-        dataset_builder = self.dataset_setup.dataset_builder_type(
-            data_filepath=data_filepath,
-            index_filepath=index_filepath,
-            dtype=self.dataset_setup.dataset_dtype,
-            dataset_type=self.dataset_setup.dataset_type,
-        )
-
-        # convert text to ids and write to the data file
-        logger.info("Processing the data file: %s", filename)
-        self.binarize(filename=filename, consumer=dataset_builder.add_tokenized_ids)
-
-        # write meta data and type info
-        logger.info("Finilizing the results")
-        dataset_builder.finalize()
+    @abstractmethod
+    def binarize_dataset(
+        self,
+        filename: Text,
+        output_prefix: Text,
+        **kwargs: Any,
+    ) -> None:
+        raise NotImplementedError()
 
     @abstractmethod
-    def binarize(
-        self, filename: Text, consumer: Callable[[torch.Tensor], None]
-    ) -> None:
+    def binarize(self, filename: Text, **kwargs: Any) -> None:
         """Binarize the given chunk of file and pass to a consumer."""
         raise NotImplementedError()
 
 
-@Binarizer.register(name="default", constructor="from_partial")
-class DefaultBinarizer(Binarizer):
+class BinarizerBase(Binarizer, metaclass=ABCMeta):
     @dataclass
     class Params(DataclassBase):
-        truncation: Truncation = field(
-            default="do_not_truncate",
-            metadata={"help": "Activates and controls the truncation."},
-        )
-        padding: Padding = field(
-            default="do_not_pad",
-            metadata={"help": "Controls the padding strategy."},
-        )
-        max_length: Optional[int] = field(
-            default=None,
-            metadata={
-                "help": "Pad to a maximum length specified with the argument"
-                " max_length or to the maximum acceptable input length for"
-                " the model if that argument is not provided."
-            },
-        )
-        stride: int = field(
-            default=0,
-            metadata={
-                "help": "If set to a number along with max_length, "
-                " the overflowing tokens returned when return_overflowing_tokens=True"
-                " will contain some tokens from the end of the truncated sequence"
-                " returned to provide some overlap between truncated and overflowing sequences."
-                " The value of this argument defines the number of overlapping tokens."
-            },
-        )
-        return_overflowing_tokens: bool = field(
-            default=False,
-            metadata={"help": "Whether or not to return overflowing token sequences."},
-        )
         batched: bool = field(
             default=True,
             metadata={
@@ -173,11 +131,15 @@ class DefaultBinarizer(Binarizer):
         super().__init__(dataset_setup, tokenizer)
         self.params = params
 
-    def binarize(
-        self, filename: Text, consumer: Callable[[torch.Tensor], None]
-    ) -> None:
+    @abstractmethod
+    def encode(self, instance: Dict[Text, Any]) -> Dict[Text, Any]:
+        raise NotImplementedError()
+
+    def process_dataset(
+        self, filename: Text, script_path: Text, remove_columns: List[Text]
+    ) -> Union[Dataset, DatasetDict]:
         dataset = load_dataset(
-            path="text",
+            path=script_path,
             data_files=[filename],
             split="train",
             script_version="master",
@@ -188,20 +150,115 @@ class DefaultBinarizer(Binarizer):
             batched=self.params.batched,
             batch_size=self.params.batch_size,
             num_proc=self.params.num_proc,
+            remove_columns=remove_columns,
+        )
+
+        return dataset
+
+    def write_instance(
+        self, instance: Dict[Text, Any], consumer: IndexedDatasetBuilderBase
+    ) -> None:
+        # write each chunk as a sample if `input_ids` is a batch
+        # and the `split_chunks` flag is set to true
+        input_ids = instance["input_ids"]
+        if isinstance(input_ids[0], list) and self.params.split_chunks:
+            for ids in input_ids:
+                consumer.add_tokenized_ids(torch.tensor(ids))
+        else:
+            consumer.add_tokenized_ids(torch.tensor(input_ids))
+
+
+# pylint: disable=arguments-differ
+@Binarizer.register(name="default", constructor="from_partial")
+class DefaultBinarizer(BinarizerBase):
+    @dataclass
+    class Params(BinarizerBase.Params):
+        truncation: Truncation = field(
+            default="do_not_truncate",
+            metadata={"help": "Activates and controls the truncation."},
+        )
+        padding: Padding = field(
+            default="do_not_pad",
+            metadata={"help": "Controls the padding strategy."},
+        )
+        max_length: Optional[int] = field(
+            default=None,
+            metadata={
+                "help": "Pad to a maximum length specified with the argument"
+                " max_length or to the maximum acceptable input length for"
+                " the model if that argument is not provided."
+            },
+        )
+        stride: int = field(
+            default=0,
+            metadata={
+                "help": "If set to a number along with max_length, "
+                " the overflowing tokens returned when return_overflowing_tokens=True"
+                " will contain some tokens from the end of the truncated sequence"
+                " returned to provide some overlap between truncated and overflowing sequences."
+                " The value of this argument defines the number of overlapping tokens."
+            },
+        )
+        return_overflowing_tokens: bool = field(
+            default=False,
+            metadata={"help": "Whether or not to return overflowing token sequences."},
+        )
+
+    params: Params
+    params_type: Type[Params] = Params
+
+    def __init__(
+        self,
+        dataset_setup: IndexedDatasetSetup,
+        tokenizer: PreTrainedTokenizerFast,
+        params: Params,
+    ) -> None:
+        super().__init__(dataset_setup, tokenizer, params)
+        self.params = params
+
+    def binarize_dataset(
+        self,
+        filename: Text,
+        output_prefix: Text,
+        **kwargs: Any,
+    ) -> None:
+        del kwargs  # support arbitrary arguments
+
+        # prepare indexed dataset builder
+        data_filepath = dataset_dest_filepath(output_prefix, extension="bin")
+        index_filepath = dataset_dest_filepath(output_prefix, extension="idx")
+        dataset_builder = self.dataset_setup.dataset_builder_type(
+            data_filepath=data_filepath,
+            index_filepath=index_filepath,
+            dtype=self.dataset_setup.dataset_dtype,
+            dataset_type=self.dataset_setup.dataset_type,
+        )
+
+        # convert text to ids and write to the data file
+        logger.info("Processing the data file: %s", filename)
+        self.binarize(filename=filename, consumer=dataset_builder)
+
+        # write meta data and type info
+        logger.info("Finilizing the results")
+        dataset_builder.finalize()
+
+    def binarize(
+        self,
+        filename: Text,
+        consumer: IndexedDatasetBuilderBase,
+        **kwargs: Any,
+    ) -> None:
+        del kwargs  # use only designated args
+
+        dataset = self.process_dataset(
+            filename,
+            script_path="text",
             remove_columns=["text"],
         )
 
         for instance in dataset:
             assert isinstance(instance, dict)
-            input_ids = instance["input_ids"]
-
-            # write each chunk as a sample if `input_ids` is a batch
-            # and the `split_chunks` flag is set to true
-            if isinstance(input_ids[0], list) and self.params.split_chunks:
-                for ids in input_ids:
-                    consumer(torch.tensor(ids))
-            else:
-                consumer(torch.tensor(input_ids))
+            self.write_instance(instance, consumer)
 
     def encode(self, instance: Dict[Text, Any]) -> Dict[Text, Any]:
         result: List[Union[int, List[int]]] = []
