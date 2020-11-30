@@ -60,11 +60,11 @@ class Preprocess(Subcommand):
             metadata={"help": "Test dataset text file prefix."},
         )
         legacy_format: bool = field(
-            default=True,
+            default=False,
             metadata={
-                "help": "Whether to save the tokenizer in legacy format (default),"
+                "help": "Whether to save the tokenizer in legacy format,"
                 " i.e. with tokenizer specific vocabulary and separate added_tokens files"
-                " or in the unified JSON file format of the `tokenizers` library."
+                " or in the unified JSON file format of the `tokenizers` library (default)."
             },
         )
 
