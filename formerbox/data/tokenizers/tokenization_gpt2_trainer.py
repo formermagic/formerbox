@@ -170,5 +170,6 @@ class GPT2TokenizerTrainer(TokenizerTrainerBase):
         kwargs.pop("unicode_normalizer", None)
         kwargs.pop("continuing_subword_prefix", None)
         kwargs.pop("end_of_word_suffix", None)
+        kwargs.pop("save_directory", None)
 
         return kwargs
