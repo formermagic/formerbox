@@ -85,18 +85,7 @@ class TokenizerTrainerBase(TokenizerTrainer[ParamsType]):
         # prepare the pre-trained tokenizer
         tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
 
-        # workaround for saving tokenizer bugs in the transformers backend
-        self.__fix_tokenizer(tokenizer)
-
         # save the pre-trained tokenizer
         tokenizer.save_pretrained(
             save_directory=save_directory, legacy_format=legacy_format
         )
-
-    def __fix_tokenizer(self, tokenizer: Tokenizer) -> None:
-        init_kwargs = getattr(tokenizer, "init_kwargs", {})
-        for key, value in init_kwargs.items():
-            if isinstance(value, AddedToken):
-                init_kwargs[key] = str(value)
-            else:
-                init_kwargs[key] = value
