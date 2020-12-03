@@ -100,9 +100,9 @@ class TransformerDataModule(
         self.params = params
 
         self.train_dataset: Optional[IndexedDatasetBase] = None
-        self.train_iterator: Optional[Dataset] = None
+        self.train_iterator: Optional[DatasetIterator] = None
         self.val_dataset: Optional[IndexedDatasetBase] = None
-        self.val_iterator: Optional[Dataset] = None
+        self.val_iterator: Optional[DatasetIterator] = None
 
         self.collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
 
