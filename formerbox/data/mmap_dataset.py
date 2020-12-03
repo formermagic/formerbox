@@ -52,6 +52,7 @@ class MMapIndexedDataset(MMapIndexedDatasetBase):
             self.length = length - 1  # has one extra (initial) item
             offset = index_file.tell()
 
+        self.index_buffer_mmap = np.memmap(filepath, mode="r", order="C")  # type: ignore
         self.index_buffer = memoryview(self.index_buffer_mmap.data)
         self.dim_offsets = np.frombuffer(
             self.index_buffer,
@@ -71,6 +72,7 @@ class MMapIndexedDataset(MMapIndexedDatasetBase):
         )
 
     def read_data_file(self, filepath: Text) -> None:
+        self.data_buffer_mmap = np.memmap(filepath, mode="r", order="C")  # type: ignore
         self.data_buffer = memoryview(self.data_buffer_mmap.data)
 
     @property
