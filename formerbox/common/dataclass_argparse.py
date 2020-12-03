@@ -54,7 +54,7 @@ def get_params_item(
 ) -> Optional[ParamsType]:
     for args in params:
         if isinstance(args, params_type):
-            return args
+            return args  # type: ignore
     return default
 
 
@@ -180,14 +180,14 @@ class DataclassArgumentParser(ArgumentParser):
                     continue
                 container_type = get_args(field_type)[0]
                 for collection_type in (List,):
-                    if container_type == collection_type[primitive_type]:
+                    if container_type == collection_type[primitive_type]:  # type: ignore
                         field_type = collection_type[primitive_type]
-                if container_type == primitive_type:
+                if container_type == primitive_type:  # type: ignore
                     field_type = primitive_type
 
             # unpack optional container
             if is_optional_type(field_type):
-                field_type: Type[Any] = get_args(field_type)[0]
+                field_type: Type[Any] = get_args(field_type)[0]  # type: ignore
 
             # raise value errors for unsupported field types
             if is_union_type(field_type):
