@@ -1,21 +1,17 @@
-from abc import ABCMeta, abstractmethod
-from argparse import Namespace
-from typing import Tuple, Type, TypeVar, Union
+import logging
+from abc import abstractmethod
+from typing import Tuple, Type, TypeVar
 
-from formerbox.common.dataclass_argparse import DataclassBase
-from formerbox.common.has_params import HasParsableParams
+from formerbox.common.has_params import HasParsableParams, ParamsType
 from formerbox.common.registrable import Registrable
-from formerbox.modules import TransformerDataModule, TransformerModule
-from transformers import PreTrainedTokenizerBase
+from transformers import PreTrainedTokenizerFast as Tokenizer
 from typing_extensions import Protocol
 
-Tokenizer = PreTrainedTokenizerBase
-
-ModuleType = TypeVar("ModuleType", bound=TransformerModule)
-DataModuleType = TypeVar("DataModuleType", bound=TransformerDataModule)
+ModuleType = TypeVar("ModuleType")
+DataModuleType = TypeVar("DataModuleType")
 TaskModuleType = TypeVar("TaskModuleType", bound="TaskModule")
 
-ParamType = Union[DataclassBase, Namespace]
+logger = logging.getLogger(__name__)
 
 
 class TaskModuleBase(Protocol[ModuleType, DataModuleType]):
@@ -24,10 +20,12 @@ class TaskModuleBase(Protocol[ModuleType, DataModuleType]):
 
 class TaskModule(
     TaskModuleBase[ModuleType, DataModuleType],
+    HasParsableParams[ParamsType],
     Registrable,
-    HasParsableParams,
-    metaclass=ABCMeta,
 ):
+    params: ParamsType
+    params_type: Type[ParamsType]
+
     def __init__(
         self,
         tokenizer: Tokenizer,
@@ -42,6 +40,6 @@ class TaskModule(
     @classmethod
     @abstractmethod
     def setup(
-        cls: Type[TaskModuleType], params: Tuple[ParamType, ...]
+        cls: Type[TaskModuleType], params: Tuple[ParamsType, ...]
     ) -> TaskModuleType:
         raise NotImplementedError()
