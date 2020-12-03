@@ -16,35 +16,35 @@
 
 import importlib
 import logging
+import typing
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Text, Tuple, Type, TypeVar, Union
+from typing import Callable, Dict, List, Optional, Text, Tuple, Type, Union
 
 from formerbox.common.partial_initable import PartialInitable
 
-T = TypeVar("T", bound="Registrable")  # pylint: disable=invalid-name
-Entry = TypeVar("Entry")
+T = typing.TypeVar("T", bound="Registrable")  # pylint: disable=invalid-name
 
 RegistryKey = Union[Text, Type[T]]
-RegistryRecord = Tuple[Type[T], Optional[Text]]
-RegistryMap = Dict[Text, RegistryRecord]
+RegistryMap = Dict[Text, Tuple[Type[T], Optional[Text]]]
+Registry = Dict[RegistryKey[T], RegistryMap[T]]
 
 logger = logging.getLogger(__name__)
 
 
 class Registrable(PartialInitable):
-    _registry: Dict[RegistryKey, RegistryMap] = defaultdict(dict)
     default_implementation: Optional[Text] = None
+    _registry: Registry["Registrable"] = defaultdict(dict)
 
     @classmethod
     def register(
-        cls: Type[T],
+        cls,
         name: Text,
         constructor: Optional[Text] = None,
         exist_ok: bool = False,
-    ) -> Callable[[Type[Entry]], Type[Entry]]:
+    ) -> Callable[[Type[T]], Type[T]]:
         registry = Registrable._registry[cls]
 
-        def add_subclass_to_registry(subclass: Type[Entry]) -> Type[Entry]:
+        def add_subclass_to_registry(subclass: Type[T]) -> Type[T]:
             # Add to registry, raise an error if key has already been used.
             if name in registry:
                 if not exist_ok:
@@ -60,12 +60,12 @@ class Registrable(PartialInitable):
         return add_subclass_to_registry
 
     @classmethod
-    def resolve_class_name(cls: Type[T], name: Text) -> RegistryRecord:
-        subclass: Type["Registrable"]
+    def resolve_class_name(cls: Type[T], name: Text) -> Tuple[Type[T], Optional[Text]]:
+        subclass: Type[T]
         constructor: Optional[Text]
 
         if name in Registrable._registry[cls]:
-            subclass, constructor = Registrable._registry[cls][name]
+            subclass, constructor = Registrable._registry[cls][name]  # type: ignore
         elif "." in name:
             # This might be a fully qualified class name, so we'll try importing its "module"
             # and finding it there.
@@ -106,8 +106,8 @@ class Registrable(PartialInitable):
     def from_registry(cls: Type[T], name: Text) -> Tuple[Type[T], Callable[..., T]]:
         subclass, constructor = cls.resolve_class_name(name)
         if constructor is None:
-            return subclass, subclass.__new__
-        return subclass, getattr(subclass, constructor)
+            return subclass, subclass.__new__  # type: ignore
+        return subclass, getattr(subclass, constructor)  # type: ignore
 
     @classmethod
     def from_name(cls: Type[T], name: Text) -> Callable[..., T]:
