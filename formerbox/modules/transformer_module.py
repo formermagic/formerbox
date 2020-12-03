@@ -86,8 +86,6 @@ class TransformerModule(
         # lazy initialized properties
         self.total_train_steps = 0
         self.lr_scheduler: Optional[LambdaLR] = None
-        self._train_dataloader: Optional[DataLoader[Tensor]] = None
-        self._val_dataloader: Optional[DataLoader[Tensor]] = None
 
         self.register_buffer("best_val_loss", torch.tensor(0.0))
 
