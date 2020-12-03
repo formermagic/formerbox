@@ -165,7 +165,7 @@ class MMapIndexedDatasetBuilder(IndexedDatasetBuilderBase):
 
         # merge `sizes` properties together
         if indexed_dataset.sizes is not None:
-            self.sizes.extend(indexed_dataset.sizes)
+            self.sizes.extend(indexed_dataset.sizes.tolist())
 
         # merge `dim_offsets` properties together
         start_offset = self.dim_offsets[-1]
