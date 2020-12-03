@@ -195,6 +195,7 @@ class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
                     test_size=self.params.valid_size
                 )
 
+                assert isinstance(dataset_split, DatasetDict)
                 train_dataset, valid_dataset = dataset_split.values()
                 valid_path = append_path_suffix(self.params.output_path, ".valid")
                 self.save_dataset(valid_dataset, valid_path)
@@ -205,6 +206,7 @@ class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
                     test_size=self.params.test_size
                 )
 
+                assert isinstance(dataset_split, DatasetDict)
                 train_dataset, test_dataset = dataset_split.values()
                 test_path = append_path_suffix(self.params.output_path, ".test")
                 self.save_dataset(test_dataset, test_path)
