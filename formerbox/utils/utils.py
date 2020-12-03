@@ -92,9 +92,11 @@ def path_to_posix(path: Union[Text, Path]) -> Text:
 
 
 def all_subclasses(cls: Type[T]) -> typing.Iterable[Type[T]]:
-    return set(cls.__subclasses__()).union(
-        [s for c in cls.__subclasses__() for s in all_subclasses(c)]
-    )
+    subclasses = set(cls.__subclasses__())
+    for subclass in subclasses:
+        _subclasses = all_subclasses(subclass)
+        subclasses = subclasses.union(_subclasses)
+    return subclasses  # type: ignore
 
 
 def init_from_args(cls: Type[T]) -> Type[T]:
