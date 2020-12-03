@@ -4,14 +4,8 @@ from pathlib import Path
 from typing import Any, Dict, Text, Type, Union
 
 import yaml
-from transformers import (
-    PretrainedConfig,
-    PreTrainedModel,
-    PreTrainedTokenizer,
-    PreTrainedTokenizerFast,
-)
-
-Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+from transformers import PretrainedConfig, PreTrainedModel
+from transformers import PreTrainedTokenizerFast as Tokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +69,7 @@ def tokenizer_from_config(
         validate_tokenizer_config(config_kwargs)
         tokenizer_name = config_kwargs["tokenizer"]["name"]
         tokenizer_class = import_class_from_string(tokenizer_name)
-        assert issubclass(tokenizer_class, Tokenizer.__args__)  # type: ignore
+        assert issubclass(tokenizer_class, Tokenizer)
     except AttributeError as err:
         raise err
 
@@ -84,6 +78,6 @@ def tokenizer_from_config(
 
     params = config_kwargs["tokenizer"].get("params", {})
     params.update(kwargs)
-    tokenizer = tokenizer_class.from_pretrained(tokenizer_path, **params)  # type: ignore
+    tokenizer = tokenizer_class.from_pretrained(tokenizer_path, **params)
 
     return tokenizer
