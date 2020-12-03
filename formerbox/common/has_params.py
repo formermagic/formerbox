@@ -19,7 +19,7 @@ class HasParams(Protocol[ParamsType]):
 
     @classmethod
     def from_params(cls: Type[Self], params: ParamsType, **kwargs: Any) -> Self:
-        return cls.from_partial(params=params, **kwargs)
+        return cls.from_partial(params=params, **kwargs)  # type: ignore
 
 
 class HasParsableParams(HasParams[ParamsType]):
