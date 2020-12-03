@@ -1,3 +1,5 @@
+from formerbox.modules.seq2seq_datamodule import Seq2SeqDataModule
+from formerbox.modules.seq2seq_module import Seq2SeqModule
 from formerbox.modules.tokenizer_trainer import TokenizerTrainer
 from formerbox.modules.transformer_datamodule import TransformerDataModule
 from formerbox.modules.transformer_module import TransformerModule
