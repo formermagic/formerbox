@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Text, Tuple, Type
 
 import torch
 from formerbox.common.dataclass_argparse import DataclassBase
@@ -14,11 +14,9 @@ from pytorch_lightning import LightningModule
 from torch import Tensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
-from torch.utils.data import DataLoader
-from transformers import PreTrainedModel, PreTrainedTokenizer, PreTrainedTokenizerFast
+from transformers import PreTrainedModel
+from transformers import PreTrainedTokenizerFast as Tokenizer
 from typing_extensions import Protocol
-
-Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 logger = logging.getLogger(__name__)
 
