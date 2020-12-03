@@ -127,12 +127,20 @@ class TransformerDataModule(
     def train_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
         assert self.train_iterator is not None
-        return DataLoader(self.train_iterator, num_workers=self.num_workers)
+        return DataLoader(
+            self.train_iterator,
+            collate_fn=self.train_iterator.collate_fn,
+            num_workers=self.num_workers,
+        )
 
     def val_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
         assert self.val_iterator is not None
-        return DataLoader(self.val_iterator, num_workers=self.num_workers)
+        return DataLoader(
+            self.val_iterator,
+            collate_fn=self.train_iterator.collate_fn,
+            num_workers=self.num_workers,
+        )
 
     def test_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
