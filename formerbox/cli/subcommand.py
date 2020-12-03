@@ -4,7 +4,7 @@ from argparse import _SubParsersAction
 from typing import Any, Callable, Dict, Optional, Text, Tuple, Type, TypeVar
 
 from formerbox.common.dataclass_argparse import DataclassArgumentParser
-from formerbox.common.registrable import Entry, Registrable
+from formerbox.common.registrable import Registrable
 
 T = TypeVar("T", bound="Subcommand")  # pylint: disable=invalid-name
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class Subcommand(Registrable):
-    _reverse_registry: Dict[Type, Text] = {}
+    _reverse_registry: Dict[Type["Subcommand"], Text] = {}
 
     @property
     def name(self) -> Text:
@@ -26,16 +26,16 @@ class Subcommand(Registrable):
 
     @classmethod
     def register(
-        cls: Type[T],
+        cls,
         name: Text,
         constructor: Optional[Text] = None,
         exist_ok: bool = False,
-    ) -> Callable[[Type[Entry]], Type[Entry]]:
+    ) -> Callable[[Type[T]], Type[T]]:
         super_register_fn = super().register(
             name, constructor=constructor, exist_ok=exist_ok
         )
 
-        def add_name_to_reverse_registry(subclass: Type[Entry]) -> Type[Entry]:
+        def add_name_to_reverse_registry(subclass: Type[T]) -> Type[T]:
             subclass = super_register_fn(subclass)
             # Don't need to check `exist_ok`, as it's done by super.
             # Also, don't need to delete previous entries if overridden, they can just stay there.
