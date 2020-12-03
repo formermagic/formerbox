@@ -102,7 +102,7 @@ def init_from_args(cls: Type[T]) -> Type[T]:
         valid_kwargs = inspect.signature(cls.__init__).parameters
         obj_kwargs = dict((name, args[name]) for name in valid_kwargs if name in args)
         obj_kwargs.update(**kwargs)
-        return cls(**obj_kwargs)
+        return cls(**obj_kwargs)  # type: ignore
 
     setattr(cls, "from_args", from_args)
     return cls
