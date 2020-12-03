@@ -160,11 +160,8 @@ class TransformerModule(
         assert outputs.loss is not None
 
         # prepare detached tensors for logging
-        loss = outputs.loss.detach().cpu()
-        logits = outputs.logits.detach()
-        labels = batch["labels"].detach()
-
-        perplexity = self.perplexity(logits, labels)
+        loss = outputs.loss
+        perplexity = self.perplexity(loss.detach())
         perplexity = perplexity.detach().cpu()
         batch_size = torch.tensor(len(batch["input_ids"]))
 
@@ -178,14 +175,17 @@ class TransformerModule(
         self.log("train_bsz", batch_size, prog_bar=True)
 
         return {
-            "loss": outputs.loss,
+            "loss": loss,
             "ppl": perplexity,
             "lr": learning_rate,
             "bsz": batch_size,
         }
 
     def validation_step(
-        self, batch: Dict[Text, Tensor], batch_idx: int, **kwargs: Any
+        self,
+        batch: Dict[Text, Tensor],
+        batch_idx: int,
+        **kwargs: Any,
     ) -> None:
         del batch_idx, kwargs  # nouse
         # model forward pass & prepare metrics
@@ -193,11 +193,8 @@ class TransformerModule(
         assert outputs.loss is not None
 
         # prepare detached tensors for logging
-        loss = outputs.loss.detach().cpu()
-        logits = outputs.logits.detach()
-        labels = batch["labels"].detach()
-
-        perplexity = self.perplexity(logits, labels)
+        loss = outputs.loss
+        perplexity = self.perplexity(loss.detach())
         perplexity = perplexity.detach().cpu()
 
         # log validation metrics
