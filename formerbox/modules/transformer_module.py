@@ -133,16 +133,6 @@ class TransformerModule(
         # return the model outputs
         return outputs
 
-    def prepare_batch(self, batch: Dict[Text, Tensor], batch_idx: int) -> None:
-        del batch_idx  # nouse
-
-        # data loader will produce an extra dimension
-        # if a data iterator is used, so we have
-        # to flatten our input tensor if this happens
-        input_ids = batch["input_ids"]
-        if len(input_ids.size()) == 3:
-            batch["input_ids"] = input_ids.squeeze(0)
-
     def training_step(
         self,
         batch: Dict[Text, Tensor],
@@ -150,9 +140,7 @@ class TransformerModule(
         optimizer_idx: Optional[int] = None,
         hiddens: Optional[Tensor] = None,
     ) -> Dict[Text, Any]:
-        del optimizer_idx, hiddens  # nouse
-        self.prepare_batch(batch, batch_idx)
-
+        del batch_idx, optimizer_idx, hiddens  # nouse
         # model forward pass & prepare metrics values
         outputs = self.forward(**batch)
         assert outputs.loss is not None
@@ -192,9 +180,7 @@ class TransformerModule(
     def validation_step(
         self, batch: Dict[Text, Tensor], batch_idx: int, **kwargs: Any
     ) -> None:
-        del kwargs  # nouse
-        self.prepare_batch(batch, batch_idx)
-
+        del batch_idx, kwargs  # nouse
         # model forward pass & prepare metrics
         outputs = self.forward(**batch)
         assert outputs.loss is not None
