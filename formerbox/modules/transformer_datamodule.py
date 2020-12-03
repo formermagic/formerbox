@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Optional, Text, Type, Union
+from typing import Any, Optional, Text, Type
 
 import torch
 from formerbox.common.dataclass_argparse import MISSING, DataclassBase
@@ -11,16 +11,10 @@ from formerbox.data.indexed_dataset import IndexedDatasetBase
 from formerbox.utils import path_to_posix
 from pytorch_lightning import LightningDataModule
 from pytorch_lightning.core.datamodule import _DataModuleWrapper
-from torch.utils.data import DataLoader, Dataset
-from transformers import (
-    DataCollator,
-    DataCollatorForLanguageModeling,
-    PreTrainedTokenizer,
-    PreTrainedTokenizerFast,
-)
+from torch.utils.data import DataLoader
+from transformers import DataCollator, DataCollatorForLanguageModeling
+from transformers import PreTrainedTokenizerFast as Tokenizer
 from typing_extensions import _ProtocolMeta  # type: ignore
-
-Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +98,7 @@ class TransformerDataModule(
         self.val_dataset: Optional[IndexedDatasetBase] = None
         self.val_iterator: Optional[DatasetIterator] = None
 
-        self.collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
+        self.collator = DataCollatorForLanguageModeling(self.tokenizer)
 
     def prepare_data(self, *args: Any, **kwargs: Any) -> None:
         del args, kwargs  # no data to download
