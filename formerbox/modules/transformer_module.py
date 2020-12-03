@@ -88,6 +88,20 @@ class TransformerModule(
 
         self.register_buffer("best_val_loss", torch.tensor(0.0))
 
+    @property
+    def learning_rate(self) -> torch.Tensor:
+        learning_rate: torch.Tensor
+        if self.lr_scheduler is None:
+            learning_rate = torch.tensor(float("nan"))
+        else:
+            try:
+                values = self.lr_scheduler.get_last_lr()  # type: ignore
+                learning_rate = torch.tensor(values).mean()
+            except IndexError:
+                learning_rate = torch.tensor(float("nan"))
+
+        return learning_rate
+
     def setup(self, stage: Optional[Text] = None) -> None:
         del stage  # we don't use `stage` to build a module
 
@@ -155,14 +169,7 @@ class TransformerModule(
         batch_size = torch.tensor(len(batch["input_ids"]))
 
         # get the latest scheduled learning rate
-        if self.lr_scheduler is None:
-            learning_rate = torch.tensor(float("nan"))
-        else:
-            try:
-                values = self.lr_scheduler.get_last_lr()  # type: ignore
-                learning_rate = torch.tensor(values).mean()
-            except IndexError:
-                learning_rate = torch.tensor(float("nan"))
+        learning_rate = self.learning_rate
 
         # log training metrics
         self.log("train_loss", loss, prog_bar=True)
