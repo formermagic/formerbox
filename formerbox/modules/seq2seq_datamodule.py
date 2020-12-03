@@ -5,7 +5,7 @@ from typing import Optional, Text, Type
 from formerbox.common.dataclass_argparse import MISSING
 from formerbox.data.data_collator import DataCollatorForSeq2SeqDenoising, ReplaceLength
 from formerbox.data.seq2seq_dataset import Seq2SeqDataset
-from formerbox.modules import TransformerDataModule
+from formerbox.modules.transformer_datamodule import TransformerDataModule
 from transformers import PreTrainedTokenizerFast as Tokenizer
 
 logger = logging.getLogger(__name__)
