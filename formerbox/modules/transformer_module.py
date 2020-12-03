@@ -80,8 +80,7 @@ class TransformerModule(
         self.model = model
         self.tokenizer = tokenizer
         self.params = params
-
-        self.perplexity = Perplexity(tokenizer.vocab_size)
+        self.perplexity = Perplexity()
 
         # lazy initialized properties
         self.total_train_steps = 0
