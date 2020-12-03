@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Text, Union
+from typing import Any, Dict, List, Text, Type, Union
 
 from formerbox.common.dataclass_argparse import MISSING, DataclassBase
 from formerbox.modules.tokenizer_trainer import ParamsType, TokenizerTrainer
@@ -41,6 +41,8 @@ class TokenizerTrainerParams(DataclassBase):
 
 
 class TokenizerTrainerBase(TokenizerTrainer[ParamsType]):
+    params: ParamsType
+    params_type: Type[ParamsType]
     special_tokens: List[Token]
     tokenizer: BaseTokenizer
 
