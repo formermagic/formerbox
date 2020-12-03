@@ -203,7 +203,7 @@ class DataCollatorForSeq2SeqDenoising:
         elif self.replace_length == -1:
             inputs[masked_tokens_indices] = self.tokenizer.mask_token_id
             inputs[random_tokens_indices] = self.random_tokens(
-                shape=random_tokens_indices.shape
+                shape=random_tokens_indices.shape,  # type: ignore
             )
         # replace each word with a mask or random token
         # `Trans #form #er #s are great` => `<mask> are great`
@@ -219,7 +219,9 @@ class DataCollatorForSeq2SeqDenoising:
 
             # replace first non-repeating subwords with a mask or random token
             inputs[indices_replaced] = self.tokenizer.mask_token_id
-            inputs[indices_random] = self.random_tokens(shape=indices_random.shape)
+            inputs[indices_random] = self.random_tokens(
+                shape=indices_random.shape,  # type: ignore
+            )
 
             # include only word starts for the final result
             inputs_mask[masked_tokens_indices] = masked_words_start_mask
