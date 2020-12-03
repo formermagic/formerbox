@@ -18,4 +18,4 @@ class PartialInitable:
                 continue
 
         # build an instance with selected attributes
-        return cls(**obj_kwargs)
+        return cls(**obj_kwargs)  # type: ignore
