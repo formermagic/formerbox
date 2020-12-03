@@ -72,7 +72,7 @@ def collate_batch(
 
 
 def find(tensor: Tensor, values: Tensor) -> Tensor:
-    return torch.nonzero(tensor[:, None] == values)  # type: ignore
+    return torch.nonzero(tensor[:, None] == values, as_tuple=False)  # type: ignore
 
 
 @dataclass
