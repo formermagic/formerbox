@@ -142,7 +142,7 @@ def test_cli_train(
     task: Text,
 ) -> None:
     assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
-    config_path = fixtures_directory / "model-config.yml"
+    config_path = fixtures_directory / "tiny_roberta.yml"
     tiny_dataset = fixtures_directory / "tiny_dataset.bin"
 
     tokenizer_path = tiny_dataset / "tokenizer"
