@@ -22,7 +22,7 @@ def test_cli_convert_dataset(
     converter: Text,
 ) -> None:
     assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
-    data_files = fixtures_directory / "tiny_dataset" / "tiny_raw_dataset.jsonl"
+    data_files = fixtures_directory / "tiny_dataset" / "tiny_dataset.jsonl"
     output_path = tmp_path / "tiny_dataset" / "tiny_dataset.src"
 
     argv = shlex.split(
