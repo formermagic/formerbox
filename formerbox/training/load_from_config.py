@@ -23,8 +23,8 @@ def validate_model_config(config: Any) -> None:
     assert "name" in config["model"], "Config must contain a `model.name` property"
     assert "config" in config["model"], "Config must contain a `model.config` property"
     assert (
-        "config_params" in config["model"]
-    ), "Config must contain `model.config_params` property"
+        "name" in config["model"]["config"]
+    ), "Config must contain `model.config.name` property"
 
 
 def validate_tokenizer_config(config: Any) -> None:
@@ -43,22 +43,31 @@ def parse_config(config_path: Union[Text, Path]) -> Dict[Text, Any]:
 
 def model_from_config(config_path: Union[Text, Path], **kwargs: Any) -> PreTrainedModel:
     try:
+        # parse config and make sure it contains model setup
         config_kwargs = parse_config(config_path)
         validate_model_config(config_kwargs)
-        model_name = config_kwargs["model"]["name"]
-        config_name = config_kwargs["model"]["config"]
 
+        # extract model setup parameters
+        model_kwargs = config_kwargs["model"]
+        assert isinstance(model_kwargs, dict)
+        # extract model config setup parameters
+        model_config_kwargs = model_kwargs.pop("config")
+        assert isinstance(model_config_kwargs, dict)
+
+        # get the model class
+        model_name = model_kwargs.pop("name")
         model_class = import_class_from_string(model_name)
-        config_class = import_class_from_string(config_name)
+        # get the model config class
+        model_config_name = model_config_kwargs.pop("name")
+        model_config_class = import_class_from_string(model_config_name)
     except AttributeError as err:
         raise err
 
-    config_params = config_kwargs["model"]["config_params"]
-    config_params.update(kwargs)
-    config = config_class(**config_params)
-    assert isinstance(config, PretrainedConfig)
+    model_config_kwargs.update(kwargs)
+    model_config = model_config_class(**model_config_kwargs)
+    assert isinstance(model_config, PretrainedConfig)
 
-    return model_class(config)
+    return model_class(model_config)
 
 
 def tokenizer_from_config(
