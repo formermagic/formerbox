@@ -49,7 +49,10 @@ class Seq2SeqDataset(IndexedDatasetBase):
         if self.tgt_dataset is None:
             return self.src_dataset.supports_prefetch
 
-        return self.src_dataset.supports_prefetch and self.tgt_dataset.supports_prefetch
+        both_support_prefetch = self.src_dataset.supports_prefetch
+        both_support_prefetch &= self.tgt_dataset.supports_prefetch
+
+        return both_support_prefetch
 
     def prefetch(self, indices: List[int]) -> None:
         self.src_dataset.prefetch(indices)
