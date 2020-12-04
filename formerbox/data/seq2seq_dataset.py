@@ -37,12 +37,12 @@ class Seq2SeqDataset(IndexedDatasetBase):
         self.kwargs = kwargs
 
     def __getitem__(self, index: int) -> Dict[Text, Tensor]:
-        src_input_ids = self.src_dataset[index]
+        input_ids = self.src_dataset[index]
         if self.tgt_dataset is None:
-            return {"src_input_ids": src_input_ids}
+            return {"input_ids": input_ids}
 
-        tgt_input_ids = self.tgt_dataset[index]
-        return {"src_input_ids": src_input_ids, "tgt_input_ids": tgt_input_ids}
+        labels = self.tgt_dataset[index]
+        return {"input_ids": input_ids, "labels": labels}
 
     @property
     def supports_prefetch(self) -> bool:
