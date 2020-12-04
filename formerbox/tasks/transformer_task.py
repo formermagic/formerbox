@@ -7,20 +7,19 @@ from formerbox.common.dataclass_argparse import (
     MISSING,
     DataclassArgumentParser,
     DataclassBase,
-    get_params_item,
 )
+from formerbox.common.has_params import ParamsType
 from formerbox.modules import TransformerDataModule as DataModule
 from formerbox.modules import TransformerModule as Module
 from formerbox.tasks.task_module import TaskModule
 from formerbox.training.load_from_config import model_from_config, tokenizer_from_config
-
-ParamType = Union[DataclassBase, Namespace]
+from transformers import PreTrainedTokenizerFast as Tokenizer
 
 logger = logging.getLogger(__name__)
 
 
 @TaskModule.register("transformer-task")
-class TransformerTask(TaskModule[Module, DataModule]):
+class TransformerTask(TaskModule[ParamsType]):
     @dataclass
     class Params(DataclassBase):
         config_path: Text = field(
@@ -35,43 +34,24 @@ class TransformerTask(TaskModule[Module, DataModule]):
     params: Params
     params_type: Type[Params] = Params
 
-    ComponentParams = Tuple[
-        params_type,
-        Module.params_type,
-        DataModule.params_type,
-    ]
-
-    @classmethod
-    def get_params(cls, params: Tuple[ParamType, ...]) -> "ComponentParams":
-        # get the params for task components
-        task_params = get_params_item(
-            params=params,
-            params_type=cls.params_type,
-        )
-        module_params = get_params_item(
-            params=params,
-            params_type=Module.params_type,
-        )
-        datamodule_params = get_params_item(
-            params=params,
-            params_type=DataModule.params_type,
-        )
-
-        # make sure the params exist
-        assert task_params is not None
-        assert module_params is not None
-        assert datamodule_params is not None
-
-        return task_params, module_params, datamodule_params
+    def __init__(
+        self,
+        tokenizer: Tokenizer,
+        module: Module,
+        datamodule: DataModule,
+    ) -> None:
+        super().__init__(tokenizer, module, datamodule)
+        self.tokenizer = tokenizer
+        self.module = module
+        self.datamodule = datamodule
 
     @classmethod
     def setup(
-        cls: Type["TransformerTask"], params: Tuple[ParamType, ...]
+        cls: Type["TransformerTask"],
+        params: Tuple[Union[DataclassBase, Namespace], ...],
     ) -> "TransformerTask":
-        # get the params for task components
-        task_params, module_params, datamodule_params = cls.get_params(params)
-
         # prepare the tokenizer from config
+        task_params = cls.get_params(params, cls.params_type)
         tokenizer = tokenizer_from_config(
             task_params.config_path, task_params.tokenizer_path
         )
@@ -86,9 +66,11 @@ class TransformerTask(TaskModule[Module, DataModule]):
         )
 
         # prepare a transformer module
+        module_params = cls.get_params(params, Module.params_type)
         module = Module(model=model, tokenizer=tokenizer, params=module_params)
 
         # prepare a transformer datamodule
+        datamodule_params = cls.get_params(params, DataModule.params_type)
         datamodule = DataModule(tokenizer=tokenizer, params=datamodule_params)
 
         return cls(tokenizer, module, datamodule)
@@ -97,6 +79,6 @@ class TransformerTask(TaskModule[Module, DataModule]):
     def add_argparse_params(
         cls: Type["TransformerTask"], parser: DataclassArgumentParser
     ) -> None:
-        parser.add_arguments(cls.Params)
+        parser.add_arguments(cls.params_type)
         Module.add_argparse_params(parser)
         DataModule.add_argparse_params(parser)
