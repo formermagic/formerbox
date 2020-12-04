@@ -160,12 +160,13 @@ class DataCollatorForSeq2SeqDenoising:
         assert self.tokenizer.mask_token_id is not None
 
         # prepare the word boundaries for masking out
+        special_tokens_mask = self.get_special_tokens_mask(input_ids)
         word_bounds = torch.tensor([x if x is not None else -1 for x in input_words])
-        word_ids = word_bounds[word_bounds != -1].unique()
+        word_ids = word_bounds[~special_tokens_mask].unique()
 
         # prepare input and input mask to split masked subwords
         inputs = torch.tensor(input_ids)
-        inputs_mask = torch.full(word_bounds.shape, fill_value=1, dtype=torch.bool)
+        inputs_mask = torch.full(inputs.shape, fill_value=1, dtype=torch.bool)
 
         # prepare the target labels
         labels = inputs.clone()
@@ -230,6 +231,19 @@ class DataCollatorForSeq2SeqDenoising:
         inputs = inputs[inputs_mask]
 
         return inputs, labels
+
+    def get_special_tokens_mask(
+        self,
+        input_ids: Union[List[int], Tensor],
+        already_has_special_tokens: bool = True,
+    ) -> torch.BoolTensor:
+        """Returns the mask indicating special tokens in the given list."""
+        special_tokens_mask = self.tokenizer.get_special_tokens_mask(
+            token_ids_0=tolist(input_ids),
+            already_has_special_tokens=already_has_special_tokens,
+        )
+
+        return torch.BoolTensor(special_tokens_mask)
 
     def words_start_mask(self, elements: List[Any]) -> List[bool]:
         """Returns the mask indicating where words start."""
