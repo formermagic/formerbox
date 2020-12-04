@@ -33,7 +33,13 @@ from formerbox.data import (
     TokenizerBase,
     TokenizerTrainerBase,
 )
-from formerbox.modules import TokenizerTrainer, TransformerDataModule, TransformerModule
+from formerbox.modules import (
+    Seq2SeqDataModule,
+    Seq2SeqModule,
+    TokenizerTrainer,
+    TransformerDataModule,
+    TransformerModule,
+)
 from formerbox.optim import AdamW, get_polynomial_decay_with_warmup, weight_decay_params
 from formerbox.tasks import (
     CodeDatasetConverter,
