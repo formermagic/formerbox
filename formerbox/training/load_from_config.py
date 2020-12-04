@@ -30,9 +30,6 @@ def validate_model_config(config: Any) -> None:
 def validate_tokenizer_config(config: Any) -> None:
     assert isinstance(config, dict), "Config must be decoded into a dictionary"
     assert "tokenizer" in config, "Config must contain a `tokenizer` property"
-    assert (
-        "params" in config["tokenizer"]
-    ), "Config must contain `tokenizer.params` property"
 
 
 def parse_config(config_path: Union[Text, Path]) -> Dict[Text, Any]:
@@ -74,19 +71,25 @@ def tokenizer_from_config(
     config_path: Union[Text, Path], tokenizer_path: Union[Text, Path], **kwargs: Any
 ) -> Tokenizer:
     try:
+        # parse config and make sure it contains tokenizer setup
         config_kwargs = parse_config(config_path)
         validate_tokenizer_config(config_kwargs)
-        tokenizer_name = config_kwargs["tokenizer"]["name"]
+
+        # extract tokenizer setup parameters
+        tokenizer_kwargs = config_kwargs["tokenizer"]
+        assert isinstance(tokenizer_kwargs, dict)
+
+        # get the tokenizer class
+        tokenizer_name = tokenizer_kwargs.pop("name")
         tokenizer_class = import_class_from_string(tokenizer_name)
         assert issubclass(tokenizer_class, Tokenizer)
     except AttributeError as err:
         raise err
 
     if isinstance(tokenizer_path, Path):
-        tokenizer_path = tokenizer_path.as_posix()
+        tokenizer_path = str(tokenizer_path)
 
-    params = config_kwargs["tokenizer"].get("params", {})
-    params.update(kwargs)
-    tokenizer = tokenizer_class.from_pretrained(tokenizer_path, **params)
+    tokenizer_kwargs.update(kwargs)
+    tokenizer = tokenizer_class.from_pretrained(tokenizer_path, **tokenizer_kwargs)
 
     return tokenizer
