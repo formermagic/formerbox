@@ -82,14 +82,14 @@ class DataCollatorForSeq2Seq:
     def __call__(self, features: List[Dict[Text, EncodedInput]]) -> Dict[Text, Tensor]:
         assert self.tokenizer.pad_token_id is not None
 
-        src_input_ids: List[EncodedInput] = []
-        tgt_input_ids: List[EncodedInput] = []
+        seq_input_ids: List[EncodedInput] = []
+        seq_labels: List[EncodedInput] = []
         for feature in features:
-            src_input_ids.append(feature["src_input_ids"])
-            tgt_input_ids.append(feature["tgt_input_ids"])
+            seq_input_ids.append(feature["input_ids"])
+            seq_labels.append(feature["labels"])
 
-        input_ids = collate_batch(sequences=src_input_ids, tokenizer=self.tokenizer)
-        labels = collate_batch(sequences=tgt_input_ids, tokenizer=self.tokenizer)
+        input_ids = collate_batch(sequences=seq_input_ids, tokenizer=self.tokenizer)
+        labels = collate_batch(sequences=seq_labels, tokenizer=self.tokenizer)
         attention_mask = (input_ids != self.tokenizer.pad_token_id).long()
 
         return {
@@ -111,7 +111,7 @@ class DataCollatorForSeq2SeqDenoising:
 
         inputs: List[EncodedInput] = []
         for feature in features:
-            input_ids = feature["src_input_ids"]
+            input_ids = feature["input_ids"]
             inputs.append(tolist(input_ids))
 
         input_ids, labels = self.add_whole_word_mask(inputs)
