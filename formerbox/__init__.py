@@ -39,6 +39,7 @@ from formerbox.tasks import (
     CodeDatasetConverter,
     CodeRobertaTokenizer,
     CodeRobertaTokenizerTrainer,
+    Seq2SeqTask,
     TaskModule,
     TransformerTask,
 )
