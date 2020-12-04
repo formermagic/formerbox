@@ -1,5 +1,6 @@
 import os
 
+from formerbox.tasks.seq2seq_task import Seq2SeqTask
 from formerbox.tasks.task_module import TaskModule
 from formerbox.tasks.transformer_task import TransformerTask
 from formerbox.utils.utils import str2bool
