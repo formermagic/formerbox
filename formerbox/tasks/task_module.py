@@ -43,3 +43,22 @@ class TaskModule(
         params: Tuple[Union[DataclassBase, Namespace], ...],
     ) -> TaskModuleType:
         raise NotImplementedError()
+
+    @classmethod
+    def get_params(
+        cls,
+        params: Tuple[Union[DataclassBase, Namespace], ...],
+        params_type: Type[ParamsType],
+    ) -> ParamsType:
+        item = get_params_item(
+            params=params,
+            params_type=params_type,
+        )
+
+        assert item is not None, (
+            f"Unable to find params of type ({params_type}) in {params}.",
+            " Make sure all required methods are implemented in a running task.",
+            " You may also want to make sure all required arguments are specified.",
+        )
+
+        return item
