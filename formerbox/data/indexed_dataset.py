@@ -13,7 +13,6 @@ import torch
 from formerbox.utils import all_subclasses, path_to_posix
 from numpy import float32, float64, int8, int16, int32, int64, uint8, uint16
 from torch.utils.data import Dataset
-from typing_extensions import Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -55,11 +54,7 @@ def make_data_filepath(prefix_path: Text) -> Text:
     return prefix_path + ".bin"
 
 
-class MagicDecodable(Protocol):
-    magic_code: bytes
-
-
-class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
+class IndexedDatasetBase(Dataset, metaclass=ABCMeta):
     """A base class for loading preprocessed binary datasets.
     Binary datasets are represented as 2 files (.bin, .idx),
     containing the data sequences (.bin) and indices (.idx).
@@ -77,6 +72,8 @@ class IndexedDatasetBase(Dataset, MagicDecodable, metaclass=ABCMeta):
         sizes (:obj:`Optional[np.ndarray]`): A number of elements for the given element
             written to the index (.idx) file.
     """
+
+    magic_code: bytes = NotImplemented
 
     def __init__(self, filepath_prefix: Text, **kwargs: Any) -> None:
         # properties for reading data from files
