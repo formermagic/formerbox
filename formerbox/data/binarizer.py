@@ -264,10 +264,24 @@ class DefaultBinarizer(BinarizerBase):
         result: List[Union[int, List[int]]] = []
         lines = instance["text"]
 
+        # use tokenizer associated model max length
+        # if max_length isn't set explicitly
+        if self.params.max_length is None:
+            max_length = getattr(self.tokenizer, "model_max_length", None)
+        else:
+            max_length = self.params.max_length
+
+            # update tokenizer associated model max length config
+            # this is useful since we might wanna save tokenizer
+            # to reproduce expected behavior after data preprocessing
+            init_kwargs: Dict[Text, Any] = getattr(self.tokenizer, "init_kwargs", {})
+            init_kwargs["model_max_length"] = max_length
+            setattr(self.tokenizer, "init_kwargs", init_kwargs)
+
         # make sure we explicitly truncate if max_length is provided
         truncation = self.params.truncation
-        if truncation == "do_not_truncate" and self.params.max_length is not None:
-            truncation = "longest_first"
+        if truncation == "do_not_truncate" and max_length is not None:
+            truncation = "only_first"  # same as `truncation=True`
 
         try:
             # split long documents into smaller overlaping chunks
