@@ -132,7 +132,11 @@ class DataCollatorForSeq2SeqDenoising:
             clean_up_tokenization_spaces=False,  # makes operation idempotent
         )
 
-        encoding_batch = self.tokenizer(text=input_text, add_special_tokens=False)
+        encoding_batch = self.tokenizer(
+            text=input_text,
+            add_special_tokens=False,
+            truncation=True,
+        )
 
         # batched inputs for further collation
         batched_input_ids: List[EncodedInput] = []
