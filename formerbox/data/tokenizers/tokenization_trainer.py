@@ -23,6 +23,8 @@ SPECIAL_TOKENS: List[Token] = [
     "<mask>",
 ]
 
+VERY_LARGE_INTEGER = int(1e30)
+
 
 @dataclass
 class TokenizerTrainerParams(DataclassBase):
@@ -37,6 +39,10 @@ class TokenizerTrainerParams(DataclassBase):
     min_frequency: int = field(
         default=2,
         metadata={"help": "The min frequency for calculating subwords merges."},
+    )
+    model_max_length: int = field(
+        default=VERY_LARGE_INTEGER,
+        metadata={"help": "The maximum input length for the associated model."},
     )
 
 
