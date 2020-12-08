@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 @TokenizerBase.register("roberta")
 class RobertaTokenizer(RobertaTokenizerFast, TokenizerBase):
+    model_max_length: int
+
     def __init__(
         self,
         vocab_file: Text,
