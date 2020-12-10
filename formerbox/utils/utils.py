@@ -138,3 +138,9 @@ def append_path_suffix(base_path: Union[Text, Path], suffix: Text) -> Text:
         base_path = str(base_path)
     base_path, ext = os.path.splitext(base_path)
     return f"{base_path}{suffix}{ext}"
+
+
+def update_left_inplace(left_dict: Dict[Any, Any], right_dict: Dict[Any, Any]) -> None:
+    for key, item in right_dict.items():
+        if key not in left_dict:
+            left_dict[key] = item
