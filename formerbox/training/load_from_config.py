@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, Text, Type, Union
 
 import yaml
+from formerbox.utils import update_left_inplace
 from transformers import PretrainedConfig, PreTrainedModel
 from transformers import PreTrainedTokenizerFast as Tokenizer
 
@@ -60,7 +61,7 @@ def model_from_config(config_path: Union[Text, Path], **kwargs: Any) -> PreTrain
     except AttributeError as err:
         raise err
 
-    model_config_kwargs.update(kwargs)
+    update_left_inplace(model_config_kwargs, kwargs)
     model_config = model_config_class(**model_config_kwargs)
     assert isinstance(model_config, PretrainedConfig)
 
