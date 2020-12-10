@@ -90,7 +90,7 @@ def tokenizer_from_config(
     if isinstance(tokenizer_path, Path):
         tokenizer_path = str(tokenizer_path)
 
-    tokenizer_kwargs.update(kwargs)
+    update_left_inplace(tokenizer_kwargs, kwargs)
     tokenizer = tokenizer_class.from_pretrained(tokenizer_path, **tokenizer_kwargs)
 
     return tokenizer
