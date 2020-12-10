@@ -56,6 +56,14 @@ class TransformerTask(TaskModule[ParamsType]):
             task_params.config_path, task_params.tokenizer_path
         )
 
+        # prepare model max length for positional embeddings
+        assert hasattr(tokenizer, "model_max_length")
+        model_max_length = getattr(tokenizer, "model_max_length")
+
+        # some models also add extra positions to positional embeddings
+        assert tokenizer.pad_token_id is not None
+        extra_pos_embeddings = tokenizer.pad_token_id + 1
+
         # prepare a model to train
         model = model_from_config(
             task_params.config_path,
@@ -63,6 +71,8 @@ class TransformerTask(TaskModule[ParamsType]):
             pad_token_id=tokenizer.pad_token_id,
             bos_token_id=tokenizer.bos_token_id,
             eos_token_id=tokenizer.eos_token_id,
+            max_position_embeddings=model_max_length,
+            extra_pos_embeddings=extra_pos_embeddings,
         )
 
         # prepare a transformer module
