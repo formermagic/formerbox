@@ -33,11 +33,17 @@ class SaveCheckpointAtStep(Callback):
         self.monitor_start_value = torch.tensor(0.0)
 
     def get_metrics(self, trainer: Trainer) -> Dict[Text, Tensor]:
-        result = {}
-        for metric, value in trainer.logged_metrics.items():
+        # get all logged metrics
+        metrics: Dict[Text, Any] = deepcopy(trainer.logger_connector.logged_metrics)
+        metrics.update(trainer.logger_connector.callback_metrics)
+        metrics.update(trainer.logger_connector.progress_bar_metrics)
+        metrics.update({"step": trainer.global_step, "epoch": trainer.current_epoch})
+
+        # select only scalar metrics
+        scalar_metrics: Dict[Text, Tensor] = {}
+        for metric, value in metrics.items():
             if isinstance(value, (int, float, bool)):
-                result[metric] = torch.tensor([value])
-        return result
+                scalar_metrics[metric] = torch.tensor(value)
 
     def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         del trainer  # nouse
