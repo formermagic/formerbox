@@ -80,13 +80,13 @@ class TransformerModule(
         self.model = model
         self.tokenizer = tokenizer
         self.params = params
+
+        # metrics properties
         self.perplexity = Perplexity()
 
         # lazy initialized properties
         self.total_train_steps = 0
         self.lr_scheduler: Optional[LambdaLR] = None
-
-        self.register_buffer("best_val_loss", torch.tensor(0.0))
 
     @property
     def learning_rate(self) -> torch.Tensor:
