@@ -97,11 +97,15 @@ class Seq2SeqModule(TransformerModule):
         batch_size = torch.tensor(batch["input_ids"].size(0))
         learning_rate = self.learning_rate
 
+        metrics = {
+            "train_loss": loss,
+            "train_ppl": perplexity,
+            "train_lr": learning_rate,
+            "train_bsz": batch_size,
+        }
+
         # log training metrics
-        self.log("train_loss", loss, prog_bar=True)
-        self.log("train_ppl", perplexity, prog_bar=True)
-        self.log("train_lr", learning_rate, prog_bar=True)
-        self.log("train_bsz", batch_size, prog_bar=True)
+        self.log_dict(metrics, prog_bar=True)
 
         return {
             "loss": loss,
@@ -129,7 +133,7 @@ class Seq2SeqModule(TransformerModule):
 
         # prepare other metrics to log
         perplexity = self.perplexity(loss.detach())
+        metrics = {"val_loss": loss, "val_ppl": perplexity}
 
         # log validation metrics
-        self.log("val_loss", loss, prog_bar=True)
-        self.log("val_ppl", perplexity, prog_bar=True)
+        self.log_dict(metrics, prog_bar=True)
