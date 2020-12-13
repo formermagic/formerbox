@@ -94,7 +94,6 @@ class Seq2SeqModule(TransformerModule):
 
         # prepare other metrics to log
         perplexity = self.perplexity(loss.detach())
-        perplexity = perplexity.detach().cpu()
         batch_size = torch.tensor(batch["input_ids"].size(0))
         learning_rate = self.learning_rate
 
