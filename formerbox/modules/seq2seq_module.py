@@ -80,7 +80,7 @@ class Seq2SeqModule(TransformerModule):
         batch_idx: int,
         optimizer_idx: Optional[int] = None,
         hiddens: Optional[Tensor] = None,
-    ) -> Dict[Text, Any]:
+    ) -> Tensor:
         del batch_idx, optimizer_idx, hiddens  # nouse
 
         # make a model forward pass
@@ -107,12 +107,7 @@ class Seq2SeqModule(TransformerModule):
         # log training metrics
         self.log_dict(metrics, prog_bar=True)
 
-        return {
-            "loss": loss,
-            "ppl": perplexity,
-            "lr": learning_rate,
-            "bsz": batch_size,
-        }
+        return loss
 
     def validation_step(
         self,
