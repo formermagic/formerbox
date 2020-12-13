@@ -129,7 +129,6 @@ class Seq2SeqModule(TransformerModule):
 
         # prepare other metrics to log
         perplexity = self.perplexity(loss.detach())
-        perplexity = perplexity.detach().cpu()
 
         # log validation metrics
         self.log("val_loss", loss, prog_bar=True)
