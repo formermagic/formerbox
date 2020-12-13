@@ -16,7 +16,12 @@ class Perplexity(Metric):
     ) -> None:
         super().__init__(compute_on_step, ddp_sync_on_step, process_group)
 
-        self.add_state("loss", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state(
+            name="loss",
+            default=torch.tensor(0),
+            dist_reduce_fx="sum",
+            persistent=False,
+        )
 
     def update(self, loss: torch.Tensor) -> None:
         self.loss = self.loss + loss
