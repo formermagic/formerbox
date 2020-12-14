@@ -102,6 +102,7 @@ class Seq2SeqModule(TransformerModule):
             "train_ppl": perplexity,
             "train_lr": learning_rate,
             "train_bsz": batch_size,
+            "global_step": self.trainer.global_step,
         }
 
         # log training metrics
