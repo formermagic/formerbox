@@ -107,6 +107,8 @@ class Seq2SeqModule(TransformerModule):
 
         # log training metrics
         self.log_dict(metrics, prog_bar=True)
+        # this ensures that we'll always log the last step
+        self.log("step", self.trainer.global_step)
 
         return loss
 
