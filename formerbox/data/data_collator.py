@@ -130,7 +130,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
             input_ids = feature["input_ids"]
             inputs.append(tolist(input_ids))
 
-        input_ids, labels = self.add_whole_word_mask(inputs)
+        input_ids, labels = self.add_noise(inputs)
         attention_mask = (input_ids != self.tokenizer.pad_token_id).long()
 
         return {
@@ -139,7 +139,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
             "labels": labels,
         }
 
-    def add_whole_word_mask(self, inputs: List[EncodedInput]) -> Tuple[Tensor, Tensor]:
+    def add_noise(self, inputs: List[EncodedInput]) -> Tuple[Tensor, Tensor]:
         # pipeline: ids -> text -> encoding batch
         # we need these operations to get word bounds
         input_text = self.tokenizer.batch_decode(
@@ -163,7 +163,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
             input_words = encoding_batch.words(idx)
 
             # prepare masked source and labels
-            source, labels = self.mask_words(input_ids, input_words)
+            source, labels = self.add_whole_word_mask(input_ids, input_words)
             # append values to the accumulated lists
             batched_input_ids.append(source)
             batched_labels.append(labels)
@@ -174,7 +174,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
 
         return input_ids, labels
 
-    def mask_words(
+    def add_whole_word_mask(
         self, input_ids: List[int], input_words: List[Optional[int]]
     ) -> Tuple[Tensor, Tensor]:
         assert self.tokenizer.mask_token_id is not None
