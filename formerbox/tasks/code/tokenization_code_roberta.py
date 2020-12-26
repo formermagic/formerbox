@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List, Optional, Text, Union
+from typing import Any, Optional, Text, Union
 
 from formerbox.data.tokenizers import RobertaTokenizer, TokenizerBase
 from formerbox.utils.code_tokenizer import SpecialToken
