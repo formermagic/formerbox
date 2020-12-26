@@ -69,10 +69,5 @@ class CodeRobertaTokenizer(RobertaTokenizer, TokenizerBase):
             **kwargs,
         )
 
-        # add code specific special tokens
-        additional_special_tokens: List[Text] = []
-        for token in SpecialToken:
-            setattr(self, token.name, token.value)
-            additional_special_tokens.append(token.value)
-
-        self.additional_special_tokens += additional_special_tokens
+        # add code specific additional tokens
+        self.add_tokens([token.value for token in SpecialToken])
