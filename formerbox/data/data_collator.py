@@ -119,10 +119,7 @@ class DataCollatorForSeq2Seq(DataCollator):
 
 
 @dataclass
-class DataCollatorForSeq2SeqDenoising:
-    tokenizer: PreTrainedTokenizerFast
-    masked_token_ratio: float = 0.15
-    random_token_ratio: float = 0
+class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
     replace_length: ReplaceLength = -1
 
     def __call__(self, features: List[Dict[Text, EncodedInput]]) -> Dict[Text, Tensor]:
