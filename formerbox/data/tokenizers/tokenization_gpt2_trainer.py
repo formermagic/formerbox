@@ -126,6 +126,11 @@ class GPT2TokenizerTrainer(TokenizerTrainerBase):
         assert self.params.vocab_size is not None
         assert isinstance(self.tokenizer, ByteLevelBPETokenizer)
 
+        # add special tokens specific to the configured tokenizer
+        self.tokenizer.add_special_tokens(self.special_tokens)
+        # add additional tokens to include in the vocabulary
+        self.tokenizer.add_tokens(self.additional_tokens)
+
         self.tokenizer.train(
             files=self.params.files,
             vocab_size=self.params.vocab_size,
