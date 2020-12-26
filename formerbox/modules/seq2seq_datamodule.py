@@ -1,14 +1,24 @@
 import logging
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Optional, Text, Type
 
 from formerbox.common.dataclass_argparse import MISSING
-from formerbox.data.data_collator import DataCollatorForSeq2SeqDenoising, ReplaceLength
+from formerbox.data.data_collator import (
+    DataCollatorForBartDenoising,
+    DataCollatorForWholeWordMasking,
+    ReplaceLength,
+)
 from formerbox.data.seq2seq_dataset import Seq2SeqDataset
 from formerbox.modules.transformer_datamodule import TransformerDataModule
 from transformers import PreTrainedTokenizerFast as Tokenizer
 
 logger = logging.getLogger(__name__)
+
+
+class DataCollator(Enum):
+    whole_word_masking = "whole_word_masking"
+    bart_denoising = "bart_denoising"
 
 
 class Seq2SeqDataModule(TransformerDataModule):
@@ -20,6 +30,10 @@ class Seq2SeqDataModule(TransformerDataModule):
         )
         tgt_lang: Optional[Text] = field(
             default=None,
+            metadata={"help": ""},
+        )
+        data_collator: DataCollator = field(
+            default=MISSING,
             metadata={"help": ""},
         )
         masked_token_ratio: float = field(
@@ -34,6 +48,10 @@ class Seq2SeqDataModule(TransformerDataModule):
             default=-1,
             metadata={"help": ""},
         )
+        lambda_coef: float = field(
+            default=3.0,
+            metadata={"help": ""},
+        )
 
     params: Params
     params_type: Type[Params] = Params
@@ -41,12 +59,25 @@ class Seq2SeqDataModule(TransformerDataModule):
     def __init__(self, tokenizer: Tokenizer, params: Params) -> None:
         super().__init__(tokenizer, params)
 
-        self.collator = DataCollatorForSeq2SeqDenoising(
-            self.tokenizer,
-            masked_token_ratio=params.masked_token_ratio,
-            random_token_ratio=params.random_token_ratio,
-            replace_length=params.replace_length,
-        )
+        if params.data_collator == DataCollator.whole_word_masking:
+            self.collator = DataCollatorForWholeWordMasking(
+                self.tokenizer,
+                masked_token_ratio=params.masked_token_ratio,
+                random_token_ratio=params.random_token_ratio,
+                replace_length=params.replace_length,
+            )
+        elif params.data_collator == DataCollator.bart_denoising:
+            self.collator = DataCollatorForBartDenoising(
+                self.tokenizer,
+                masked_token_ratio=params.masked_token_ratio,
+                random_token_ratio=params.random_token_ratio,
+                lambda_coef=params.lambda_coef,
+            )
+        else:
+            assert False, (
+                "No data collator selected.",
+                " Specify one with the --data_collator flag.",
+            )
 
     def setup(self, stage: Optional[Text] = None) -> None:
         del stage  # we don't use `stage` to build a dataloader
