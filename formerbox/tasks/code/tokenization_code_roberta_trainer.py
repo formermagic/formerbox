@@ -17,9 +17,8 @@ class CodeRobertaTokenizerTrainer(RobertaTokenizerTrainer):
     def __init__(self, params: Params, **kwargs: Any) -> None:
         super().__init__(params, **kwargs)
 
-        # add code special tokens
-        for token in SpecialToken:
-            self.special_tokens.append(token.value)
+        # add code special tokens as additional tokens
+        self.additional_tokens = [token.value for token in SpecialToken]
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
