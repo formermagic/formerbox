@@ -49,13 +49,15 @@ class TokenizerTrainerParams(DataclassBase):
 class TokenizerTrainerBase(TokenizerTrainer[ParamsType]):
     params: ParamsType
     params_type: Type[ParamsType]
+    additional_tokens: List[Token]
     special_tokens: List[Token]
     tokenizer: BaseTokenizer
 
     def __init__(self, params: ParamsType, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.params = params
-        self.special_tokens: List[Token] = SPECIAL_TOKENS
+        self.additional_tokens = []
+        self.special_tokens = SPECIAL_TOKENS
         self.tokenizer = self.build_tokenizer(params)
 
     @classmethod
