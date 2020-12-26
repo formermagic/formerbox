@@ -55,9 +55,10 @@ def collate_batch(
         assert tokenizer.pad_token_id is not None
         pad_value = tokenizer.pad_token_id
 
-    result = torch.LongTensor().new_full(
+    result = torch.full(
         size=[len(sequences), max_length],
         fill_value=pad_value,
+        dtype=torch.long,
     )
 
     # fill result tensor with sequences
@@ -209,12 +210,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
         labels = inputs.clone()
 
         # pick random words to be masked out
-        indices_masked = torch.full(
-            size=word_ids.shape,
-            fill_value=self.masked_token_ratio,
-            dtype=torch.float,
-        )
-
+        indices_masked = torch.full(word_ids.shape, float(self.masked_token_ratio))
         indices_masked = torch.bernoulli(indices_masked).bool()
         masked_word_ids = word_ids[indices_masked]
 
@@ -353,7 +349,7 @@ class DataCollatorForBartDenoising(DataCollatorForDenoising):
         insertion_mask = insertion_mask.bool()
 
         # a mask for tokens to be random among inserted indices
-        random_prob = torch.full(insertion_mask.shape, self.random_token_ratio)
+        random_prob = torch.full(insertion_mask.shape, float(self.random_token_ratio))
         random_mask = torch.bernoulli(random_prob).bool()
         random_size = tokens[insertion_mask & random_mask].size()
 
