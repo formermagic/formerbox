@@ -1,3 +1,5 @@
+import math
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Text, Tuple, Union
 
@@ -76,9 +78,26 @@ def find(tensor: Tensor, values: Tensor) -> Tensor:
 
 
 @dataclass
-class DataCollatorForSeq2Seq:
+class DataCollator(metaclass=ABCMeta):
     tokenizer: PreTrainedTokenizerFast
 
+    @abstractmethod
+    def __call__(self, features: List[Dict[Text, EncodedInput]]) -> Dict[Text, Tensor]:
+        raise NotImplementedError()
+
+
+@dataclass
+class DataCollatorForDenoising(DataCollator):
+    masked_token_ratio: float = 0.15
+    random_token_ratio: float = 0
+
+    @abstractmethod
+    def add_noise(self, inputs: List[EncodedInput]) -> Tuple[Tensor, Tensor]:
+        raise NotImplementedError()
+
+
+@dataclass
+class DataCollatorForSeq2Seq(DataCollator):
     def __call__(self, features: List[Dict[Text, EncodedInput]]) -> Dict[Text, Tensor]:
         assert self.tokenizer.pad_token_id is not None
 
