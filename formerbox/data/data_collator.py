@@ -284,6 +284,6 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
 
         return result_mask
 
-    def random_tokens(self, shape: torch.Size) -> Tensor:
+
         """Returns random tokens sampled from the tokenizer vocab."""
         return torch.randint(self.tokenizer.vocab_size, shape).long()
