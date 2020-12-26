@@ -140,7 +140,7 @@ class TransformerModule(
         kwargs.setdefault("return_dict", return_dict)
 
         # make a forward pass with our transformer model
-        outputs = self.model(**kwargs)
+        outputs = self.model.forward(**kwargs)
         # the language model should return a `TransformerModuleOutput` instance
         assert isinstance(outputs, TransformerModuleOutput)
 
@@ -161,7 +161,7 @@ class TransformerModule(
 
         # prepare detached tensors for logging
         loss = outputs.loss
-        perplexity = self.perplexity(loss.detach())
+        perplexity = self.perplexity.forward(loss.detach())
         perplexity = perplexity.detach().cpu()
         batch_size = torch.tensor(len(batch["input_ids"]))
 
@@ -194,7 +194,7 @@ class TransformerModule(
 
         # prepare detached tensors for logging
         loss = outputs.loss
-        perplexity = self.perplexity(loss.detach())
+        perplexity = self.perplexity.forward(loss.detach())
         perplexity = perplexity.detach().cpu()
 
         # log validation metrics

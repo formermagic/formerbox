@@ -67,7 +67,7 @@ class Seq2SeqModule(TransformerModule):
         kwargs.setdefault("return_dict", return_dict)
 
         # make a forward pass with our transformer model
-        outputs = self.model(**kwargs)
+        outputs = self.model.forward(**kwargs)
         # the model should return a `ModelOutput` instance
         assert isinstance(outputs, Seq2SeqModuleOutput)
 
@@ -93,7 +93,7 @@ class Seq2SeqModule(TransformerModule):
         assert isinstance(loss, torch.Tensor)
 
         # prepare other metrics to log
-        perplexity = self.perplexity(loss.detach())
+        perplexity = self.perplexity.forward(loss.detach())
         batch_size = torch.tensor(batch["input_ids"].size(0))
         learning_rate = self.learning_rate
 
@@ -130,7 +130,7 @@ class Seq2SeqModule(TransformerModule):
         assert isinstance(loss, Tensor)
 
         # prepare other metrics to log
-        perplexity = self.perplexity(loss.detach())
+        perplexity = self.perplexity.forward(loss.detach())
         metrics = {"val_loss": loss, "val_ppl": perplexity}
 
         # log validation metrics
