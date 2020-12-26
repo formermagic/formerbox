@@ -85,6 +85,23 @@ class DataCollator(metaclass=ABCMeta):
     def __call__(self, features: List[Dict[Text, EncodedInput]]) -> Dict[Text, Tensor]:
         raise NotImplementedError()
 
+    def _get_special_tokens_mask(
+        self,
+        input_ids: Union[List[int], Tensor],
+        already_has_special_tokens: bool = True,
+    ) -> torch.BoolTensor:
+        """Returns the mask indicating special tokens in the given list."""
+        special_tokens_mask = self.tokenizer.get_special_tokens_mask(
+            token_ids_0=tolist(input_ids),
+            already_has_special_tokens=already_has_special_tokens,
+        )
+
+        return torch.BoolTensor(special_tokens_mask)
+
+    def _random_tokens(self, shape: torch.Size) -> Tensor:
+        """Returns random tokens sampled from the tokenizer vocab."""
+        return torch.randint(self.tokenizer.vocab_size, shape).long()
+
 
 @dataclass
 class DataCollatorForDenoising(DataCollator):
@@ -180,7 +197,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
         assert self.tokenizer.mask_token_id is not None
 
         # prepare the word boundaries for masking out
-        special_tokens_mask = self.get_special_tokens_mask(input_ids)
+        special_tokens_mask = self._get_special_tokens_mask(input_ids)
         word_bounds = torch.tensor([x if x is not None else -1 for x in input_words])
         word_ids = word_bounds[~special_tokens_mask].unique()
 
@@ -223,7 +240,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
         # `Trans #form #er #s are great` => `<mask> <mask> <mask> <mask> are great`
         elif self.replace_length == -1:
             inputs[masked_tokens_indices] = self.tokenizer.mask_token_id
-            inputs[random_tokens_indices] = self.random_tokens(
+            inputs[random_tokens_indices] = self._random_tokens(
                 shape=random_tokens_indices.shape,  # type: ignore
             )
         # replace each word with a mask or random token
@@ -231,7 +248,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
         else:
             # get a mask to find where words start
             masked_words = word_bounds[masked_tokens_indices].tolist()
-            masked_words_start_mask = torch.tensor(self.words_start_mask(masked_words))
+            masked_words_start_mask = torch.tensor(self._words_start_mask(masked_words))
 
             # get indices for replacing word starts with mask tokens
             indices_replaced = masked_tokens_indices[masked_words_start_mask]
@@ -240,7 +257,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
 
             # replace first non-repeating subwords with a mask or random token
             inputs[indices_replaced] = self.tokenizer.mask_token_id
-            inputs[indices_random] = self.random_tokens(
+            inputs[indices_random] = self._random_tokens(
                 shape=indices_random.shape,  # type: ignore
             )
 
@@ -252,20 +269,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
 
         return inputs, labels
 
-    def get_special_tokens_mask(
-        self,
-        input_ids: Union[List[int], Tensor],
-        already_has_special_tokens: bool = True,
-    ) -> torch.BoolTensor:
-        """Returns the mask indicating special tokens in the given list."""
-        special_tokens_mask = self.tokenizer.get_special_tokens_mask(
-            token_ids_0=tolist(input_ids),
-            already_has_special_tokens=already_has_special_tokens,
-        )
-
-        return torch.BoolTensor(special_tokens_mask)
-
-    def words_start_mask(self, elements: List[Any]) -> List[bool]:
+    def _words_start_mask(self, elements: List[Any]) -> List[bool]:
         """Returns the mask indicating where words start."""
         result_mask: List[bool] = []
         prev_element: Optional[Any] = None
