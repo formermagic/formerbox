@@ -30,6 +30,10 @@ class TransformerTask(TaskModule[ParamsType]):
             default=MISSING,
             metadata={"help": "A path to the dir with saved pretrained tokenizer."},
         )
+        include_added_tokens: bool = field(
+            default=True,
+            metadata={"help": "Whether to include added tokens in vocab size or not."},
+        )
 
     params: Params
     params_type: Type[Params] = Params
@@ -56,6 +60,11 @@ class TransformerTask(TaskModule[ParamsType]):
             task_params.config_path, task_params.tokenizer_path
         )
 
+        # prepare vocab size with or without added tokens
+        vocab_size = tokenizer.backend_tokenizer.get_vocab_size(
+            task_params.include_added_tokens
+        )
+
         # prepare model max length for positional embeddings
         assert hasattr(tokenizer, "model_max_length")
         model_max_length = getattr(tokenizer, "model_max_length")
@@ -67,7 +76,7 @@ class TransformerTask(TaskModule[ParamsType]):
         # prepare a model to train
         model = model_from_config(
             task_params.config_path,
-            vocab_size=tokenizer.vocab_size,
+            vocab_size=vocab_size,
             pad_token_id=tokenizer.pad_token_id,
             bos_token_id=tokenizer.bos_token_id,
             eos_token_id=tokenizer.eos_token_id,
