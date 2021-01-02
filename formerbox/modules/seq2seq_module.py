@@ -9,13 +9,9 @@ from formerbox.modules.utils import LabelSmoothingNLLLoss
 from torch import Tensor
 from transformers import PreTrainedModel
 from transformers import PreTrainedTokenizerFast as Tokenizer
-from typing_extensions import Protocol
+from transformers.file_utils import ModelOutput
 
 logger = logging.getLogger(__name__)
-
-
-class Seq2SeqModuleOutput(Protocol):
-    logits: torch.Tensor
 
 
 # pylint: disable=arguments-differ
@@ -56,7 +52,7 @@ class Seq2SeqModule(TransformerModule):
         attention_mask: Tensor,
         return_dict: bool = True,
         **kwargs: Any,
-    ) -> Seq2SeqModuleOutput:
+    ) -> ModelOutput:
         # put the module into train mode
         self.model.train()
 
@@ -69,7 +65,7 @@ class Seq2SeqModule(TransformerModule):
         # make a forward pass with our transformer model
         outputs = self.model.forward(**kwargs)
         # the model should return a `ModelOutput` instance
-        assert isinstance(outputs, Seq2SeqModuleOutput)
+        assert isinstance(outputs, ModelOutput)
 
         # return the model outputs
         return outputs
