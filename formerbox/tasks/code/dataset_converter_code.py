@@ -29,7 +29,7 @@ class CodeDatasetConverter(DefaultDatasetConverter):
 
     def preprocess_text(self, text: Text) -> Instance:
         # workaround to avoid disambiguation in parsing text datasets
-        # text = text.replace("\b", "\r")
+        text = text.replace("\b", "\r").replace("\r", "\n")
         # tokenize code and turn into string again
         tokens = tokenize_python(text, keep_comments=self.params.keep_comments)
         result = " ".join(tokens)
