@@ -1,1 +1,1 @@
-from formerbox.contrib.lightning_trainer import LightningTrainer
+from formerbox.contrib.lightning import LightningTrainer
