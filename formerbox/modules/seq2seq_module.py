@@ -25,7 +25,7 @@ class Seq2SeqModule(TransformerModule):
 
     params: Params
     params_type: Type[Params] = Params
-    criterion: nn.Module
+    criterion: LabelSmoothingNLLLoss
 
     def __init__(
         self,
