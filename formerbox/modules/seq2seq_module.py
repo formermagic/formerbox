@@ -1,9 +1,8 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Text, Type
+from typing import Any, Dict, Optional, Text, Tuple, Type
 
 import torch
-import torch.nn as nn
 from formerbox.modules.transformer_module import TransformerModule
 from formerbox.modules.utils import LabelSmoothingNLLLoss
 from torch import Tensor
@@ -80,13 +79,10 @@ class Seq2SeqModule(TransformerModule):
         del batch_idx, optimizer_idx, hiddens  # nouse
 
         # make a model forward pass
-        outputs = self.forward(**batch)
+        model_output = self.forward(**batch)
 
-        # compute the loss based on model's outputs
-        logits = outputs.logits
-        targets = batch["labels"]
-        loss = self.criterion(logits, targets)
-        assert isinstance(loss, torch.Tensor)
+        # compute the loss based on model output
+        loss, nll_loss = self._calculate_loss(batch, model_output)
 
         # prepare other metrics to log
         perplexity = self.perplexity.forward(loss.detach())
@@ -95,6 +91,7 @@ class Seq2SeqModule(TransformerModule):
 
         metrics = {
             "train_loss": loss,
+            "train_nll_loss": nll_loss,
             "train_ppl": perplexity,
             "train_lr": learning_rate,
             "train_bsz": batch_size,
@@ -117,17 +114,33 @@ class Seq2SeqModule(TransformerModule):
         del batch_idx, kwargs  # nouse
 
         # make a model forward pass
-        outputs = self.forward(**batch)
+        model_output = self.forward(**batch)
 
-        # compute the loss based on model's outputs
-        logits = outputs.logits
-        targets = batch["labels"]
-        loss = self.criterion(logits, targets)
-        assert isinstance(loss, Tensor)
+        # compute the loss based on model output
+        loss, nll_loss = self._calculate_loss(batch, model_output)
 
         # prepare other metrics to log
         perplexity = self.perplexity.forward(loss.detach())
-        metrics = {"val_loss": loss, "val_ppl": perplexity}
+        metrics = {
+            "val_loss": loss,
+            "val_nll_loss": nll_loss,
+            "val_ppl": perplexity,
+        }
 
         # log validation metrics
         self.log_dict(metrics, prog_bar=True)
+
+    def _calculate_loss(
+        self, batch: Dict[Text, Tensor], model_output: ModelOutput
+    ) -> Tuple[Tensor, Tensor]:
+        # get input target values
+        targets: Tensor = batch["labels"]
+        # get model output logits
+        logits: Tensor = model_output["logits"]
+        # get model output nll loss
+        nll_loss: Tensor = model_output["loss"]
+
+        # calculate label smoothed loss
+        smoothed_loss: Tensor = self.criterion.forward(logits, targets)
+
+        return smoothed_loss, nll_loss
