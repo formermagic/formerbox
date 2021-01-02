@@ -3,6 +3,7 @@ from typing import Callable, Optional
 
 import torch
 from torch import Tensor
+from torch.nn import functional as F
 from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)
@@ -27,28 +28,68 @@ class LabelSmoothingNLLLoss(torch.nn.Module):
         self.reduce_op = self.get_reduce_op()
 
     def forward(self, logits: Tensor, targets: Tensor) -> Tensor:
-        if targets.dim() == logits.dim() - 1:
-            targets = targets.unsqueeze(-1)
-
-        log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
-        nll_loss = -log_probs.gather(dim=-1, index=targets)
-        smooth_loss = -log_probs.sum(dim=-1, keepdim=True)
-
+        # prepare mask for ignored label indices
         if self.ignore_index is not None:
-            pad_mask = targets == self.ignore_index
-            nll_loss.masked_fill_(pad_mask, 0.0)
-            smooth_loss.masked_fill_(pad_mask, 0.0)
+            ignore_mask = targets == self.ignore_index
         else:
-            nll_loss = nll_loss.squeeze(-1)
-            smooth_loss = smooth_loss.squeeze(-1)
+            ignore_mask = torch.zeros_like(targets)
 
-        if self.should_reduce:
-            nll_loss = self.reduce_op(nll_loss)
-            smooth_loss = self.reduce_op(smooth_loss)
+        # all dimensions without the one for batch size
+        non_batch_dims = tuple(range(1, len(targets.shape)))
 
+        # prepare weights for loss normalization
+        # shape: (batch_size,)
+        weights = torch.ones_like(targets)
+        weights.masked_fill_(ignore_mask, value=0.0)
+        weights_batch_sum = weights.sum(dim=non_batch_dims)
+
+        # prepare flat input tensors
+        # shape: (batch_size * sequence_length, num_classes)
+        logits_flat = logits.view(-1, logits.size(-1))
+        # shape: (batch_size * sequence_length, num_classes)
+        log_probs_flat = F.log_softmax(logits_flat, dim=-1)
+        # shape: (batch_size * sequence_length, 1)
+        targets_flat = targets.view(-1, 1).long()
+
+        # prepare calculation constants
         num_classes = logits.size(-1)
         smoothing_value = self.label_smoothing / num_classes
-        loss = (1.0 - self.label_smoothing) * nll_loss + smoothing_value * smooth_loss
+
+        # fill all the correct indices with (1 - label_smoothing) value
+        # shape: (batch_size * sequence_length, num_classes)
+        one_hot_targets = torch.zeros_like(log_probs_flat)
+        one_hot_targets = one_hot_targets.scatter_(
+            dim=-1,
+            index=targets_flat,
+            value=(1.0 - self.label_smoothing),
+        )
+
+        # prepare smoothed nll loss values
+        # shape: (batch_size * sequence_length, num_classes)
+        smoothed_targets = one_hot_targets + smoothing_value
+        # shape: (batch_size * sequence_length, num_classes)
+        negative_log_likelihood_flat = -log_probs_flat * smoothed_targets
+        # shape: (batch_size * sequence_length, 1)
+        negative_log_likelihood_flat = negative_log_likelihood_flat.sum(
+            dim=-1,
+            keepdim=True,
+        )
+
+        # shape: (batch_size, sequence_length)
+        negative_log_likelihood = negative_log_likelihood_flat.view(*targets.size())
+        negative_log_likelihood.masked_fill_(ignore_mask, value=0.0)
+
+        # prepare normalized per batch loss values
+        # shape: (batch_size,)
+        per_batch_loss = negative_log_likelihood.sum(non_batch_dims) / weights_batch_sum
+
+        # finalize loss calculation
+        if self.should_reduce:
+            # shape: (1,)
+            loss = self.reduce_op(per_batch_loss)
+        else:
+            # shape: (batch_size,)
+            loss = per_batch_loss
 
         return loss
 
