@@ -115,7 +115,7 @@ class DataCollatorForDenoising(DataCollator):
 
 
 @dataclass
-class DataCollatorForSeq2Seq(DataCollator):
+class DataCollatorForTranslation(DataCollator):
     def __call__(self, features: List[Dict[Text, EncodedInput]]) -> Dict[Text, Tensor]:
         assert self.tokenizer.pad_token_id is not None
 
