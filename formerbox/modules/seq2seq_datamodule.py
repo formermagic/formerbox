@@ -6,6 +6,7 @@ from typing import Optional, Text, Type
 from formerbox.common.dataclass_argparse import MISSING
 from formerbox.data.data_collator import (
     DataCollatorForBartDenoising,
+    DataCollatorForTranslation,
     DataCollatorForWholeWordMasking,
     ReplaceLength,
 )
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 class DataCollator(Enum):
     whole_word_masking = "whole_word_masking"
     bart_denoising = "bart_denoising"
+    translation = "translation"
 
 
 class Seq2SeqDataModule(TransformerDataModule):
@@ -73,10 +75,13 @@ class Seq2SeqDataModule(TransformerDataModule):
                 random_token_ratio=params.random_token_ratio,
                 lambda_coef=params.lambda_coef,
             )
+        elif params.data_collator == DataCollator.translation:
+            self.collator = DataCollatorForTranslation(self.tokenizer)
         else:
             assert False, (
                 "No data collator selected.",
-                " Specify one with the --data_collator flag.",
+                " Specify one with the --data_collator flag",
+                " or set the `data_collator` argument to datamodule.",
             )
 
     def setup(self, stage: Optional[Text] = None) -> None:
