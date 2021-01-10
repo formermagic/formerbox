@@ -17,7 +17,7 @@ from torch.utils.data import Dataset
 logger = logging.getLogger(__name__)
 
 
-element_codes = {
+element_codes: Dict[int, Any] = {
     1: uint8,
     2: int8,
     3: int16,
