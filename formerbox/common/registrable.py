@@ -113,7 +113,7 @@ class Registrable(PartialInitable):
     def from_name(cls: Type[T], name: Text) -> Callable[..., T]:
         subclass, constructor = cls.resolve_class_name(name)
         if not constructor:
-            return subclass
+            return subclass  # type: ignore
         return getattr(subclass, constructor)
 
     @classmethod
