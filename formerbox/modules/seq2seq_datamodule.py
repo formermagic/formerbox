@@ -28,31 +28,50 @@ class Seq2SeqDataModule(TransformerDataModule):
     class Params(TransformerDataModule.Params):
         src_lang: Text = field(
             default=MISSING,
-            metadata={"help": ""},
+            metadata={
+                "help": "A source language code. Used in mono-bilingual translation tasks."
+            },
         )
         tgt_lang: Optional[Text] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={
+                "help": "A target language code. Used in bilingual translation tasks."
+                " Default value is `None`."
+            },
         )
         data_collator: DataCollator = field(
             default=MISSING,
-            metadata={"help": ""},
+            metadata={
+                "help": "A data collator defining the objective learning function."
+            },
         )
         masked_token_ratio: float = field(
             default=0.15,
-            metadata={"help": ""},
+            metadata={
+                "help": "A ratio of input tokens to mask.",
+            },
         )
         random_token_ratio: float = field(
             default=0.0,
-            metadata={"help": ""},
+            metadata={
+                "help": "A ratio of random tokens among ones selected for masking."
+            },
         )
         replace_length: ReplaceLength = field(
             default=-1,
-            metadata={"help": ""},
+            metadata={
+                "help": "A masked replacement length for whole word masking."
+                " `replace_length=0` removes masked subwords from input,"
+                " `replace_length=1` replaces all masked subwords with one token,"
+                " `replace_length=-1` replaces each masked subwords with mask token."
+                " Default value is `replace_length=-1`."
+            },
         )
         lambda_coef: float = field(
             default=3.0,
-            metadata={"help": ""},
+            metadata={
+                "help": "A lambda value for poisson distribution probability mass function."
+            },
         )
 
     params: Params
