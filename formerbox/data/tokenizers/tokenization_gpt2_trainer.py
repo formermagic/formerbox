@@ -26,50 +26,56 @@ class GPT2TokenizerTrainer(TokenizerTrainerBase):
             metadata={
                 "help": "Whether to save the tokenizer in legacy format,"
                 " i.e. with tokenizer specific vocabulary and separate added_tokens files"
-                " or in the unified JSON file format of the `tokenizers` library (default)."
+                " or in the unified JSON file format of the `tokenizers` library (default).",
             },
         )
         save_directory: Text = field(
             default=MISSING,
-            metadata={"help": "A path for saving the pre-trained tokenizer."},
+            metadata={
+                "help": "A path for saving the pre-trained tokenizer.",
+            },
         )
         add_prefix_space: bool = field(
             default=False,
-            metadata={"help": "Whether to add a leading space to the first word."},
+            metadata={
+                "help": "Whether to add a leading space to the first word.",
+            },
         )
         trim_offsets: bool = field(
             default=True,
             metadata={
-                "help": (
-                    "Whether the post processing step should trim"
-                    " offsets to avoid including whitespaces."
-                )
+                "help": "Whether the post processing step should trim"
+                " offsets to avoid including whitespaces.",
             },
         )
         lowercase: bool = field(
             default=False,
-            metadata={"help": "Whether or not to preprocess text in lowercase."},
+            metadata={
+                "help": "Whether or not to preprocess text in lowercase.",
+            },
         )
         dropout: Optional[float] = field(
             default=None,
             metadata={
-                "help": "The likelihood of dropping a subword during calculating the frequency."
+                "help": "The likelihood of dropping a subword during calculating the frequency.",
             },
         )
         unicode_normalizer: Optional[Text] = field(
             default=None,
-            metadata={"help": "The unicode text normalizer. Default is set to `None`."},
+            metadata={
+                "help": "The unicode text normalizer. Default is set to `None`.",
+            },
         )
         continuing_subword_prefix: Optional[Text] = field(
             default=None,
             metadata={
-                "help": "The subword prefix used for decoding the words. Default is set to `None`."
+                "help": "The subword prefix used for decoding the words. Default is set to `None`.",
             },
         )
         end_of_word_suffix: Optional[Text] = field(
             default=None,
             metadata={
-                "help": "The suffix that comes after each word. Default is set to `None`."
+                "help": "The suffix that comes after each word. Default is set to `None`.",
             },
         )
 
