@@ -19,7 +19,11 @@ class Seq2SeqModule(TransformerModule):
     class Params(TransformerModule.Params):
         label_smoothing: float = field(
             default=0.0,
-            metadata={"help": ""},
+            metadata={
+                "help": "A value for calculating the label smoothed loss."
+                " Setting `label_smoothing=0` gives a regular cross entropy loss."
+                " Default value is `label_smoothing=0`."
+            },
         )
 
     params: Params
