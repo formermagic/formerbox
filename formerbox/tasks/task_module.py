@@ -9,8 +9,6 @@ from formerbox.common.registrable import Registrable
 from pytorch_lightning import LightningDataModule, LightningModule
 from transformers import PreTrainedTokenizerFast as Tokenizer
 
-ModuleType = TypeVar("ModuleType", bound=LightningModule)
-DataModuleType = TypeVar("DataModuleType", bound=LightningDataModule)
 TaskModuleType = TypeVar("TaskModuleType", bound="TaskModule")
 
 logger = logging.getLogger(__name__)
@@ -28,8 +26,8 @@ class TaskModule(
     def __init__(
         self,
         tokenizer: Tokenizer,
-        module: ModuleType,
-        datamodule: DataModuleType,
+        module: LightningModule,
+        datamodule: LightningDataModule,
     ) -> None:
         super().__init__()
         self.tokenizer = tokenizer
