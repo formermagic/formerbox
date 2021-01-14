@@ -2,6 +2,7 @@ import logging
 from typing import Callable, Optional
 
 import torch
+import torch.nn as nn
 from torch import Tensor
 from torch.nn import functional as F
 from typing_extensions import Literal
@@ -12,7 +13,7 @@ Reduction = Literal["mean", "sum"]
 
 
 # pylint: disable=abstract-method
-class LabelSmoothingNLLLoss(torch.nn.Module):
+class LabelSmoothingNLLLoss(nn.Module):
     def __init__(
         self,
         label_smoothing: float,
