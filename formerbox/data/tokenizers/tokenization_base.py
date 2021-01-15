@@ -29,7 +29,7 @@ EncodedInputPair = Tuple[List[int], List[int]]
 
 
 class TokenizerBase(Registrable):
-    ...
+    model_max_length: int
 
 
 @runtime_checkable

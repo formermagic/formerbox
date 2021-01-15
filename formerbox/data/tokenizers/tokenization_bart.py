@@ -22,7 +22,6 @@ VERY_LARGE_INTEGER = int(1e30)
 # pylint: disable=arguments-differ
 @TokenizerBase.register("bart")
 class BartTokenizer(BartTokenizerFast, Seq2SeqTokenizer, TokenizerBase):
-    model_max_length: int
     prefix_tokens: List[int] = []
 
     def __init__(
