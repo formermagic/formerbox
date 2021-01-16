@@ -94,6 +94,7 @@ class Registry:
 
         try:
             subclass = getattr(module, class_name)
+            subclass = typing.cast(Type["Registrable"], subclass)
             constructor = None
         except AttributeError as err:
             raise RuntimeError(
