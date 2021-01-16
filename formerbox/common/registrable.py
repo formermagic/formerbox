@@ -23,7 +23,6 @@ from typing import Callable, Dict, List, Optional, Text, Tuple, Type
 from formerbox.common.partial_initable import PartialInitable
 
 RegistryType = typing.TypeVar("RegistryType", bound="Registrable")
-RegistryWrapper = typing.TypeVar("RegistryWrapper", bound="Registrable")
 RegistryValue = Tuple[Type["Registrable"], Optional[Text]]
 
 logger = logging.getLogger(__name__)
@@ -115,12 +114,12 @@ class Registrable(PartialInitable):
         name: Text,
         constructor: Optional[Text] = None,
         exist_ok: bool = False,
-    ) -> Callable[[Type[RegistryWrapper]], Type[RegistryWrapper]]:
+    ) -> Callable[[Type[RegistryType]], Type[RegistryType]]:
         registry = Registrable._registry[cls.__name__]
 
         def add_to_registry(
-            subclass: Type[RegistryWrapper],
-        ) -> Type[RegistryWrapper]:
+            subclass: Type[RegistryType],
+        ) -> Type[RegistryType]:
             if name in registry and not exist_ok:
                 message = f"{name} has already been registered as {registry[name][0].__name__}"
                 raise RuntimeError(message)
