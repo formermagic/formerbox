@@ -70,7 +70,7 @@ class Registry:
             candidate = self._get_candidate_from_module(key)
         else:
             raise RuntimeError(
-                f"{key} is not a registered name. "
+                f"{key} is not a registered name for {self.name}. "
                 "You probably need to use the --include-package flag "
                 "to load your custom code. Alternatively, you can specify your choices "
                 'using fully-qualified paths, e.g. {"model": "my_module.models.MyModel"} '
