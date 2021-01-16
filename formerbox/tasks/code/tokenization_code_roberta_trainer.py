@@ -10,7 +10,7 @@ from formerbox.utils.code_tokenizer import SpecialToken
 logger = logging.getLogger(__name__)
 
 
-@TokenizerTrainer.register("code-roberta", constructor="from_partial")
+@TokenizerTrainer.register("code_roberta", constructor="from_partial")
 class CodeRobertaTokenizerTrainer(RobertaTokenizerTrainer):
     Params = RobertaTokenizerTrainer.Params
 

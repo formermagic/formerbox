@@ -25,7 +25,7 @@ PRETRAINED_VOCAB_FILES_MAP = {
 PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
 
 
-@TokenizerBase.register("code-roberta")
+@TokenizerBase.register("code_roberta")
 class CodeRobertaTokenizer(RobertaTokenizer, TokenizerBase):
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
