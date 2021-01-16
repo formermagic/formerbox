@@ -185,5 +185,5 @@ class Registrable(PartialInitable):
     @classmethod
     def _get_registry(cls: Type["Registrable"]) -> Registry:
         if cls.__name__ not in Registrable._registry:
-            raise ValueError(f"{cls.__name__} is not a registered name")
+            raise RuntimeError(f"{cls.__name__} is not a registered name")
         return Registrable._registry[cls.__name__]
