@@ -31,7 +31,8 @@ logger = logging.getLogger(__name__)
 class Registry:
     _registry: Dict[Text, RegistryValue]
 
-    def __init__(self) -> None:
+    def __init__(self, name: Optional[Text] = None) -> None:
+        self.name = name
         self._registry = {}
 
     def get(
@@ -116,6 +117,7 @@ class Registrable(PartialInitable):
         exist_ok: bool = False,
     ) -> Callable[[Type[RegistryType]], Type[RegistryType]]:
         registry = Registrable._registry[cls.__name__]
+        registry.name = cls.__name__
 
         def add_to_registry(
             subclass: Type[RegistryType],
