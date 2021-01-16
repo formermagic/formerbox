@@ -1,5 +1,6 @@
 import inspect
-from typing import Any, Type, TypeVar
+import typing
+from typing import Any, Callable, Type, TypeVar
 
 T = TypeVar("T")  # pylint: disable=invalid-name
 
@@ -18,4 +19,7 @@ class PartialInitable:
                 continue
 
         # build an instance with selected attributes
-        return cls(**obj_kwargs)  # type: ignore
+        assert inspect.isclass(cls)
+        constructor = typing.cast(Callable[..., T], cls)
+        initialized = constructor(**obj_kwargs)
+        return initialized

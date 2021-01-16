@@ -19,10 +19,13 @@ class HasParams(Protocol[ParamsType]):
 
     @classmethod
     def from_params(cls: Type[Self], params: ParamsType, **kwargs: Any) -> Self:
-        return cls.from_partial(params=params, **kwargs)  # type: ignore
+        obj = cls.from_partial(params=params, **kwargs)
+        obj = typing.cast(Self, obj)
+        return obj
 
 
 class HasParsableParams(HasParams[ParamsType]):
     @classmethod
     def add_argparse_params(cls, parser: DataclassArgumentParser) -> None:
-        parser.add_arguments(cls.params_type)  # type: ignore
+        params_type = typing.cast(Type[DataclassBase], cls.params_type)
+        parser.add_arguments(params_type)
