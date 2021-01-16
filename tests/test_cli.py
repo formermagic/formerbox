@@ -50,7 +50,7 @@ def test_cli_convert_dataset(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["code-roberta"])
+@pytest.mark.parametrize("tokenizer", ["code_roberta"])
 def test_cli_train_tokenizer(
     tmp_path: Path,
     fixtures_directory: Path,
@@ -85,7 +85,7 @@ def test_cli_train_tokenizer(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["code-roberta"])
+@pytest.mark.parametrize("tokenizer", ["code_roberta"])
 @pytest.mark.parametrize("binarizer", ["default"])
 def test_cli_preprocess(
     tmp_path: Path,
@@ -135,7 +135,7 @@ def test_cli_preprocess(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("task", ["transformer-task"])
+@pytest.mark.parametrize("task", ["masked_lm"])
 def test_cli_train(
     tmp_path: Path,
     fixtures_directory: Path,
