@@ -1,8 +1,8 @@
 import os
 
-from formerbox.tasks.seq2seq_task import Seq2SeqTask
+from formerbox.tasks.denoising_task import DenoisingTask
+from formerbox.tasks.masked_lm_task import MaskedLMTask
 from formerbox.tasks.task_module import TaskModule
-from formerbox.tasks.transformer_task import TransformerTask
 from formerbox.utils.utils import str2bool
 
 EXPORT_TASKS = str2bool(os.environ.get("EXPORT_TASKS", default="true"))

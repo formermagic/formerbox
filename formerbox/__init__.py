@@ -45,9 +45,9 @@ from formerbox.tasks import (
     CodeDatasetConverter,
     CodeRobertaTokenizer,
     CodeRobertaTokenizerTrainer,
-    Seq2SeqTask,
+    DenoisingTask,
+    MaskedLMTask,
     TaskModule,
-    TransformerTask,
 )
 from formerbox.training import TransformerTrainer
 
