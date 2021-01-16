@@ -42,7 +42,7 @@ class Registry:
         if issubclass(cls_candidate, value_type):
             cls = typing.cast(Type[RegistryType], cls_candidate)
             return cls, constructor
-        raise ValueError(f"Unable to get item of type {value_type}")
+        raise RuntimeError(f"Unable to get value for key {key} of type {value_type}")
 
     def keys(self, value_type: Type[typing.Any]) -> List[Text]:
         result: List[Text] = []
