@@ -18,8 +18,8 @@ from transformers import PreTrainedTokenizerFast as Tokenizer
 logger = logging.getLogger(__name__)
 
 
-@TaskModule.register("transformer-task")
-class TransformerTask(TaskModule[ParamsType]):
+@TaskModule.register("masked_lm")
+class MaskedLMTask(TaskModule[ParamsType]):
     @dataclass
     class Params(DataclassBase):
         config_path: Text = field(
@@ -51,9 +51,9 @@ class TransformerTask(TaskModule[ParamsType]):
 
     @classmethod
     def setup(
-        cls: Type["TransformerTask"],
+        cls: Type["MaskedLMTask"],
         params: Tuple[Union[DataclassBase, Namespace], ...],
-    ) -> "TransformerTask":
+    ) -> "MaskedLMTask":
         # prepare the tokenizer from config
         task_params = cls.get_params(params, cls.params_type)
         tokenizer = tokenizer_from_config(
@@ -96,7 +96,7 @@ class TransformerTask(TaskModule[ParamsType]):
 
     @classmethod
     def add_argparse_params(
-        cls: Type["TransformerTask"], parser: DataclassArgumentParser
+        cls: Type["MaskedLMTask"], parser: DataclassArgumentParser
     ) -> None:
         parser.add_arguments(cls.params_type)
         Module.add_argparse_params(parser)
