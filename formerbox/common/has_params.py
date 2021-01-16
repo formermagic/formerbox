@@ -3,10 +3,10 @@ from typing import Any, Type
 
 # pylint: disable=unused-import
 from formerbox.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
-from formerbox.common.partial_initable import PartialInitable
+from formerbox.common.from_partial import FromPartial
 from typing_extensions import Protocol
 
-Self = typing.TypeVar("Self", bound="PartialInitable")
+Self = typing.TypeVar("Self", bound="FromPartial")
 ParamsType = typing.TypeVar("ParamsType", bound=DataclassBase)
 
 

@@ -20,7 +20,7 @@ import typing
 from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Text, Tuple, Type
 
-from formerbox.common.partial_initable import PartialInitable
+from formerbox.common.from_partial import FromPartial
 
 RegistryType = typing.TypeVar("RegistryType", bound="Registrable")
 RegistryValue = Tuple[Type["Registrable"], Optional[Text]]
@@ -105,7 +105,7 @@ class Registry:
         return (subclass, constructor)
 
 
-class Registrable(PartialInitable):
+class Registrable(FromPartial):
     _registry: Dict[Text, Registry] = defaultdict(Registry)
     _constructor: Optional[Text] = None
 
