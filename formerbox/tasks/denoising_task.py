@@ -18,8 +18,8 @@ from transformers import PreTrainedTokenizerFast as Tokenizer
 logger = logging.getLogger(__name__)
 
 
-@TaskModule.register("seq2seq")
-class Seq2SeqTask(TaskModule[ParamsType]):
+@TaskModule.register("denoising")
+class DenoisingTask(TaskModule[ParamsType]):
     @dataclass
     class Params(DataclassBase):
         config_path: Text = field(
@@ -51,9 +51,9 @@ class Seq2SeqTask(TaskModule[ParamsType]):
 
     @classmethod
     def setup(
-        cls: Type["Seq2SeqTask"],
+        cls: Type["DenoisingTask"],
         params: Tuple[Union[DataclassBase, Namespace], ...],
-    ) -> "Seq2SeqTask":
+    ) -> "DenoisingTask":
         # prepare the tokenizer from config
         task_params = cls.get_params(params, cls.params_type)
         tokenizer = tokenizer_from_config(
@@ -96,7 +96,7 @@ class Seq2SeqTask(TaskModule[ParamsType]):
 
     @classmethod
     def add_argparse_params(
-        cls: Type["Seq2SeqTask"], parser: DataclassArgumentParser
+        cls: Type["DenoisingTask"], parser: DataclassArgumentParser
     ) -> None:
         parser.add_arguments(cls.params_type)
         Module.add_argparse_params(parser)
