@@ -7,9 +7,9 @@ from formerbox.cli import ConvertDataset, Preprocess, Subcommand, Train, TrainTo
 from formerbox.common import (
     DataclassArgumentParser,
     DataclassBase,
+    FromPartial,
     HasParams,
     HasParsableParams,
-    PartialInitable,
     Registrable,
 )
 from formerbox.data import (
