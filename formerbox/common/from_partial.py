@@ -5,7 +5,7 @@ from typing import Any, Callable, Type, TypeVar
 T = TypeVar("T")  # pylint: disable=invalid-name
 
 
-class PartialInitable:
+class FromPartial:
     @classmethod
     def from_partial(cls: Type[T], **kwargs: Any) -> T:
         # inspect the instance init method signature
