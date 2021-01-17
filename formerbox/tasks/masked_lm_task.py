@@ -1,17 +1,13 @@
 import logging
 from argparse import Namespace
-from dataclasses import dataclass, field
-from typing import Text, Tuple, Type, Union
+from dataclasses import dataclass
+from typing import Tuple, Type, Union
 
-from formerbox.common.dataclass_argparse import (
-    MISSING,
-    DataclassArgumentParser,
-    DataclassBase,
-)
+from formerbox.common.dataclass_argparse import DataclassArgumentParser, DataclassBase
 from formerbox.common.has_params import ParamsType
-from formerbox.modules import TransformerDataModule as DataModule
-from formerbox.modules import TransformerModule as Module
-from formerbox.tasks.task_module import TaskModule
+from formerbox.modules import MaskedLMDataModule as DataModule
+from formerbox.modules import MaskedLMModule as Module
+from formerbox.tasks.task_module import TaskModule, TaskParams
 from formerbox.training.load_from_config import model_from_config, tokenizer_from_config
 from transformers import PreTrainedTokenizerFast as Tokenizer
 
@@ -21,19 +17,8 @@ logger = logging.getLogger(__name__)
 @TaskModule.register("masked_lm")
 class MaskedLMTask(TaskModule[ParamsType]):
     @dataclass
-    class Params(DataclassBase):
-        config_path: Text = field(
-            default=MISSING,
-            metadata={"help": "A path to the file with model and tokenizer configs."},
-        )
-        tokenizer_path: Text = field(
-            default=MISSING,
-            metadata={"help": "A path to the dir with saved pretrained tokenizer."},
-        )
-        include_added_tokens: bool = field(
-            default=True,
-            metadata={"help": "Whether to include added tokens in vocab size or not."},
-        )
+    class Params(TaskParams):
+        pass
 
     params: Params
     params_type: Type[Params] = Params
