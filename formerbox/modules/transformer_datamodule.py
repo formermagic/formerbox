@@ -127,4 +127,4 @@ class TransformerDataModule(
         )
 
     def test_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
-        raise NotImplementedError()
+        raise RuntimeError("Test test partition is not supported yet")
