@@ -1,9 +1,10 @@
 import logging
 from abc import ABCMeta, abstractmethod
 from argparse import Namespace
-from typing import Tuple, Type, TypeVar, Union
+from dataclasses import dataclass, field
+from typing import Text, Tuple, Type, TypeVar, Union
 
-from formerbox.common.dataclass_argparse import DataclassBase, get_params_item
+from formerbox.common.dataclass_argparse import MISSING, DataclassBase, get_params_item
 from formerbox.common.has_params import HasParsableParams, ParamsType
 from formerbox.common.registrable import Registrable
 from pytorch_lightning import LightningDataModule, LightningModule
@@ -12,6 +13,22 @@ from transformers import PreTrainedTokenizerFast as Tokenizer
 TaskModuleType = TypeVar("TaskModuleType", bound="TaskModule")
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TaskParams(DataclassBase):
+    config_path: Text = field(
+        default=MISSING,
+        metadata={"help": "A path to the file with model and tokenizer configs."},
+    )
+    tokenizer_path: Text = field(
+        default=MISSING,
+        metadata={"help": "A path to the dir with saved pretrained tokenizer."},
+    )
+    include_added_tokens: bool = field(
+        default=True,
+        metadata={"help": "Whether to include added tokens in vocab size or not."},
+    )
 
 
 class TaskModule(
