@@ -32,13 +32,20 @@ from formerbox.data import (
     Seq2SeqBinarizer,
     TokenizerBase,
     TokenizerTrainerBase,
+    TranslationDataset,
 )
 from formerbox.modules import (
-    Seq2SeqDataModule,
-    Seq2SeqModule,
+    DenoisingDataModule,
+    DenoisingModule,
+    MaskedLMDataModule,
+    MaskedLMModule,
     TokenizerTrainer,
     TransformerDataModule,
     TransformerModule,
+    TranslationDataModule,
+    TranslationModule,
+    WordLMDataModule,
+    WordLMModule,
 )
 from formerbox.optim import AdamW, get_polynomial_decay_with_warmup, weight_decay_params
 from formerbox.tasks import (
@@ -48,6 +55,8 @@ from formerbox.tasks import (
     DenoisingTask,
     MaskedLMTask,
     TaskModule,
+    TranslationTask,
+    WordLMTask,
 )
 from formerbox.training import TransformerTrainer
 
