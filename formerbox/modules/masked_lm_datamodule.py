@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class MaskedLMDataModule(TransformerDataModule):
     @dataclass
     class Params(TransformerDataModule.Params):
-        ...
+        pass
 
     params: Params
     params_type: Type[Params] = Params
