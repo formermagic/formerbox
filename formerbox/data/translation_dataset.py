@@ -6,7 +6,7 @@ from torch import Tensor
 
 
 # pylint: disable=arguments-differ
-class Seq2SeqDataset(IndexedDatasetBase):
+class TranslationDataset(IndexedDatasetBase):
     magic_code = b"S2S\x00\x00"
 
     def __init__(
@@ -64,11 +64,11 @@ class Seq2SeqDataset(IndexedDatasetBase):
         src_lang: Text,
         tgt_lang: Optional[Text] = None,
         **kwargs: Any,
-    ) -> "Seq2SeqDataset":
+    ) -> "TranslationDataset":
         del kwargs  # use designated args
         if isinstance(filepath_prefix, Path):
             filepath_prefix = str(filepath_prefix)
-        return Seq2SeqDataset(
+        return TranslationDataset(
             filepath_prefix=filepath_prefix,
             src_lang=src_lang,
             tgt_lang=tgt_lang,
