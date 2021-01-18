@@ -4,7 +4,8 @@ from itertools import zip_longest
 from typing import Any, Optional, Text, Type
 
 from formerbox.common.dataclass_argparse import MISSING
-from formerbox.data.binarizer import Binarizer, DefaultBinarizer, dataset_dest_filepath
+from formerbox.data.binarizer import Binarizer, dataset_dest_filepath
+from formerbox.data.binarizer_default import DefaultBinarizer
 from formerbox.data.indexed_dataset import IndexedDatasetBuilderBase
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
 from transformers import PreTrainedTokenizerFast
@@ -13,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 # pylint: disable=arguments-differ
-@Binarizer.register("seq2seq", constructor="from_partial")
-class Seq2SeqBinarizer(DefaultBinarizer):
+@Binarizer.register("translation", constructor="from_partial")
+class TranslationBinarizer(DefaultBinarizer):
     @dataclass
     class Params(DefaultBinarizer.Params):
         src_lang: Text = field(
