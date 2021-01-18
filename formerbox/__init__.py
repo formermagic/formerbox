@@ -29,9 +29,9 @@ from formerbox.data import (
     MMapIndexedDatasetBuilder,
     RobertaTokenizer,
     RobertaTokenizerTrainer,
-    Seq2SeqBinarizer,
     TokenizerBase,
     TokenizerTrainerBase,
+    TranslationBinarizer,
     TranslationDataset,
 )
 from formerbox.modules import (

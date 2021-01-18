@@ -1,5 +1,6 @@
-from formerbox.data.binarizer import Binarizer, DefaultBinarizer
-from formerbox.data.binarizer_seq2seq import Seq2SeqBinarizer
+from formerbox.data.binarizer import Binarizer
+from formerbox.data.binarizer_default import DefaultBinarizer
+from formerbox.data.binarizer_translation import TranslationBinarizer
 from formerbox.data.dataset_converter import DatasetConverter, DefaultDatasetConverter
 from formerbox.data.dataset_iterators import DatasetIterator
 from formerbox.data.indexed_dataset import (
