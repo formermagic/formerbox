@@ -8,4 +8,5 @@ from formerbox.utils.utils import (
     path_to_posix,
     perplexity,
     str2bool,
+    update_left_inplace,
 )

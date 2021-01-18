@@ -1,7 +1,7 @@
 model:
   name: transformers.RobertaForMaskedLM
-  config: transformers.RobertaConfig
-  config_params:
+  config:
+    name: transformers.RobertaConfig
     hidden_size: 256
     num_hidden_layers: 1
     num_attention_heads: 4
@@ -17,4 +17,3 @@ model:
 
 tokenizer:
   name: formerbox.tasks.CodeRobertaTokenizer
-  params: {}

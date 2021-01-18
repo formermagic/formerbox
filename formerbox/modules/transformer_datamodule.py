@@ -1,6 +1,7 @@
 import logging
+from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Optional, Text, Type, Union
+from typing import Any, Optional, Text, Type
 
 import torch
 from formerbox.common.dataclass_argparse import MISSING, DataclassBase
@@ -8,19 +9,12 @@ from formerbox.common.has_params import HasParsableParams
 from formerbox.common.registrable import Registrable
 from formerbox.data.dataset_iterators import DatasetIterator
 from formerbox.data.indexed_dataset import IndexedDatasetBase
-from formerbox.utils import path_to_posix
 from pytorch_lightning import LightningDataModule
 from pytorch_lightning.core.datamodule import _DataModuleWrapper
-from torch.utils.data import DataLoader, Dataset
-from transformers import (
-    DataCollator,
-    DataCollatorForLanguageModeling,
-    PreTrainedTokenizer,
-    PreTrainedTokenizerFast,
-)
+from torch.utils.data import DataLoader
+from transformers import DataCollator
+from transformers import PreTrainedTokenizerFast as Tokenizer
 from typing_extensions import _ProtocolMeta  # type: ignore
-
-Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 logger = logging.getLogger(__name__)
 
@@ -100,46 +94,37 @@ class TransformerDataModule(
         self.params = params
 
         self.train_dataset: Optional[IndexedDatasetBase] = None
-        self.train_iterator: Optional[Dataset] = None
+        self.train_iterator: Optional[DatasetIterator] = None
         self.val_dataset: Optional[IndexedDatasetBase] = None
-        self.val_iterator: Optional[Dataset] = None
-
-        self.collator = DataCollatorForLanguageModeling(self.tokenizer)  # type: ignore
+        self.val_iterator: Optional[DatasetIterator] = None
 
     def prepare_data(self, *args: Any, **kwargs: Any) -> None:
-        del args, kwargs  # no data to download
+        return
 
     def transfer_batch_to_device(self, batch: Any, device: torch.device) -> Any:
-        del device  # lightning should have already moved a batch to the device
         return batch
 
+    @abstractmethod
     def setup(self, stage: Optional[Text] = None) -> None:
-        del stage  # we don't use `stage` to build a dataloader
-
-        # prepare a train dataset iterator
-        train_path = path_to_posix(self.params.train_data_prefix)
-        self.train_dataset = IndexedDatasetBase.from_file(train_path)
-        self.train_iterator = self.get_dataset_itr(
-            self.train_dataset, collator=self.collator, shuffle=True, drop_last=False
-        )
-
-        # prepare a validation dataset iterator
-        val_path = path_to_posix(self.params.val_data_prefix)
-        self.val_dataset = IndexedDatasetBase.from_file(val_path)
-        self.val_iterator = self.get_dataset_itr(
-            self.val_dataset, collator=self.collator, shuffle=False, drop_last=False
-        )
+        raise NotImplementedError()
 
     def train_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
         assert self.train_iterator is not None
-        return DataLoader(self.train_iterator, num_workers=self.num_workers)
+        return DataLoader(
+            self.train_iterator,
+            collate_fn=self.train_iterator.collate_fn,
+            num_workers=self.num_workers,
+        )
 
     def val_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
         del args, kwargs  # use initialized properties to make a dataloader
         assert self.val_iterator is not None
-        return DataLoader(self.val_iterator, num_workers=self.num_workers)
+        return DataLoader(
+            self.val_iterator,
+            collate_fn=self.train_iterator.collate_fn,
+            num_workers=self.num_workers,
+        )
 
     def test_dataloader(self, *args: Any, **kwargs: Any) -> DataLoader:
-        del args, kwargs  # use initialized properties to make a dataloader
-        raise NotImplementedError()
+        raise RuntimeError("Test test partition is not supported yet")

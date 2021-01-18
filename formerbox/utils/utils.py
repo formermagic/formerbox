@@ -92,9 +92,11 @@ def path_to_posix(path: Union[Text, Path]) -> Text:
 
 
 def all_subclasses(cls: Type[T]) -> typing.Iterable[Type[T]]:
-    return set(cls.__subclasses__()).union(
-        [s for c in cls.__subclasses__() for s in all_subclasses(c)]
-    )
+    subclasses = set(cls.__subclasses__())
+    for subclass in subclasses:
+        _subclasses = all_subclasses(subclass)
+        subclasses = subclasses.union(_subclasses)
+    return subclasses  # type: ignore
 
 
 def init_from_args(cls: Type[T]) -> Type[T]:
@@ -102,7 +104,7 @@ def init_from_args(cls: Type[T]) -> Type[T]:
         valid_kwargs = inspect.signature(cls.__init__).parameters
         obj_kwargs = dict((name, args[name]) for name in valid_kwargs if name in args)
         obj_kwargs.update(**kwargs)
-        return cls(**obj_kwargs)
+        return cls(**obj_kwargs)  # type: ignore
 
     setattr(cls, "from_args", from_args)
     return cls
@@ -136,3 +138,9 @@ def append_path_suffix(base_path: Union[Text, Path], suffix: Text) -> Text:
         base_path = str(base_path)
     base_path, ext = os.path.splitext(base_path)
     return f"{base_path}{suffix}{ext}"
+
+
+def update_left_inplace(left_dict: Dict[Any, Any], right_dict: Dict[Any, Any]) -> None:
+    for key, item in right_dict.items():
+        if key not in left_dict:
+            left_dict[key] = item

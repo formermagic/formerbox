@@ -7,9 +7,9 @@ from formerbox.cli import ConvertDataset, Preprocess, Subcommand, Train, TrainTo
 from formerbox.common import (
     DataclassArgumentParser,
     DataclassBase,
+    FromPartial,
     HasParams,
     HasParsableParams,
-    PartialInitable,
     Registrable,
 )
 from formerbox.data import (
@@ -17,6 +17,7 @@ from formerbox.data import (
     BartTokenizerTrainer,
     Binarizer,
     DatasetConverter,
+    DatasetIterator,
     DefaultBinarizer,
     DefaultDatasetConverter,
     GPT2Tokenizer,
@@ -30,15 +31,32 @@ from formerbox.data import (
     RobertaTokenizerTrainer,
     TokenizerBase,
     TokenizerTrainerBase,
+    TranslationBinarizer,
+    TranslationDataset,
 )
-from formerbox.modules import TokenizerTrainer, TransformerDataModule, TransformerModule
+from formerbox.modules import (
+    DenoisingDataModule,
+    DenoisingModule,
+    MaskedLMDataModule,
+    MaskedLMModule,
+    TokenizerTrainer,
+    TransformerDataModule,
+    TransformerModule,
+    TranslationDataModule,
+    TranslationModule,
+    WordLMDataModule,
+    WordLMModule,
+)
 from formerbox.optim import AdamW, get_polynomial_decay_with_warmup, weight_decay_params
 from formerbox.tasks import (
     CodeDatasetConverter,
     CodeRobertaTokenizer,
     CodeRobertaTokenizerTrainer,
+    DenoisingTask,
+    MaskedLMTask,
     TaskModule,
-    TransformerTask,
+    TranslationTask,
+    WordLMTask,
 )
 from formerbox.training import TransformerTrainer
 

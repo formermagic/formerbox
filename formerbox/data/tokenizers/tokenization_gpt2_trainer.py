@@ -22,54 +22,60 @@ class GPT2TokenizerTrainer(TokenizerTrainerBase):
     @dataclass
     class Params(TokenizerTrainerParams):
         legacy_format: bool = field(
-            default=True,
+            default=False,
             metadata={
-                "help": "Whether to save the tokenizer in legacy format (default),"
+                "help": "Whether to save the tokenizer in legacy format,"
                 " i.e. with tokenizer specific vocabulary and separate added_tokens files"
-                " or in the unified JSON file format of the `tokenizers` library."
+                " or in the unified JSON file format of the `tokenizers` library (default).",
             },
         )
         save_directory: Text = field(
             default=MISSING,
-            metadata={"help": "A path for saving the pre-trained tokenizer."},
+            metadata={
+                "help": "A path for saving the pre-trained tokenizer.",
+            },
         )
         add_prefix_space: bool = field(
             default=False,
-            metadata={"help": "Whether to add a leading space to the first word."},
+            metadata={
+                "help": "Whether to add a leading space to the first word.",
+            },
         )
         trim_offsets: bool = field(
             default=True,
             metadata={
-                "help": (
-                    "Whether the post processing step should trim"
-                    " offsets to avoid including whitespaces."
-                )
+                "help": "Whether the post processing step should trim"
+                " offsets to avoid including whitespaces.",
             },
         )
         lowercase: bool = field(
             default=False,
-            metadata={"help": "Whether or not to preprocess text in lowercase."},
+            metadata={
+                "help": "Whether or not to preprocess text in lowercase.",
+            },
         )
         dropout: Optional[float] = field(
             default=None,
             metadata={
-                "help": "The likelihood of dropping a subword during calculating the frequency."
+                "help": "The likelihood of dropping a subword during calculating the frequency.",
             },
         )
         unicode_normalizer: Optional[Text] = field(
             default=None,
-            metadata={"help": "The unicode text normalizer. Default is set to `None`."},
+            metadata={
+                "help": "The unicode text normalizer. Default is set to `None`.",
+            },
         )
         continuing_subword_prefix: Optional[Text] = field(
             default=None,
             metadata={
-                "help": "The subword prefix used for decoding the words. Default is set to `None`."
+                "help": "The subword prefix used for decoding the words. Default is set to `None`.",
             },
         )
         end_of_word_suffix: Optional[Text] = field(
             default=None,
             metadata={
-                "help": "The suffix that comes after each word. Default is set to `None`."
+                "help": "The suffix that comes after each word. Default is set to `None`.",
             },
         )
 
@@ -126,6 +132,11 @@ class GPT2TokenizerTrainer(TokenizerTrainerBase):
         assert self.params.vocab_size is not None
         assert isinstance(self.tokenizer, ByteLevelBPETokenizer)
 
+        # add special tokens specific to the configured tokenizer
+        self.tokenizer.add_special_tokens(self.special_tokens)
+        # add additional tokens to include in the vocabulary
+        self.tokenizer.add_tokens(self.additional_tokens)
+
         self.tokenizer.train(
             files=self.params.files,
             vocab_size=self.params.vocab_size,
@@ -170,5 +181,6 @@ class GPT2TokenizerTrainer(TokenizerTrainerBase):
         kwargs.pop("unicode_normalizer", None)
         kwargs.pop("continuing_subword_prefix", None)
         kwargs.pop("end_of_word_suffix", None)
+        kwargs.pop("save_directory", None)
 
         return kwargs

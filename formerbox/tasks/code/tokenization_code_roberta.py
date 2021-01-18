@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List, Optional, Text, Union
+from typing import Any, Optional, Text, Union
 
 from formerbox.data.tokenizers import RobertaTokenizer, TokenizerBase
 from formerbox.utils.code_tokenizer import SpecialToken
@@ -25,7 +25,7 @@ PRETRAINED_VOCAB_FILES_MAP = {
 PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {}
 
 
-@TokenizerBase.register("code-roberta")
+@TokenizerBase.register("code_roberta")
 class CodeRobertaTokenizer(RobertaTokenizer, TokenizerBase):
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
@@ -69,10 +69,5 @@ class CodeRobertaTokenizer(RobertaTokenizer, TokenizerBase):
             **kwargs,
         )
 
-        # add code specific special tokens
-        additional_special_tokens: List[Text] = []
-        for token in SpecialToken:
-            setattr(self, token.name, token.value)
-            additional_special_tokens.append(token.value)
-
-        self.additional_special_tokens += additional_special_tokens
+        # add code specific additional tokens
+        self.add_tokens([token.value for token in SpecialToken])

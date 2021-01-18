@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Text, Union
+from typing import Any, Dict, List, Text, Type, Union
 
 from formerbox.common.dataclass_argparse import MISSING, DataclassBase
 from formerbox.modules.tokenizer_trainer import ParamsType, TokenizerTrainer
@@ -23,6 +23,8 @@ SPECIAL_TOKENS: List[Token] = [
     "<mask>",
 ]
 
+VERY_LARGE_INTEGER = int(1e30)
+
 
 @dataclass
 class TokenizerTrainerParams(DataclassBase):
@@ -38,16 +40,24 @@ class TokenizerTrainerParams(DataclassBase):
         default=2,
         metadata={"help": "The min frequency for calculating subwords merges."},
     )
+    model_max_length: int = field(
+        default=VERY_LARGE_INTEGER,
+        metadata={"help": "The maximum input length for the associated model."},
+    )
 
 
 class TokenizerTrainerBase(TokenizerTrainer[ParamsType]):
+    params: ParamsType
+    params_type: Type[ParamsType]
+    additional_tokens: List[Token]
     special_tokens: List[Token]
     tokenizer: BaseTokenizer
 
     def __init__(self, params: ParamsType, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.params = params
-        self.special_tokens: List[Token] = SPECIAL_TOKENS
+        self.additional_tokens = []
+        self.special_tokens = SPECIAL_TOKENS
         self.tokenizer = self.build_tokenizer(params)
 
     @classmethod
@@ -85,18 +95,7 @@ class TokenizerTrainerBase(TokenizerTrainer[ParamsType]):
         # prepare the pre-trained tokenizer
         tokenizer = self.configure_tokenizer(tokenizer_path=tokenizer_path, **kwargs)
 
-        # workaround for saving tokenizer bugs in the transformers backend
-        self.__fix_tokenizer(tokenizer)
-
         # save the pre-trained tokenizer
         tokenizer.save_pretrained(
             save_directory=save_directory, legacy_format=legacy_format
         )
-
-    def __fix_tokenizer(self, tokenizer: Tokenizer) -> None:
-        init_kwargs = getattr(tokenizer, "init_kwargs", {})
-        for key, value in init_kwargs.items():
-            if isinstance(value, AddedToken):
-                init_kwargs[key] = str(value)
-            else:
-                init_kwargs[key] = value

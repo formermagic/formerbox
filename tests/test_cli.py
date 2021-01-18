@@ -22,7 +22,7 @@ def test_cli_convert_dataset(
     converter: Text,
 ) -> None:
     assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
-    data_files = fixtures_directory / "tiny_dataset" / "tiny_raw_dataset.jsonl"
+    data_files = fixtures_directory / "tiny_dataset" / "tiny_dataset.jsonl"
     output_path = tmp_path / "tiny_dataset" / "tiny_dataset.src"
 
     argv = shlex.split(
@@ -50,7 +50,7 @@ def test_cli_convert_dataset(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["code-roberta"])
+@pytest.mark.parametrize("tokenizer", ["code_roberta"])
 def test_cli_train_tokenizer(
     tmp_path: Path,
     fixtures_directory: Path,
@@ -85,7 +85,7 @@ def test_cli_train_tokenizer(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("tokenizer", ["code-roberta"])
+@pytest.mark.parametrize("tokenizer", ["code_roberta"])
 @pytest.mark.parametrize("binarizer", ["default"])
 def test_cli_preprocess(
     tmp_path: Path,
@@ -135,14 +135,14 @@ def test_cli_preprocess(
     assert not os.path.exists(tmp_path)
 
 
-@pytest.mark.parametrize("task", ["transformer-task"])
+@pytest.mark.parametrize("task", ["masked_lm"])
 def test_cli_train(
     tmp_path: Path,
     fixtures_directory: Path,
     task: Text,
 ) -> None:
     assert os.path.exists(fixtures_directory), FIXTURES_DIR_ERROR
-    config_path = fixtures_directory / "model-config.yml"
+    config_path = fixtures_directory / "tiny_roberta.yml"
     tiny_dataset = fixtures_directory / "tiny_dataset.bin"
 
     tokenizer_path = tiny_dataset / "tokenizer"

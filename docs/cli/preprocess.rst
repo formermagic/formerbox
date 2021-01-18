@@ -40,7 +40,7 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m formerbox preprocess                          \
+    formerbox-cli preprocess                                \
         --train_prefix <train_prefix>                       \
         --valid_prefix <valid_prefix>                       \
         --test_prefix <test_prefix>                         \
@@ -50,10 +50,46 @@ Example cli command
         --tokenizer_path <tokenizer_path>                   \
                                                             \
         --binarizer default                                 \
-        --max_length 512 --return_overflowing_tokens true   \
-        --batch_size 512 --batched true                     \
+        --return_overflowing_tokens true                    \
+        --batch_size 512                                    \
+        --batched true                                      \
         --num_proc 16                                       \
-        --block_size 1073741824                             \
+                                                            \
+        --dataset_impl mmap
+
+translation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Converts monolingual and bilingual samples into tokenized encodings. supports the overflowing batches with stride
+for long docs processing.
+
+Required parameters
+***********************************************************************************************************************
+
+.. autoclass:: formerbox.TranslationBinarizer.Params
+    :members:
+
+Example cli command
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: shell
+
+    formerbox-cli preprocess                                \
+        --train_prefix <train_prefix>                       \
+        --valid_prefix <valid_prefix>                       \
+        --test_prefix <test_prefix>                         \
+        --output_path <output_path>                         \
+                                                            \
+        --tokenizer <tokenizer>                             \
+        --tokenizer_path <tokenizer_path>                   \
+                                                            \
+        --binarizer translation                             \
+        --src_lang <src_lang>                               \
+        --tgt_lang <tgt_lang>                               \
+        --return_overflowing_tokens true                    \
+        --batch_size 512                                    \
+        --batched true                                      \
+        --num_proc 16                                       \
                                                             \
         --dataset_impl mmap
 
@@ -62,24 +98,23 @@ Making your own binarizer
 
 .. code-block:: python
 
-    from dataclasses import dataclass, field
-    from typing import Any, Callable, Dict, Text
+    from dataclasses import dataclass
+    from typing import Any, Dict, List, Optional, Text, Type, Union
 
-    import torch
-    from formerbox import Binarizer
-    from formerbox.common.dataclass_argparse import DataclassBase
+    from formerbox.data.binarizer import Binarizer, BinarizerBase
+    from formerbox.data.indexed_dataset import IndexedDatasetBuilderBase
     from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
     from transformers import PreTrainedTokenizerFast
 
 
-    @Binarizer.register(name="my-binarizer", constructor="from_partial")
-    class MyBinarizer(Binarizer):
+    @Binarizer.register(name="my_binarizer")
+    class MyBinarizer(BinarizerBase):
         @dataclass
-        class Params(DataclassBase):
+        class Params(BinarizerBase.Params):
             ### Your fields here
 
         params: Params
-        params_type = Params
+        params_type: Type[Params] = Params
 
         def __init__(
             self,
@@ -87,15 +122,28 @@ Making your own binarizer
             tokenizer: PreTrainedTokenizerFast,
             params: Params,
         ) -> None:
-            super().__init__(dataset_setup, tokenizer)
+            super().__init__(dataset_setup, tokenizer, params)
             self.params = params
 
-        def binarize(
-            self, filename: Text, consumer: Callable[[torch.Tensor], None]
+        def binarize_dataset(
+            self,
+            filename: Text,
+            output_prefix: Text,
+            **kwargs: Any,
         ) -> None:
-            ### Step 1: do anything to prepare the dataset for mapping
-            ### Step 2: map the dataset with `self.encode` method
+            ### Step 1: prepare dataset files to binarize
+            ### Step 2: binarize prepared datasets
+            ### Step 3: finalize results
+
+        def binarize(
+            self,
+            filename: Text,
+            consumer: IndexedDatasetBuilderBase,
+            **kwargs: Any,
+        ) -> None:
+            ### Step 1: prepare the given dataset for processing
+            ### Step 2: run dataset processing to encode texts into input ids
             ### Step 3: iterate over the processed dataset and write results to the consumer
 
         def encode(self, instance: Dict[Text, Any]) -> Dict[Text, Any]:
-            ### Do anything to map a dataset instance into input ids
+            ### Map a dataset instance into input ids

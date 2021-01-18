@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 from formerbox.data.indexed_dataset import IndexedDatasetBase
 from formerbox.data.samplers import (
@@ -75,3 +75,7 @@ class DatasetIterator(Dataset):
             )
 
         return batch_sampler
+
+    def collate_fn(self, samples: List[Any]) -> Any:
+        assert len(samples) == 1
+        return samples[0]

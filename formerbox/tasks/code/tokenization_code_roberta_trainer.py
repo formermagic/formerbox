@@ -10,16 +10,15 @@ from formerbox.utils.code_tokenizer import SpecialToken
 logger = logging.getLogger(__name__)
 
 
-@TokenizerTrainer.register("code-roberta", constructor="from_partial")
+@TokenizerTrainer.register("code_roberta", constructor="from_partial")
 class CodeRobertaTokenizerTrainer(RobertaTokenizerTrainer):
     Params = RobertaTokenizerTrainer.Params
 
     def __init__(self, params: Params, **kwargs: Any) -> None:
         super().__init__(params, **kwargs)
 
-        # add code special tokens
-        for token in SpecialToken:
-            self.special_tokens.append(token.value)
+        # add code special tokens as additional tokens
+        self.additional_tokens = [token.value for token in SpecialToken]
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any

@@ -1,6 +1,7 @@
 import logging
+from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Text, Tuple, Type
 
 import torch
 from formerbox.common.dataclass_argparse import DataclassBase
@@ -14,11 +15,9 @@ from pytorch_lightning import LightningModule
 from torch import Tensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
-from torch.utils.data import DataLoader
-from transformers import PreTrainedModel, PreTrainedTokenizer, PreTrainedTokenizerFast
+from transformers import PreTrainedModel
+from transformers import PreTrainedTokenizerFast as Tokenizer
 from typing_extensions import Protocol
-
-Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
 logger = logging.getLogger(__name__)
 
@@ -83,15 +82,26 @@ class TransformerModule(
         self.tokenizer = tokenizer
         self.params = params
 
-        self.perplexity = Perplexity(tokenizer.vocab_size)
+        # metrics properties
+        self.perplexity = Perplexity()
 
         # lazy initialized properties
         self.total_train_steps = 0
         self.lr_scheduler: Optional[LambdaLR] = None
-        self._train_dataloader: Optional[DataLoader[Tensor]] = None
-        self._val_dataloader: Optional[DataLoader[Tensor]] = None
 
-        self.register_buffer("best_val_loss", torch.tensor(0.0))
+    @property
+    def learning_rate(self) -> torch.Tensor:
+        learning_rate: torch.Tensor
+        if self.lr_scheduler is None:
+            learning_rate = torch.tensor(float("nan"))
+        else:
+            try:
+                values = self.lr_scheduler.get_last_lr()  # type: ignore
+                learning_rate = torch.tensor(values).mean()
+            except IndexError:
+                learning_rate = torch.tensor(float("nan"))
+
+        return learning_rate
 
     def setup(self, stage: Optional[Text] = None) -> None:
         del stage  # we don't use `stage` to build a module
@@ -115,6 +125,7 @@ class TransformerModule(
                     " in your training command."
                 )
 
+    @abstractmethod
     def forward(
         self,
         input_ids: Tensor,
@@ -122,32 +133,9 @@ class TransformerModule(
         return_dict: bool = True,
         **kwargs: Any,
     ) -> TransformerModuleOutput:
-        # put the module into train mode
-        self.model.train()
+        raise NotImplementedError()
 
-        # prepare model forward pass arguments
-        kwargs.setdefault("input_ids", input_ids)
-        kwargs.setdefault("labels", labels)
-        kwargs.setdefault("return_dict", return_dict)
-
-        # make a forward pass with our transformer model
-        outputs = self.model(**kwargs)
-        # the language model should return a `TransformerModuleOutput` instance
-        assert isinstance(outputs, TransformerModuleOutput)
-
-        # return the model outputs
-        return outputs
-
-    def prepare_batch(self, batch: Dict[Text, Tensor], batch_idx: int) -> None:
-        del batch_idx  # nouse
-
-        # data loader will produce an extra dimension
-        # if a data iterator is used, so we have
-        # to flatten our input tensor if this happens
-        input_ids = batch["input_ids"]
-        if len(input_ids.size()) == 3:
-            batch["input_ids"] = input_ids.squeeze(0)
-
+    @abstractmethod
     def training_step(
         self,
         batch: Dict[Text, Tensor],
@@ -155,66 +143,16 @@ class TransformerModule(
         optimizer_idx: Optional[int] = None,
         hiddens: Optional[Tensor] = None,
     ) -> Dict[Text, Any]:
-        del optimizer_idx, hiddens  # nouse
-        self.prepare_batch(batch, batch_idx)
+        raise NotImplementedError()
 
-        # model forward pass & prepare metrics values
-        outputs = self.forward(**batch)
-        assert outputs.loss is not None
-
-        # prepare detached tensors for logging
-        loss = outputs.loss.detach().cpu()
-        logits = outputs.logits.detach()
-        labels = batch["labels"].detach()
-
-        perplexity = self.perplexity(logits, labels)
-        perplexity = perplexity.detach().cpu()
-        batch_size = torch.tensor(len(batch["input_ids"]))
-
-        # get the latest scheduled learning rate
-        if self.lr_scheduler is None:
-            learning_rate = torch.tensor(float("nan"))
-        else:
-            try:
-                values = self.lr_scheduler.get_last_lr()  # type: ignore
-                learning_rate = torch.tensor(values).mean()
-            except IndexError:
-                learning_rate = torch.tensor(float("nan"))
-
-        # log training metrics
-        self.log("train_loss", loss, prog_bar=True)
-        self.log("train_ppl", perplexity, prog_bar=True)
-        self.log("train_lr", learning_rate, prog_bar=True)
-        self.log("train_bsz", batch_size, prog_bar=True)
-
-        return {
-            "loss": outputs.loss,
-            "ppl": perplexity,
-            "lr": learning_rate,
-            "bsz": batch_size,
-        }
-
+    @abstractmethod
     def validation_step(
-        self, batch: Dict[Text, Tensor], batch_idx: int, **kwargs: Any
+        self,
+        batch: Dict[Text, Tensor],
+        batch_idx: int,
+        **kwargs: Any,
     ) -> None:
-        del kwargs  # nouse
-        self.prepare_batch(batch, batch_idx)
-
-        # model forward pass & prepare metrics
-        outputs = self.forward(**batch)
-        assert outputs.loss is not None
-
-        # prepare detached tensors for logging
-        loss = outputs.loss.detach().cpu()
-        logits = outputs.logits.detach()
-        labels = batch["labels"].detach()
-
-        perplexity = self.perplexity(logits, labels)
-        perplexity = perplexity.detach().cpu()
-
-        # log validation metrics
-        self.log("val_loss", loss, prog_bar=True)
-        self.log("val_ppl", perplexity, prog_bar=True)
+        raise NotImplementedError()
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[Dict]]:
         parameters = weight_decay_params(

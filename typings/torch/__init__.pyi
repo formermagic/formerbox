@@ -14450,10 +14450,6 @@ def zeros_like(g, input, dtype=..., layout=..., device=..., pin_memory=..., memo
 def new_zeros(g, self, sizes, dtype, layout, device, pin_memory=...):
     ...
 
-@parse_args('v', 'i', 'v', 'v', 'v')
-def ones(g, sizes, dtype, layout, device, pin_memory=...):
-    ...
-
 @parse_args('v', 'i', 'v', 'v', 'v', 'v')
 def ones_like(g, input, dtype=..., layout=..., device=..., pin_memory=..., memory_format=...):
     ...
@@ -25071,12 +25067,7 @@ def batch_norm_stats(input: Tensor, eps: _float) -> Tuple[Tensor, Tensor]:
 def batch_norm_update_stats(input: Tensor, running_mean: Optional[Tensor], running_var: Optional[Tensor], momentum: _float) -> Tuple[Tensor, Tensor]:
     ...
 
-@overload
 def bernoulli(self: Tensor, *, generator: Optional[Generator] = ..., out: Optional[Tensor] = ...) -> Tensor:
-    ...
-
-@overload
-def bernoulli(self: Tensor, p: _float, *, generator: Optional[Generator] = ..., out: Optional[Tensor] = ...) -> Tensor:
     ...
 
 def bilinear(input1: Tensor, input2: Tensor, weight: Tensor, bias: Optional[Tensor]) -> Tensor:
@@ -25137,12 +25128,10 @@ def bucketize(self: Number, boundaries: Tensor, *, out_int32: _bool = ..., right
 def can_cast(from_: _dtype, to: _dtype) -> _bool:
     ...
 
-@overload
 def cat(tensors: Union[Tuple[Tensor, ...], List[Tensor]], dim: _int = ..., *, out: Optional[Tensor] = ...) -> Tensor:
     ...
 
-@overload
-def cat(tensors: Union[Tuple[Tensor, ...], List[Tensor]], dim: Union[str, ellipsis, None], *, out: Optional[Tensor] = ...) -> Tensor:
+def cat(tensors: Union[Tuple[Tensor, ...], List[Tensor]], dim: Union[str, ellipsis, None, _int], *, out: Optional[Tensor] = ...) -> Tensor:
     ...
 
 def ceil(self: Tensor, *, out: Optional[Tensor] = ...) -> Tensor:
@@ -25293,11 +25282,9 @@ def cumprod(self: Tensor, dim: _int, *, dtype: Optional[_dtype] = ..., out: Opti
 def cumprod(self: Tensor, dim: Union[str, ellipsis, None], *, dtype: Optional[_dtype] = ..., out: Optional[Tensor] = ...) -> Tensor:
     ...
 
-@overload
 def cumsum(self: Tensor, dim: _int, *, dtype: Optional[_dtype] = ..., out: Optional[Tensor] = ...) -> Tensor:
     ...
 
-@overload
 def cumsum(self: Tensor, dim: Union[str, ellipsis, None], *, dtype: Optional[_dtype] = ..., out: Optional[Tensor] = ...) -> Tensor:
     ...
 
@@ -25567,12 +25554,7 @@ def from_file(filename: str, shared: Optional[_bool] = ..., size: Optional[_int]
 def from_numpy(ndarray) -> Tensor:
     ...
 
-@overload
 def full(size: _size, fill_value: Number, *, out: Optional[Tensor] = ..., dtype: Optional[_dtype] = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
-    ...
-
-@overload
-def full(size: _size, fill_value: Number, *, names: List[Union[str, None]], dtype: Optional[_dtype] = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
     ...
 
 def full_like(self: Tensor, fill_value: Number, *, memory_format: Optional[memory_format] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
@@ -25961,16 +25943,13 @@ def max_pool2d(self: Tensor, kernel_size: Union[_int, _size], stride: Union[_int
 def max_pool3d(self: Tensor, kernel_size: Union[_int, _size], stride: Union[_int, _size] = ..., padding: Union[_int, _size] = ..., dilation: Union[_int, _size] = ..., ceil_mode: _bool = ...) -> Tensor:
     ...
 
-@overload
 def mean(self: Tensor, *, dtype: Optional[_dtype] = ..., out: Optional[Tensor] = ...) -> Tensor:
     ...
 
-@overload
 def mean(self: Tensor, dim: Union[_int, _size], keepdim: _bool = ..., *, dtype: Optional[_dtype] = ..., out: Optional[Tensor] = ...) -> Tensor:
     ...
 
-@overload
-def mean(self: Tensor, dim: Sequence[Union[str, ellipsis, None]], keepdim: _bool = ..., *, dtype: Optional[_dtype] = ..., out: Optional[Tensor] = ...) -> Tensor:
+def mean(self: Tensor, dim: Sequence[Union[str, ellipsis, None]] = ..., keepdim: _bool = ..., *, dtype: Optional[_dtype] = ..., out: Optional[Tensor] = ...) -> Tensor:
     ...
 
 @overload
@@ -26071,11 +26050,9 @@ def native_layer_norm(input: Tensor, weight: Optional[Tensor], bias: Optional[Te
 def native_norm(self: Tensor, p: Number = ...) -> Tensor:
     ...
 
-@overload
 def ne(self: Tensor, other: Number, *, out: Optional[Tensor] = ...) -> Tensor:
     ...
 
-@overload
 def ne(self: Tensor, other: Tensor, *, out: Optional[Tensor] = ...) -> Tensor:
     ...
 
@@ -26089,7 +26066,6 @@ def neg_(self: Tensor) -> Tensor:
 def nonzero(input: Tensor, *, out: Optional[Tensor] = ...) -> Tensor:
     ...
 
-@overload
 def nonzero(input: Tensor, *, as_tuple: bool = ...) -> Tensor:
     ...
 
@@ -26123,19 +26099,6 @@ def nuclear_norm(self: Tensor, dim: Union[_int, _size], keepdim: _bool = ..., *,
 def numel(self: Tensor) -> _int:
     ...
 
-@overload
-def ones(size: _size, *, names: Optional[Sequence[Union[str, ellipsis, None]]], out: Optional[Tensor] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
-    ...
-
-@overload
-def ones(*size: _int, names: Optional[Sequence[Union[str, ellipsis, None]]], out: Optional[Tensor] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
-    ...
-
-@overload
-def ones(size: _size, *, out: Optional[Tensor] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
-    ...
-
-@overload
 def ones(*size: _int, out: Optional[Tensor] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
     ...
 
@@ -26287,11 +26250,9 @@ def rand(*size: _int, generator: Optional[Generator], out: Optional[Tensor] = ..
 def rand_like(self: Tensor, *, memory_format: Optional[memory_format] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
     ...
 
-@overload
 def randint(low: _int, high: _int, size: _size, *, dtype: Optional[_dtype] = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
     ...
 
-@overload
 def randint(high: _int, size: _size, *, dtype: Optional[_dtype] = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
     ...
 
@@ -26338,12 +26299,7 @@ def randn(*size: _int, generator: Optional[Generator], names: Optional[Sequence[
 def randn_like(self: Tensor, *, memory_format: Optional[memory_format] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
     ...
 
-@overload
-def randperm(n: _int, *, out: Optional[Tensor] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
-    ...
-
-@overload
-def randperm(n: _int, *, generator: Optional[Generator], out: Optional[Tensor] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
+def randperm(n: _int, *, generator: Optional[Generator] = ..., out: Optional[Tensor] = ..., dtype: _dtype = ..., layout: _layout = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:
     ...
 
 def range(start: Number, end: Number, step: Number = ..., *, out: Optional[Tensor] = ..., dtype: Optional[_dtype] = ..., device: Union[_device, str, None] = ..., requires_grad: _bool = ...) -> Tensor:

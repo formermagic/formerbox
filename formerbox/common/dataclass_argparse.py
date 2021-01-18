@@ -54,7 +54,7 @@ def get_params_item(
 ) -> Optional[ParamsType]:
     for args in params:
         if isinstance(args, params_type):
-            return args
+            return typing.cast(ParamsType, args)
     return default
 
 
@@ -178,7 +178,11 @@ class DataclassArgumentParser(ArgumentParser):
             for primitive_type in (int, float, str):
                 if not is_optional_type(field_type):
                     continue
+
+                # get container generic type
                 container_type = get_args(field_type)[0]
+                container_type = typing.cast(Type[Any], container_type)
+
                 for collection_type in (List,):
                     if container_type == collection_type[primitive_type]:
                         field_type = collection_type[primitive_type]
@@ -187,7 +191,8 @@ class DataclassArgumentParser(ArgumentParser):
 
             # unpack optional container
             if is_optional_type(field_type):
-                field_type: Type[Any] = get_args(field_type)[0]
+                optional_type = get_args(field_type)[0]
+                field_type = typing.cast(Type[Any], optional_type)
 
             # raise value errors for unsupported field types
             if is_union_type(field_type):
@@ -197,7 +202,8 @@ class DataclassArgumentParser(ArgumentParser):
 
             # parse supported fields
             if is_enum_type(field_type):
-                kwargs["choices"] = list(field_type)  # type: ignore
+                choices = typing.cast(Type[Enum], field_type)
+                kwargs["choices"] = list(choices)
                 kwargs["type"] = field_type
                 if not is_missing(field_obj.default):
                     kwargs["default"] = field_obj.default

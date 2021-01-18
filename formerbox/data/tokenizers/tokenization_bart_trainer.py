@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 @TokenizerTrainer.register(name="bart", constructor="from_partial")
 class BartTokenizerTrainer(RobertaTokenizerTrainer):
-    Params = RobertaTokenizerTrainer.Params
+    class Params(RobertaTokenizerTrainer.Params):
+        pass
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any

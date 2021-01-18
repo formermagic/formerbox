@@ -60,11 +60,11 @@ class Preprocess(Subcommand):
             metadata={"help": "Test dataset text file prefix."},
         )
         legacy_format: bool = field(
-            default=True,
+            default=False,
             metadata={
-                "help": "Whether to save the tokenizer in legacy format (default),"
+                "help": "Whether to save the tokenizer in legacy format,"
                 " i.e. with tokenizer specific vocabulary and separate added_tokens files"
-                " or in the unified JSON file format of the `tokenizers` library."
+                " or in the unified JSON file format of the `tokenizers` library (default)."
             },
         )
 
@@ -158,12 +158,6 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
 
     # prepare the output dir for writing data files
     os.makedirs(cmd_params.output_path, exist_ok=True)
-    # save the pretrained tokenizer to the output directory
-    save_tokenizer(
-        tokenizer,
-        output_path=cmd_params.output_path,
-        legacy_format=cmd_params.legacy_format,
-    )
 
     # run dataset binarization for each split
     for split, datafile_prefix in (
@@ -191,3 +185,12 @@ def preprocess(params: Tuple[Union[DataclassBase, Namespace], ...]) -> None:
 
         time_delta = time() - start_time
         logger.info("Wall time: %.3fs", time_delta)
+
+    # save the pretrained tokenizer to the output directory
+    # we do this after data preprocessing because some updates
+    # might happen on the tokenizer state during the preprocessing
+    save_tokenizer(
+        tokenizer,
+        output_path=cmd_params.output_path,
+        legacy_format=cmd_params.legacy_format,
+    )

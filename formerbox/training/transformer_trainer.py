@@ -8,7 +8,7 @@ from formerbox.common.dataclass_argparse import DataclassArgumentParser, Datacla
 from formerbox.common.has_params import HasParsableParams
 from formerbox.common.registrable import Registrable
 from formerbox.modules.callbacks import SaveCheckpointAtStep
-from formerbox.tasks import TaskModule
+from formerbox.tasks.task_module import TaskModule
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import Callback, EarlyStopping
 from pytorch_lightning.loggers.wandb import LightningLoggerBase, WandbLogger

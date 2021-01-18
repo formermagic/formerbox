@@ -2,8 +2,8 @@ Convert arbitrary datasets into text datasets
 =======================================================================================================================
 
 If you want to train a transformer-based model on your arbitrary dataset, first you need to convert the dataset to a
-text file. This is done with :class:`~formerbox.cli.ConvertDataset` subcommand which uses the 
-:class:`~formerbox.DatasetConverter` to map any dataset into the text file for further processing.
+text file. This is done with :class:`~formerbox.cli.ConvertDataset` subcommand which uses the :class:`~formerbox.DatasetConverter`
+to map any dataset into the text file for further processing.
 
 We recommend using `🤗/datasets <https://github.com/huggingface/datasets>`__ for any mapping and processing.
 
@@ -27,6 +27,19 @@ Required parameters
 .. autoclass:: formerbox.DefaultDatasetConverter.Params
     :members:
 
+Example cli command
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: shell
+
+    formerbox-cli convert_dataset           \
+        --converter default                 \
+        --script_path json                  \
+        --data_files <data_files>           \
+        --output_path <output_path>         \
+        --batch_size <batch_size>           \
+        --num_proc <num_proc>
+
 code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -43,7 +56,7 @@ Example cli command
 
 .. code-block:: shell
 
-    python -m formerbox convert_dataset     \
+    formerbox-cli convert_dataset           \
         --converter code                    \
         --script_path json                  \
         --data_files <data_files>           \
@@ -61,11 +74,12 @@ Making your own dataset converter
     from typing import Dict, Text, Union
 
     from datasets import Dataset, DatasetDict, load_dataset
+    from formerbox.data.dataset_converter import DatasetConverter, DatasetConverterBase
     from formerbox.common.dataclass_argparse import DataclassBase
 
 
-    @DatasetConverter.register("my-converter", constructor="from_partial")
-    class MyDatasetConverter(DatasetConverter, DatasetProcessingMixin):
+    @DatasetConverter.register("my_converter")
+    class MyDatasetConverter(DatasetConverterBase):
         @dataclass
         class Params(DataclassBase):
             ### Your fields here
