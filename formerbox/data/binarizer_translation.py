@@ -20,11 +20,18 @@ class TranslationBinarizer(DefaultBinarizer):
     class Params(DefaultBinarizer.Params):
         src_lang: Text = field(
             default=MISSING,
-            metadata={"help": ""},
+            metadata={
+                "help": "A source language extension."
+                " Used in mono-bilingual translation tasks."
+            },
         )
         tgt_lang: Optional[Text] = field(
             default=None,
-            metadata={"help": ""},
+            metadata={
+                "help": "A target language extension."
+                " Used in bilingual translation tasks."
+                " Default value is `None`."
+            },
         )
 
     params: Params
