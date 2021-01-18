@@ -27,9 +27,10 @@ class DefaultBinarizer(BinarizerBase):
         max_length: Optional[int] = field(
             default=None,
             metadata={
-                "help": "Pad to a maximum length specified with the argument"
-                " max_length or to the maximum acceptable input length for"
-                " the model if that argument is not provided."
+                "help": "Pad to the maximum length specified with this argument."
+                " Note, that the default value is tokenizer's `max_model_length`."
+                " Changing this argument will override default settings."
+                " One might override if tokenizer doesn't specify `max_model_length`."
             },
         )
         stride: int = field(
