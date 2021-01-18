@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 # pylint: disable=arguments-differ
 @TokenizerTrainer.register(name="roberta", constructor="from_partial")
 class RobertaTokenizerTrainer(GPT2TokenizerTrainer):
-    Params = GPT2TokenizerTrainer.Params
+    class Params(GPT2TokenizerTrainer.Params):
+        pass
 
     def configure_tokenizer(
         self, tokenizer_path: Union[Text, Path], **kwargs: Any
