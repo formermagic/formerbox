@@ -1,8 +1,8 @@
 Train a new tokenizer on text files
 =======================================================================================================================
 
-Training a new tokenizer takes 2 steps. First, you train a new fast tokenizer (:class:`~tokenizers.Tokenizer`) using 
-`🤗/tokenizers <https://github.com/huggingface/tokenizers>`__ library. Second, you convert the pretrained tokenizer
+Training a new tokenizer is a 2 step process. First, you train a new fast tokenizer (:class:`~tokenizers.Tokenizer`)
+using `🤗/tokenizers <https://github.com/huggingface/tokenizers>`__ library. Second, you convert the pretrained tokenizer
 into :class:`~transformers.PreTrainedTokenizerFast` and save the tokenizer files. From now on, you can load saved
 pretrained tokenizers for data processing and model training. Our cli provides a `train_tokenizer` subcommand to train 
 a new tokenizer.
@@ -29,10 +29,10 @@ Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :cla
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
+.. autoclass:: formerbox.GPT2TokenizerTrainer.Params
     :members:
 
-.. autoclass:: formerbox.GPT2TokenizerTrainer.Params
+.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
     :members:
 
 roberta
@@ -43,10 +43,10 @@ Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :cla
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
+.. autoclass:: formerbox.RobertaTokenizerTrainer.Params
     :members:
 
-.. autoclass:: formerbox.RobertaTokenizerTrainer.Params
+.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
     :members:
 
 bart
@@ -57,22 +57,26 @@ Trains a :class:`~tokenizers.ByteLevelBPETokenizer` and then converts it to :cla
 Required parameters
 ***********************************************************************************************************************
 
-.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
+.. autoclass:: formerbox.BartTokenizerTrainer.Params
     :members:
 
-.. autoclass:: formerbox.BartTokenizerTrainer.Params
+.. autoclass:: formerbox.data.tokenizers.TokenizerTrainerParams
     :members:
 
 Example cli command
 ***********************************************************************************************************************
 
+Note, that transformer-based models have sequence length limits. That's why you probably need to set max length in advance.
+Basically, your tokenizer max length should match a transformer model's max length value.
+
 .. code-block:: shell
 
-    python -m formerbox train_tokenizer             \
+    formerbox-cli train_tokenizer                   \
             --tokenizer roberta                     \
             --save_directory <path>                 \
             --files <text_file>[<text_file>...]     \
-            --vocab_size <vocab_size>
+            --vocab_size <vocab_size>               \
+            --model_max_length <max_length>
 
 Making your own tokenizer trainer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,10 +85,16 @@ If no built-in component fits to your needs you can make a new one based on the 
 Note, that we provide some out-of-the-box features in :class:`~formerbox.TokenizerTrainerBase` class, so you can inherit
 from it directly. You'll need to define a backend :class:`~tokenizers.Tokenizer` and implement abstract methods.
 
+You will also need a custom :class:`~transformers.PreTrainedTokenizerFast` class to convert backend tokenizer. Consider
+reusing already existing tokenizers from `🤗/transformers <https://github.com/huggingface/transformers>`__ library.
+
 .. autoclass:: formerbox.TokenizerTrainer
     :members:
 
 .. autoclass:: formerbox.TokenizerTrainerBase
+    :members:
+
+.. autoclass:: transformers.PreTrainedTokenizerFast
     :members:
 
 Example of a new tokenizer trainer
@@ -92,7 +102,6 @@ Example of a new tokenizer trainer
 
 .. code-block:: python
 
-    import logging
     from dataclasses import dataclass, field
     from pathlib import Path
     from typing import Any, Dict, List, Optional, Text, Union
@@ -102,15 +111,12 @@ Example of a new tokenizer trainer
     from formerbox.common.dataclass_argparse import DataclassBase
     from formerbox.tasks.tokenization_trainer import TokenizerTrainerBase
 
-    logger = logging.getLogger(__name__)
 
-
-    @TokenizerTrainerBase.register(name="my-tokenizer", constructor="from_partial")
+    @TokenizerTrainer.register(name="my_tokenizer")
     class MyTokenizerTrainer(TokenizerTrainerBase):
-        # pylint: disable=arguments-differ
         @dataclass
         class Params(DataclassBase):
-            ...
+            ### Your fields here
 
         params: Params
         params_type = Params
