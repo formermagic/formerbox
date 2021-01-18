@@ -71,8 +71,7 @@ class DatasetConverter(Registrable, HasParsableParams[ParamsType], metaclass=ABC
         raise NotImplementedError()
 
 
-@DatasetConverter.register("default", constructor="from_partial")
-class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
+class DatasetConverterBase(DatasetConverter, DatasetProcessingMixin, metaclass=ABCMeta):
     @dataclass
     class Params(DataclassBase):
         script_path: Text = field(
@@ -86,14 +85,61 @@ class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
                 " datasets and ids with datasets.list_datasets())."
             },
         )
-        output_path: Text = field(
-            default=MISSING,
-            metadata={"help": "The output directory to save converted text datasets."},
-        )
         data_files: List[Text] = field(
             default_factory=MISSING,
             metadata={"help": "Defining the data_files of the dataset configuration"},
         )
+        output_path: Text = field(
+            default=MISSING,
+            metadata={"help": "The output directory to save converted text datasets."},
+        )
+        batched: bool = field(
+            default=True,
+            metadata={
+                "help": "Whether or not to provide batches of examples to the function."
+                " Default is set to `True`."
+            },
+        )
+        batch_size: int = field(
+            default=128,
+            metadata={
+                "help": "The number of examples per batch provided to function"
+                " if batched=True batch_size <= 0 or batch_size == None:"
+                " Provide the full dataset as a single batch to function."
+                " Default is set to `128`."
+            },
+        )
+        num_proc: int = field(
+            default=1,
+            metadata={
+                "help": "The number of processes for multiprocessing."
+                " Default is set to `1`."
+            },
+        )
+
+    def lookup_data_files(self, data_files: List[Text]) -> List[Text]:
+        assert data_files
+        if len(data_files) > 1:
+            return data_files
+
+        search_pattern = data_files[0]
+        search_results = glob(search_pattern)
+        if search_results:
+            logger.info(
+                "Found %d files using the pattern: %s",
+                len(search_results),
+                search_pattern,
+            )
+
+            data_files = search_results
+
+        return data_files
+
+
+@DatasetConverter.register("default", constructor="from_partial")
+class DefaultDatasetConverter(DatasetConverterBase):
+    @dataclass
+    class Params(DatasetConverterBase.Params):
         train_test_split: bool = field(
             default=False,
             metadata={
@@ -122,29 +168,6 @@ class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
                 " Default is set to `0.1`."
             },
         )
-        batched: bool = field(
-            default=True,
-            metadata={
-                "help": "Whether or not to provide batches of examples to the function."
-                " Default is set to `True`."
-            },
-        )
-        batch_size: int = field(
-            default=128,
-            metadata={
-                "help": "The number of examples per batch provided to function"
-                " if batched=True batch_size <= 0 or batch_size == None:"
-                " Provide the full dataset as a single batch to function."
-                " Default is set to `128`."
-            },
-        )
-        num_proc: int = field(
-            default=1,
-            metadata={
-                "help": "The number of processes for multiprocessing."
-                " Default is set to `1`."
-            },
-        )
 
     params: Params
     params_type: Type[Params] = Params
@@ -156,7 +179,7 @@ class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
         del args, kwargs  # use only designated args
         # search data_files if a user specified a pattern to use
         # otherwise the method will return the input values
-        data_files = self.search_data_files(self.params.data_files)
+        data_files = self.lookup_data_files(self.params.data_files)
         # prepare the output dir for writing results
         Path(self.params.output_path).parent.mkdir(exist_ok=True)
 
@@ -238,21 +261,3 @@ class DefaultDatasetConverter(DatasetConverter, DatasetProcessingMixin):
     def preprocess_text(self, text: Text) -> Instance:
         # workaround to avoid disambiguation in parsing text datasets
         return text.replace("\b", "\r")
-
-    def search_data_files(self, data_files: List[Text]) -> List[Text]:
-        assert data_files
-        if len(data_files) > 1:
-            return data_files
-
-        search_pattern = data_files[0]
-        search_results = glob(search_pattern)
-        if search_results:
-            logger.info(
-                "Found %d files using the pattern: %s",
-                len(search_results),
-                search_pattern,
-            )
-
-            data_files = search_results
-
-        return data_files
