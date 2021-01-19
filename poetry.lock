@@ -2471,8 +2471,8 @@ testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pyt
 
 [metadata]
 lock-version = "1.1"
-python-versions = ">=3.6.2,<4.0.0"
-content-hash = "5b7b0a21638d6e849e04c3ed9c4006a42d6495d664da7ceec8594917be0c05b0"
+python-versions = ">=3.6.9,<4.0.0"
+content-hash = "bb207bfa2dbd6606be3bfd7d27442d7064f15b9dcacb6e9feda27a38e7e92de2"
 
 [metadata.files]
 absl-py = [
