@@ -15,13 +15,13 @@ pytorch-lightning = "~1.1.4"
 
 # NLP toolkit packages
 transformers = "^4.2.1"
-datasets = "^1.1.2"
+datasets = "^1.2.1"
 spacy = "^2.2.4"
 sacrebleu = "^1.4.13"
 
 # Machine learning toolkit
-numpy = "^1.19.2"
-pandas = "^1.0.4"
+numpy = "^1.19.5"
+pandas = "^1.1.5"
 scikit-learn = "^0.23.1"
 scipy = "^1.4.1"
 

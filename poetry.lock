@@ -2472,7 +2472,7 @@ testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.6.2,<4.0.0"
-content-hash = "4d2d1f7407a56a83293afb1e35cc1886ed67bb6992c3a7d794c774ba84945aff"
+content-hash = "5b7b0a21638d6e849e04c3ed9c4006a42d6495d664da7ceec8594917be0c05b0"
 
 [metadata.files]
 absl-py = [
