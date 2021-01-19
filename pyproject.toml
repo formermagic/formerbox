@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "formerbox"
-version = "0.1.14"
+version = "0.2.0rc1"
 description = ""
 authors = ["mozharovsky <mozharovsky@live.com>"]
 
@@ -9,19 +9,19 @@ formerbox-cli = 'formerbox.__main__:run_main'
 
 [tool.poetry.dependencies]
 # Deep learning toolkit
-python = "^3.6.1"
-torch = "^1.6.0"
-pytorch-lightning = "^1.0.2"
+python = ">=3.6.9,<4.0.0"
+torch = ">=1.7.0,<1.8.0"
+pytorch-lightning = ">=1.1.0,<1.2.0"
 
 # NLP toolkit packages
-transformers = "^3.4.0"
-datasets = "^1.1.2"
+transformers = "^4.2.1"
+datasets = "^1.2.1"
 spacy = "^2.2.4"
 sacrebleu = "^1.4.13"
 
 # Machine learning toolkit
-numpy = "^1.19.2"
-pandas = "^1.0.4"
+numpy = "^1.19.5"
+pandas = "^1.1.5"
 scikit-learn = "^0.23.1"
 scipy = "^1.4.1"
 

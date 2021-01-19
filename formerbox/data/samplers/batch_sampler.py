@@ -1,4 +1,4 @@
-from typing import Iterator, List
+from typing import Iterator, List, Sized
 
 from torch.utils.data import Dataset, Sampler
 
@@ -11,6 +11,9 @@ class BatchSampler(Sampler):
         shuffle: bool = True,
         drop_last: bool = False,
     ) -> None:
+        # pylint: disable=isinstance-second-argument-not-valid-type
+        assert isinstance(data_source, Sized)
+
         super().__init__(data_source)
         self.data_source = data_source
         self.batch_size = batch_size
