@@ -19,6 +19,16 @@ def tolist(sequences: Union[List[Any], Tensor]) -> List[Any]:
     return sequences
 
 
+def tensors(sequences: List[Any]) -> List[Tensor]:
+    result: List[Tensor] = []
+    for sequence in sequences:
+        if isinstance(sequence, Tensor):
+            result.append(sequence)
+        else:
+            result.append(torch.tensor(sequence))
+    return result
+
+
 def collate_batch(
     sequences: List[EncodedInput],
     tokenizer: PreTrainedTokenizerFast,
@@ -48,7 +58,7 @@ def collate_batch(
 
     # handle edge case when sequences have the same length
     if not padding_required:
-        return torch.stack(sequences, dim=0)
+        return torch.stack(tensors(sequences), dim=0)
 
     # prepare the result tensor with filled pad token id
     if pad_value is None:
