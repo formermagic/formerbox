@@ -1,6 +1,6 @@
 from typing import Any, Dict, Iterable, List, Text, Tuple, Union
 
-import torch
+import torch.nn as nn
 import transformers
 from torch import Tensor
 from torch.optim import Optimizer
@@ -37,7 +37,7 @@ def get_polynomial_decay_with_warmup(
 
 
 def weight_decay_params(
-    model: torch.nn.Module, weight_decay: float, skip_list: List[Text]
+    model: nn.Module, weight_decay: float, skip_list: List[Text]
 ) -> List[Dict[Text, Any]]:
     decay = []
     no_decay = []

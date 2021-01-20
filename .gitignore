@@ -1,10 +1,36 @@
+# logging & analytics
+wandb/*
+
+# misc
 .DS_Store
+.vscode
+.devcontainer
+
+# byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-.venv/*
-wandb/*
-.ipynb_checkpoints/
-lightning_logs/
+
+# C extensions
+*.so
+
+# distribution / packaging
+dist/
+wheels/
 *.egg-info/
-dist/*
+*.egg
+
+# jupyter notebooks
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# dotenv
+.env
+
+# virtualenv
+.venv
+env/
+venv/
+ENV/
