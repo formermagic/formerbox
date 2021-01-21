@@ -97,6 +97,7 @@ class DefaultBinarizer(BinarizerBase):
         dataset = self.process_dataset(
             filename,
             script_path="text",
+            script_version=None,
             remove_columns=["text"],
         )
 

@@ -84,14 +84,20 @@ class TranslationBinarizer(DefaultBinarizer):
         # process source dataset
         src_filename = f"{filename}.{self.params.src_lang}"
         src_dataset = self.process_dataset(
-            src_filename, script_path="text", remove_columns=["text"]
+            src_filename,
+            script_path="text",
+            script_version=None,
+            remove_columns=["text"],
         )
 
         if self.params.tgt_lang is not None:
             # process target dataset if present
             tgt_filename = f"{filename}.{self.params.tgt_lang}"
             tgt_dataset = self.process_dataset(
-                tgt_filename, script_path="text", remove_columns=["text"]
+                tgt_filename,
+                script_path="text",
+                script_version=None,
+                remove_columns=["text"],
             )
 
             logger.info("Processing source and target files")
