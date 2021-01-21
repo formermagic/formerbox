@@ -3,7 +3,7 @@ import os
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from io import TextIOWrapper
-from typing import Any, Dict, List, Text, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
 import torch
 from datasets import Dataset, DatasetDict, load_dataset
@@ -134,13 +134,26 @@ class BinarizerBase(Binarizer, metaclass=ABCMeta):
         raise NotImplementedError()
 
     def process_dataset(
-        self, filename: Text, script_path: Text, remove_columns: List[Text]
+        self,
+        filename: Text,
+        script_path: Text,
+        script_version: Optional[Text],
+        remove_columns: List[Text],
     ) -> Union[Dataset, DatasetDict]:
+        # check if packaged scripts are set correctly
+        if script_path in ["csv", "json", "text"]:
+            if script_version is not None:
+                logger.error(
+                    "Script %s is packaged into datasets library."
+                    " Make sure you do not set `script_version` argument.",
+                    script_path,
+                )
+
         dataset = load_dataset(
             path=script_path,
             data_files=[filename],
             split="train",
-            script_version="master",
+            script_version=script_version,
         )
 
         dataset = dataset.map(
