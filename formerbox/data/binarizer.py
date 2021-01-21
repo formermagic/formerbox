@@ -141,7 +141,7 @@ class BinarizerBase(Binarizer, metaclass=ABCMeta):
         remove_columns: List[Text],
     ) -> Union[Dataset, DatasetDict]:
         # check if packaged scripts are set correctly
-        if script_path in ["text", "json", "csv"]:
+        if script_path in ["csv", "json", "text"]:
             if script_version is not None:
                 logger.error(
                     "Script %s is packaged into datasets library."
