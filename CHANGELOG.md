@@ -1,8 +1,187 @@
+# v0.2.0 (2021-01-22)
+
+# Refactor
+
+## Data
+
+- **data**: log error when packaged scripts are set incorrectly
+- **data**: specify script version via an argument
+- **data**: move base converter setup into base class
+- **data**: rename Seq2SeqBinarizer -> TranslationBinarizer
+- **data**: move default binarizer to its own file
+- **data**: rename Seq2SeqDataset -> TranslationDataset
+- **tokenizers**: move model_max_length to tokenizer base class
+- **data**: rename DataCollatorForSeq2Seq -> DataCollatorForTranslation
+- **code**: parametrize code pre-tokenization arguments
+- **code**: add code specific additional tokens to code tokenizer
+- **code**: add code special tokens to additional tokens list
+- **data**: simplify torch.full passed arguments to avoid facing unsupported behavior for pytorch < 1.7
+- **data**: rename DataCollatorForSeq2SeqDenoising -> DataCollatorForWholeWordMasking
+- **data**: add base abstract classes for data collator API
+- **tokenizers**: add model_max_length property signature
+- **data**: truncate input to tokenizer associated model_max_length
+- **data**: match features keys to huggingface models signature
+- **data**: rename dataset output keys to match huggingface models signature
+- **tokenizers**: remove outdated bug workaround for saving legacy tokenizers with AddedToken tokens
+- **tokenizers**: avoid save_directory from adding into tokenizer assets
+- **tokenizers**: save tokenizers in a new unified format by default
+- **data**: move common binarization logic to BinarizerBase class
+- **data**: rename TransformerDatasetConverter -> DefaultDatasetConverter
+- **data**: rename TransformerBinarizer -> DefaultBinarizer
+- **tokenizers**: move roberta tokenizer trainer logic to gpt2 tokenizer trainer
+
+## Common
+
+- **common**: rename PartialInitable -> FromPartial
+- **common**: raise runtime error when no registry found
+- **common**: raise runtime error when no value found
+- **common**: explicitly tell class name in error
+- **common**: move generic-based registry to its own container class
+
+## Modules
+
+- **modules**: remove deprecated seq2seq neural modules
+- **modules**: leave only basic setup in TransformerModule class
+- **modules**: make TransformerDataModule an abstract base class for specific data modules
+- **modules**: move loss calculation to a helper method
+- **modules**: rewrite label smoothing loss calculation wrt ignored indices
+- **modules**: return only loss in training_step method
+- **modules**: do not move valid perplexity value to cpu
+- **modules**: do not move perplexity value to cpu
+- **modules**: remove unused metric buffers
+- **callbacks**: use callback properties for storing monitor values and formatting checkpoints
+- **modules**: calculate the perplexity based on already computed loss value
+- **modules**: move getting the learning rate to an instance property
+- **modules**: remove deprecated prepare_batch step for making batches flatten
+- **modules**: specify data iterator's collate function for a dataloader
+- **modules**: use fast tokenizer as the default
+- **modules**: use DatasetIterator types for dataset iterators
+- **metrics**: use a computed loss value for calculating the perplexity
+- **modules**: rename TokenizerModule -> TokenizerTrainer, remove non-training proxy methods
+
+## Tasks
+
+- **tasks**: use Denoising modules for DenoisingTask & use default params
+- **tasks**: use MaskedLM modules for MaskedLMTask
+- **code**: rename code-roberta -> code_roberta
+- **tasks**: rename Seq2SeqTask -> DenoisingTask
+- **tasks**: rename TransformerTask -> MaskedLMTask
+- **tasks**: pass positional embeddings model config args
+- **tasks**: move tokenizer trainer base to data/tokenizers dir
+- **tasks**: move roberta tokenizer trainer to data/tokenizers dir
+- **tasks**: move roberta tokenizer to data/tokenizers dir
+- **tasks**: move tokenizer base to data/tokenizers dir
+- **tasks**: register roberta tokenizer trainer in TokenizerTrainer class
+- **tasks**: use renamed TokenizerTrainerBase class for tokenizer trainer
+- **tasks**: rename class BaseTokenizerTrainer -> TokenizerTrainerBase
+- **code**: move tokenizer training from CodeBBPETokenizerModule -> CodeRobertaTokenizerTrainer
+- **code**: rename code_dataset_converter -> dataset_converter_code
+- **code**: rename CodeBBPETokenizerFast -> CodeRobertaTokenizer
+- **tasks**: move tokenizer training from ByteLevelBPETokenizerModule -> RobertaTokenizerTrainer
+- **tasks**: mirror RobertaTokenizer instead of ByteLevelBPETokenizerFast
+
+## Training
+
+- **training**: update tokenizer params items with non-existing keys from kwargs
+- **training**: update model config items with non-existing keys from kwargs
+- **training**: load tokenizer from config with flatten components
+- **training**: load model from config with flatten components
+- **training**: use fast tokenizer as the default
+
+## CLI
+
+- **cli**: save tokenizer after preprocessing as some updated might happen during the preprocessing
+- **cli**: load tokenizer from pretrained fast tokenizer class
+
+## Other
+
+- **contrib**: move lightning contrib types to lightning dir
+- **utils**: make recursive subclass finding more expressive
+
+# Features
+
+## Data
+
+- **data**: add offline mode support by passing none to script version
+- **tokenizers**: add additional tokens to vocab after adding trained vocab
+- **tokenizers**: support additional tokens added after training on subword merges
+- **data**: add data collator for bart denoising unsupervised objective
+- **tokenizers**: set model_max_length explicitly for new tokenizers while training
+- **data**: use tokenizer model associated input max length if no expicit value is set
+- **data**: add dataset iterator built-in collate function for making batches flatten
+- **data**: add a binarizer for se2seq parallel datasets processing
+- **data**: handle empty sequences edge-case
+- **tokenizers**: add **call** method to tokenizer protocol
+- **data**: add seq2seq collators for training denoising autoencoder models
+- **data**: add a seq2seq dataset for s2s tasks
+- **tokenizers**: add BART tokenizer trainer inherited from roberta tokenizer trainer
+- **tokenizers**: add BART seq2seq registrable tokenizer
+- **tokenizers**: add GPT2 registrable tokenizer
+- **tokenizers**: add shared tokenizer training parameters
+- **tokenizers**: add seq2seq trainer interface + some basic types
+
+## Common
+
+- **common**: use a magic MISSING value for building mergable dataclasses
+
+## Modules
+
+- **modules**: add WordLM modules for whole word masking based on translation modules
+- **modules**: add lightning modules for training denoising models aka BART
+- **modules**: add Translation lightning modules for training mono/bilingual translation models
+- **modules**: add MaskedLM lightning modules for training bert-like models
+- **modules**: support translation data collator for nmt tasks
+- **modules**: choose data collator via datamodule config
+- **modules**: log step metric implicitly to ensure that we always start with the latest global step
+- **modules**: log global step to track the common training state
+- **modules**: add a seq2seq module for training seq2seq models
+- **modules**: add a seq2seq datamodule class for seq2seq data setup
+- **modules**: add a label smoothing criterion module
+
+## Tasks
+
+- **tasks**: add WordLM task for training whole word lm models
+- **tasks**: add translation task for training translation models
+- **tasks**: define base task params dataclass
+- **tasks**: parametrize vocab size with added tokens
+- **tasks**: add a seq2seq task for training seq2seq models
+- **tasks**: add a method to find params of a certain type
+- **code**: make code roberta tokenizer registrable
+- **tasks**: make roberta tokenizer a registrable component
+- **tasks**: add base registrable class for tokenizers
+- **tasks**: define special token ids for roberta tokenizer
+- **code**: register code dataset converter
+- **tasks**: add base tokenizer trainer class with defined method signatures
+
+## CLI
+
+- **cli**: specify tokenizer component in user args
+- **cli**: register default subcommands prior to registering user-defined subcomands
+
+## Other
+
+- **contrib**: add a script to parse jsonlines datasets
+- **utils**: add a method to update dict with non-existing keys inplace
+
+# Fix
+
+- **data**: make sure sequences are converted to tensors
+- **code**: return workaround to avoid newline char disambiguation
+- **callbacks**: get all logged scalar metrics
+- **metrics**: avoid persisting module state in state_dict
+- **data**: avoid masking special tokens
+- **data**: use an up-to-date nonzero method override
+- **data**: check if padding required for ascending sequences
+- **data**: make back-encoding idemponent operation
+- **training**: enable deterministic mode if seed is set
+- **tasks**: use roberta post-processing for roberta tokenization pipeline
+- **tasks**: save pretrained tokenizer with respect to legacy mode
+
 # v0.1.14 (2020-10-30)
 
 # Refactor
 
-## Tasks
+# Tasks
 
 - **tasks**: remove unused generic type
 - **code**: remove unused `dropout` in code tokenizer fast
@@ -16,7 +195,7 @@
 - **tasks**: rename `fix_tokenizer` -> `__fix_tokenizer`
 - **tasks**: remove dropout arg from base tokenizer fast
 
-## CLI
+# CLI
 
 - **cli**: use command params for getting pretrained tokenizer path
 - **cli**: remove file paths from tokenizer configs while saving
