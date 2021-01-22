@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "formerbox"
-version = "0.2.0rc1"
+version = "0.2.0"
 description = ""
 authors = ["mozharovsky <mozharovsky@live.com>"]
 
