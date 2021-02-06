@@ -79,7 +79,7 @@ class SaveCheckpointAtStep(Callback):
         dataloader_idx: int,
     ) -> None:
         # check if we should save at current step
-        if trainer.global_step % self.save_step_frequency == 0:
+        if (trainer.global_step + 1) % self.save_step_frequency == 0:
             self.save_checkpoint(trainer)
 
     def on_train_epoch_end(
