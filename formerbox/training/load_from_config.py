@@ -7,6 +7,7 @@ import yaml
 from formerbox.utils import update_left_inplace
 from transformers import PretrainedConfig, PreTrainedModel
 from transformers import PreTrainedTokenizerFast as Tokenizer
+from transformers import RobertaConfig
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,12 @@ def model_from_config(config_path: Union[Text, Path], **kwargs: Any) -> PreTrain
         model_config_class = import_class_from_string(model_config_name)
     except AttributeError as err:
         raise err
+
+    # patch position embeddings to avoid indexing errors
+    if issubclass(model_config_class, RobertaConfig):
+        max_position_embeddings = kwargs.pop("max_position_embeddings")
+        max_position_embeddings += 2
+        kwargs.setdefault("max_position_embeddings", max_position_embeddings)
 
     update_left_inplace(model_config_kwargs, kwargs)
     model_config = model_config_class(**model_config_kwargs)
