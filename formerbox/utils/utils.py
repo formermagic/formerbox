@@ -125,7 +125,7 @@ def str2bool(string: Text) -> bool:
     return result
 
 
-def iter_stide(
+def iter_stride(
     iterable: typing.Iterable[T], chunk_size: int, stride: int
 ) -> typing.Iterable[List[T]]:
     assert chunk_size > stride, "stride must be less than chunk size"
