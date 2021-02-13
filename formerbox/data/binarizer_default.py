@@ -6,7 +6,7 @@ from formerbox.data.binarizer import Binarizer, BinarizerBase, dataset_dest_file
 from formerbox.data.indexed_dataset import IndexedDatasetBuilderBase
 from formerbox.data.indexed_dataset_setup import IndexedDatasetSetup
 from formerbox.data.tokenizers.tokenization_base import Padding, Truncation
-from formerbox.utils import iter_stide
+from formerbox.utils import iter_stride
 from transformers import PreTrainedTokenizerFast
 
 logger = logging.getLogger(__name__)
@@ -156,7 +156,7 @@ class DefaultBinarizer(BinarizerBase):
 
         result = []
         for instance in batch:
-            sentences = iter_stide(instance.split(" "), chunk_size=512, stride=32)
+            sentences = iter_stride(instance.split(" "), chunk_size=512, stride=32)
             for sentence in sentences:
                 result.append(" ".join(sentence))
 
