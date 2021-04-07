@@ -41,6 +41,18 @@ class SpecialToken(Enum):
     tabsymbol_token = "<tabsymbol>"
 
 
+SPECIAL_TOKENS = set(token.value for token in SpecialToken)
+
+
+def __stringify(tokens: List[str], add_token_space: bool) -> str:
+    """Joins tokens into line with or without spaces aroung special tokens."""
+    line = " ".join(tokens)
+    if not add_token_space:
+        tokens_pattern = "|".join(SPECIAL_TOKENS)
+        line = re.sub(r"\s*(%s)\s*" % tokens_pattern, r"\1", line)
+    return line
+
+
 def process_string(
     token: Text,
     char2token: Dict[Text, Text],
@@ -83,7 +95,11 @@ def process_string(
 
 
 # pylint: disable=no-else-continue, disable=broad-except
-def tokenize_python(text: Text, keep_comments: bool = False) -> List[Text]:
+def tokenize_python(
+    text: Text,
+    keep_comments: bool = False,
+    add_token_space: bool = False,
+) -> Text:
     try:
         assert isinstance(text, str)
         text = text.replace(r"\r", "")
@@ -177,11 +193,13 @@ def tokenize_python(text: Text, keep_comments: bool = False) -> List[Text]:
                 tokens.append(token_info.string)
 
         assert tokens[-1] == SpecialToken.endmarker_token.value, "Error, no end marker"
-        return tokens[:-1]
+
     except KeyboardInterrupt as err:
         raise err
     except BaseException:
-        return []
+        tokens = []
+
+    return __stringify(tokens[:-1], add_token_space)
 
 
 # pylint: disable=no-else-continue, disable=broad-except
