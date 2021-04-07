@@ -104,12 +104,12 @@ def tokenize_python(text: Text, keep_comments: bool = False) -> List[Text]:
                 IndentationError,
                 SyntaxError,
                 UnicodeDecodeError,
-            ):
+            ) as err:
                 raise Exception(
                     f'Impossible to parse tokens because icorrect source code "{text[0:30]}" ...'
-                )
-            except StopIteration:
-                raise Exception("End of iterator before ENDMARKER token.")
+                ) from err
+            except StopIteration as err:
+                raise Exception("End of iterator before ENDMARKER token.") from err
 
             if token_info.type in [tokenize.ENCODING, tokenize.NL]:
                 continue
