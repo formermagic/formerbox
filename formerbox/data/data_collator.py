@@ -463,9 +463,18 @@ class DataCollatorForBartDenoising(DataCollatorForDenoising):
         original_mask.masked_fill_(special_tokens_mask, value=1)
         original_mask = original_mask.bool()
 
-        # prepare the input tensor with masked spans
+        # prepare the infilled input tensor
         input_ids = inputs.clone()
+        # replace selected spans with the mask_token_id
         input_ids[replace_mask] = self.tokenizer.mask_token_id
+
+        # replace random masked spans with random tokens
+        random_prob = torch.full(replace_mask.shape, float(self.random_token_ratio))
+        random_mask = torch.bernoulli(random_prob).bool()
+        random_size = nonzero_size(replace_mask & random_mask)
+        input_ids[replace_mask & random_mask] = self._random_tokens(random_size)
+
+        # select only original tokens and spans
         input_ids = input_ids[original_mask]
 
         # prepare the target tensor
