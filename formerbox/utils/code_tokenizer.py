@@ -13,17 +13,17 @@ from typing import Dict, List, Text, Union
 from sacrebleu.tokenizers import TokenizerV14International
 
 PYTHON_CHAR2TOKEN = {
-    "#": " STOKEN0 ",
-    "\\n": " STOKEN1 ",
-    '"""': " STOKEN2 ",
-    "'''": " STOKEN3 ",
+    "#": "<STOKEN0>",
+    "\\n": "<STOKEN1>",
+    '"""': "<STOKEN2>",
+    "'''": "<STOKEN3>",
 }
 
 PYTHON_TOKEN2CHAR = {
-    "STOKEN0": "#",
-    "STOKEN1": "\\n",
-    "STOKEN2": '"""',
-    "STOKEN3": "'''",
+    "<STOKEN0>": "#",
+    "<STOKEN1>": "\\n",
+    "<STOKEN2>": '"""',
+    "<STOKEN3>": "'''",
 }
 
 tokenize_v14_international = TokenizerV14International()
@@ -78,7 +78,7 @@ def process_string(
     for char, special_token in char2token.items():
         token = token.replace(char, special_token)
 
-    if token.startswith(" STOKEN0"):
+    if token.startswith("<STOKEN0>"):
         if token.endswith("\n"):
             token = token[:-1]
         token += f" {SpecialToken.encdom_token.value}"
