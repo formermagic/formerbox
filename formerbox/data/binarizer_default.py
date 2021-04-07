@@ -11,6 +11,7 @@ from transformers import PreTrainedTokenizerFast
 
 logger = logging.getLogger(__name__)
 
+
 # pylint: disable=arguments-differ
 @Binarizer.register(name="default", constructor="from_partial")
 class DefaultBinarizer(BinarizerBase):
