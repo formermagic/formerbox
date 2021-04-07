@@ -13,6 +13,11 @@ EncodedInput = Union[List[int], Tensor]
 ReplaceLength = Literal[0, 1, -1]
 
 
+def nonzero_size(tensor: torch.Tensor) -> torch.Size:
+    nonzero = tensor.nonzero(as_tuple=True)
+    return nonzero[0].size()
+
+
 def tolist(sequences: Union[List[Any], Tensor]) -> List[Any]:
     if isinstance(sequences, Tensor):
         return sequences.tolist()
@@ -294,6 +299,7 @@ class DataCollatorForWholeWordMasking(DataCollatorForDenoising):
 @dataclass
 class DataCollatorForBartDenoising(DataCollatorForDenoising):
     lambda_coef: float = 3.0
+    use_insertion_noise: bool = True
 
     def __call__(self, features: List[Dict[Text, EncodedInput]]) -> Dict[Text, Tensor]:
         assert self.tokenizer.pad_token_id is not None
@@ -337,9 +343,19 @@ class DataCollatorForBartDenoising(DataCollatorForDenoising):
         return input_ids, labels
 
     def add_insertion_noise(
-        self, tokens: Tensor, special_tokens_mask: Tensor, insertion_prob: float
+        self,
+        tokens: Tensor,
+        special_tokens_mask: Tensor,
+        insertion_prob: float,
+        labels: Optional[torch.Tensor] = None,
     ) -> Tuple[Tensor, Tensor]:
         assert self.tokenizer.mask_token_id is not None
+
+        # handle zero-probability case
+        if insertion_prob == 0.0:
+            if labels is None:
+                labels = tokens.clone()
+            return tokens, labels
 
         # count the number of insertions to make
         tokens_mask = ~special_tokens_mask
@@ -361,15 +377,16 @@ class DataCollatorForBartDenoising(DataCollatorForDenoising):
         # a mask for tokens to be random among inserted indices
         random_prob = torch.full(insertion_mask.shape, float(self.random_token_ratio))
         random_mask = torch.bernoulli(random_prob).bool()
-        random_size = tokens[insertion_mask & random_mask].size()
+        random_size = nonzero_size(insertion_mask & random_mask)
 
         # prepare the input tensor with insertions of mask and random tokens
         input_ids = torch.LongTensor(tokens.size(0) + num_insertions).fill_(0)
         input_ids[insertion_mask] = self.tokenizer.mask_token_id
-        input_ids[insertion_mask & random_mask] = self._random_tokens(random_size)  # type: ignore
+        input_ids[insertion_mask & random_mask] = self._random_tokens(random_size)
         input_ids[~insertion_mask] = tokens
 
         # prepare the target tensor
+        if labels is None:
         labels = tokens.clone()
 
         return input_ids, labels
@@ -453,6 +470,17 @@ class DataCollatorForBartDenoising(DataCollatorForDenoising):
 
         # prepare the target tensor
         labels = inputs.clone()
+
+        # add remaining insertions into infilled input_ids
+        if num_inserts > 0 and self.use_insertion_noise:
+            insertion_prob = num_inserts / input_ids.size(0)
+            special_tokens_mask = self._get_special_tokens_mask(input_ids)
+            input_ids, labels = self.add_insertion_noise(
+                input_ids,
+                special_tokens_mask=special_tokens_mask,
+                insertion_prob=insertion_prob,
+                labels=labels,
+            )
 
         return input_ids, labels
 
