@@ -1,4 +1,5 @@
 import logging
+from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, List, Optional, Text
 
 from formerbox.data.indexed_dataset import IndexedDatasetBase
@@ -14,7 +15,21 @@ from transformers import DataCollator
 logger = logging.getLogger(__name__)
 
 
-class DatasetIterator(Dataset):
+class DatasetIteratorBase(Dataset, metaclass=ABCMeta):
+    @abstractmethod
+    def __getitem__(self, index: int) -> Any:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __len__(self) -> int:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def collate_fn(self, samples: List[Any]) -> Any:
+        raise NotImplementedError()
+
+
+class DatasetIterator(DatasetIteratorBase):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
