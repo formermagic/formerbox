@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Text, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Text, Tuple, Union
 
 import torch.nn as nn
 import transformers
@@ -37,8 +37,14 @@ def get_polynomial_decay_with_warmup(
 
 
 def weight_decay_params(
-    model: nn.Module, weight_decay: float, skip_list: List[Text]
+    model: nn.Module,
+    weight_decay: float,
+    skip_list: Optional[List[Text]] = None,
 ) -> List[Dict[Text, Any]]:
+    # handle emtpy skip list case
+    if skip_list is None:
+        skip_list = []
+
     decay = []
     no_decay = []
     for name, param in model.named_parameters():
@@ -48,6 +54,7 @@ def weight_decay_params(
             no_decay.append(param)
         else:
             decay.append(param)
+
     return [
         {"params": no_decay, "weight_decay": 0.0},
         {"params": decay, "weight_decay": weight_decay},
