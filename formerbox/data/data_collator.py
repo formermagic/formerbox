@@ -387,7 +387,7 @@ class DataCollatorForBartDenoising(DataCollatorForDenoising):
 
         # prepare the target tensor
         if labels is None:
-        labels = tokens.clone()
+            labels = tokens.clone()
 
         return input_ids, labels
 
