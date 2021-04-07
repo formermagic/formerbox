@@ -53,6 +53,14 @@ def __stringify(tokens: List[str], add_token_space: bool) -> str:
     return line
 
 
+def __destringify(line: str, add_token_space: bool) -> str:
+    """Adds spaces to special tokens in the tokenized line if they are missing."""
+    if not add_token_space:
+        tokens_pattern = "|".join(SPECIAL_TOKENS)
+        line = re.sub(r"\s*(%s)\s*" % tokens_pattern, r" \1 ", line)
+    return line
+
+
 def process_string(
     token: Text,
     char2token: Dict[Text, Text],
@@ -203,23 +211,39 @@ def tokenize_python(
 
 
 # pylint: disable=no-else-continue, disable=broad-except
-def detokenize_python(tokens: Union[List[Text], Text]) -> Text:
+def detokenize_python(
+    tokens: Union[List[Text], Text],
+    add_token_space: bool = False,
+) -> Text:
     try:
         assert isinstance(tokens, (str, list))
         if isinstance(tokens, list):
             tokens = " ".join(tokens)
-        tokens = tokens.replace(
-            SpecialToken.encdom_token.value,
-            SpecialToken.newline_token.value,
-        )
-        tokens = tokens.replace(
-            SpecialToken.space_token.value,
-            SpecialToken.spacetoken_token.value,
+
+        # restore missing spaces around special tokens
+        tokens = __destringify(tokens, add_token_space)
+
+        # prepare tokenized string for splitting
+        tokens = (
+            tokens.replace(
+                SpecialToken.encdom_token.value,
+                SpecialToken.newline_token.value,
+            )
+            .replace(
+                SpecialToken.space_token.value,
+                SpecialToken.spacetoken_token.value,
+            )
+            .replace(
+                SpecialToken.strnewline_token.value,
+                SpecialToken.newline_token.value,
+            )
         )
 
+        # prepare tokenized lines for detokenization
         lines = tokens.split(SpecialToken.newline_token.value)
+
         tabs = ""
-        for i, line in enumerate(lines):
+        for idx, line in enumerate(lines):
             line = line.strip()
             if line.startswith(f"{SpecialToken.indent_token.value} "):
                 tabs += "    "
@@ -234,29 +258,28 @@ def detokenize_python(tokens: Union[List[Text], Text]) -> Text:
                 line = ""
             else:
                 line = tabs + line
-            lines[i] = line
+
+            # python tokenizer ignores comment indentation
+            # this way we check if comment should get more tabs
+            try:
+                next_line = lines[idx + 1].strip()
+                if line.strip().startswith("#"):
+                    if next_line.startswith(f"{SpecialToken.indent_token.value} "):
+                        line = "    " + line
+            except IndexError:
+                pass
+
+            lines[idx] = line
 
         untokenized = "\n".join(lines)
 
-        # find string and comment with parser and detokenize string correctly
-        try:
-            for token_info in tokenize.tokenize(
-                BytesIO(untokenized.encode("utf-8")).readline
-            ):
-                if token_info.type in [tokenize.STRING, tokenize.COMMENT]:
-                    token = (
-                        token_info.string.replace(
-                            SpecialToken.strnewline_token.value, "\n"
-                        )
-                        .replace(SpecialToken.tabsymbol_token.value, "\t")
-                        .replace(" ", "")
-                        .replace(SpecialToken.spacetoken_token.value, " ")
-                    )
-                    untokenized = untokenized.replace(token_info.string, token)
-        except KeyboardInterrupt as err:
-            raise err
-        except BaseException:
-            pass
+        # detokenize string and comment
+        untokenized = (
+            untokenized.replace(SpecialToken.strnewline_token.value, "\n")
+            .replace(SpecialToken.tabsymbol_token.value, "\t")
+            .replace(f" {SpecialToken.spacetoken_token.value} ", " ")
+            .replace(SpecialToken.spacetoken_token.value, " ")
+        )
 
         # detokenize imports
         untokenized = (
@@ -265,6 +288,7 @@ def detokenize_python(tokens: Union[List[Text], Text]) -> Text:
             .replace("import.", "import .")
             .replace("from.", "from .")
         )
+
         untokenized = untokenized.replace("> >", ">>").replace("< <", "<<")
         return untokenized
     except KeyboardInterrupt as err:
